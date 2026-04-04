@@ -571,7 +571,9 @@ function resetUpdateStatus() {
   document.getElementById('foundTicket').classList.remove('show');
   document.getElementById('usFields').style.display = 'none';
   document.getElementById('usStatus').value = '';
-  document.getElementById('usTech').value = '';
+  var tf = document.getElementById('usTech');
+  tf.value = ''; tf.readOnly = false;
+  tf.style.background = ''; tf.style.borderColor = ''; tf.style.color = ''; tf.style.fontWeight = '';
   document.getElementById('usCorrection').value = '';
   document.getElementById('usParts').value = '';
   document.getElementById('usPoNumber').value = '';
@@ -814,7 +816,23 @@ async function lookupTicket(){
     document.getElementById('foundTicket').classList.add('show');
     document.getElementById('usFields').style.display='block';
     document.getElementById('usStatus').value=ticket.status;
-    document.getElementById('usTech').value='';
+    // Pre-fill technician if already saved — only needs to be entered once
+    var savedTech = ticket.technician || '';
+    var techField = document.getElementById('usTech');
+    techField.value = savedTech;
+    if (savedTech) {
+      techField.readOnly = true;
+      techField.style.background = '#f0fdf4';
+      techField.style.borderColor = '#86efac';
+      techField.style.color = '#166534';
+      techField.style.fontWeight = '700';
+    } else {
+      techField.readOnly = false;
+      techField.style.background = '';
+      techField.style.borderColor = '';
+      techField.style.color = '';
+      techField.style.fontWeight = '';
+    }
     document.getElementById('usCorrection').value=ticket.correction||'';
     document.getElementById('usParts').value=ticket.spareParts||'';
 
