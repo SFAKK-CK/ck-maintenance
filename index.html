@@ -511,9 +511,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="font-size:11px;color:var(--g400);margin-top:4px">กรอกโดยทีมจัดซื้อ / To be filled by Purchasing team</div>
         </div>
 
+        <!-- Label changes based on status -->
         <div class="us-field">
-          <label>🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span></label>
+          <label id="correctionLabel">🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span></label>
           <textarea id="usCorrection" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ / Describe the fix or action taken..."></textarea>
+        </div>
+
+        <!-- Photo upload — shown only for Inquiring for Quotation -->
+        <div class="us-field" id="quotationPhotoWrap" style="display:none">
+          <label>📷 รูปภาพอ้างอิง / Reference Photos</label>
+          <div class="photo-drop" id="usUploadArea" onclick="document.getElementById('usFileInput').click()" style="padding:16px;text-align:center;border:2px dashed var(--g300);border-radius:var(--r8);cursor:pointer;background:var(--g50)">
+            <div style="font-size:22px;margin-bottom:4px">📷</div>
+            <p style="font-size:13px;color:var(--g600);font-weight:600;margin:0">แตะเพื่อแนบรูปภาพ / Tap to attach photos</p>
+            <p style="font-size:11px;color:var(--g400);margin:4px 0 0">สูงสุด 3 รูป / Max 3 photos</p>
+          </div>
+          <input type="file" id="usFileInput" accept="image/*" multiple capture="environment" onchange="handleUsPhotos(this.files)" style="display:none">
+          <div class="previews" id="usPreviews" style="margin-top:8px"></div>
+          <div style="font-size:11px;color:var(--g400);text-align:right;margin-top:4px" id="usPhotoCount"></div>
         </div>
         <div class="us-field">
           <label>🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</label>
@@ -566,6 +580,11 @@ function resetUpdateStatus() {
   document.getElementById('updateBtn').disabled = false;
   document.getElementById('quotationAlert').style.display = 'none';
   document.getElementById('poNumberWrap').style.display = 'none';
+  document.getElementById('quotationPhotoWrap').style.display = 'none';
+  document.getElementById('correctionLabel').innerHTML = '🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span>';
+  document.getElementById('usCorrection').placeholder = 'อธิบายวิธีการซ่อมหรือดำเนินการ / Describe the fix or action taken...';
+  usPhotos = [];
+  renderUsPrev();
   usTicket = null;
 }
 
@@ -850,7 +869,8 @@ async function submitUpdate(){
         correction,
         spareParts:parts,
         poNumber:document.getElementById('usPoNumber').value.trim(),
-        notifyPurchasing:status==='📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim()
+        notifyPurchasing:status==='📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
+        quotationPhotos:usPhotos.map(p=>({name:p.name,data:p.data}))
       })});
     hideLoading();
     document.getElementById('usSuccess').classList.add('show');
@@ -862,6 +882,31 @@ async function submitUpdate(){
     document.getElementById('updateBtn').disabled=false;
   }
 }
+
+// ─── UPDATE STATUS PHOTOS ────────────────────────────────
+let usPhotos = [];
+
+function handleUsPhotos(files) {
+  const max=3, maxSz=5*1024*1024;
+  for(const f of files){
+    if(usPhotos.length>=max)break;
+    if(f.size>maxSz){alert(f.name+': ไฟล์ใหญ่เกิน 5MB');continue}
+    if(!f.type.startsWith('image/'))continue;
+    const r=new FileReader();
+    r.onload=e=>{usPhotos.push({name:f.name,data:e.target.result});renderUsPrev()};
+    r.readAsDataURL(f);
+  }
+}
+function renderUsPrev(){
+  const c=document.getElementById('usPreviews');c.innerHTML='';
+  usPhotos.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='prev';
+    d.innerHTML='<img src="'+p.data+'" alt="Photo '+(i+1)+'"><button class="rm" onclick="rmUsPhoto('+i+')">×</button>';
+    c.appendChild(d);
+  });
+  document.getElementById('usPhotoCount').textContent=usPhotos.length?usPhotos.length+'/3 รูป':'';
+}
+function rmUsPhoto(i){usPhotos.splice(i,1);renderUsPrev();}
 
 // ─── SHARED UTILS ─────────────────────────────
 function showLoading(msg){
@@ -905,9 +950,23 @@ document.getElementById('usStatus').addEventListener('change', function() {
   const isQuotation = val === '📋 Inquiring for Quotation';
   const showPO = isQuotation || val.includes('Buying') || val.includes('Waiting') || val.includes('Inquiring');
   const existingPO = document.getElementById('usPoNumber').value.trim();
-  // Only show the "will notify purchasing" alert if Inquiring AND no PO exists yet
+
+  // Show/hide quotation alert
   document.getElementById('quotationAlert').style.display = (isQuotation && !existingPO) ? 'block' : 'none';
   document.getElementById('poNumberWrap').style.display = (showPO || existingPO) ? 'block' : 'none';
+
+  // Change correction label + show photo upload based on status
+  const corrLabel = document.getElementById('correctionLabel');
+  const photoWrap = document.getElementById('quotationPhotoWrap');
+  if (isQuotation) {
+    corrLabel.innerHTML = '📋 รายละเอียดสินค้าที่ต้องการซื้อ / Details of Purchase Item <span style="color:var(--red)">*</span>';
+    document.getElementById('usCorrection').placeholder = 'ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase...';
+    photoWrap.style.display = 'block';
+  } else {
+    corrLabel.innerHTML = '🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span>';
+    document.getElementById('usCorrection').placeholder = 'อธิบายวิธีการซ่อมหรือดำเนินการ / Describe the fix or action taken...';
+    photoWrap.style.display = 'none';
+  }
 });
 document.getElementById('usTicketInput').addEventListener('keydown',e=>{if(e.key==='Enter')lookupTicket()});
 </script>
