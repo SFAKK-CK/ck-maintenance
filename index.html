@@ -20,7 +20,6 @@
 body{font-size:20px;font-family:'Calibri','Noto Sans Thai','Helvetica Neue',Arial,sans-serif;background:#f0f4f8;color:var(--g900);min-height:100vh;line-height:1.6}
 ::placeholder{font-size:19px;}
 
-
 /* ─── PAGE SYSTEM ─── */
 .page{display:none;min-height:100vh}
 .page.active{display:block}
@@ -47,6 +46,7 @@ body{font-size:20px;font-family:'Calibri','Noto Sans Thai','Helvetica Neue',Aria
 .hc1 .home-card-icon{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.3)}
 .hc2 .home-card-icon{background:rgba(21,101,192,.25);border:1px solid rgba(21,101,192,.35)}
 .hc3 .home-card-icon{background:rgba(46,125,50,.25);border:1px solid rgba(46,125,50,.35)}
+.hc4 .home-card-icon{background:rgba(139,92,246,.25);border:1px solid rgba(139,92,246,.35)}
 .home-card-text{flex:1}
 .hct-en{display:none}
 .hct-th{font-size:26px;font-weight:800;color:white;margin-top:0}
@@ -138,7 +138,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .suc-btn-home{background:white;border:1.5px solid #e5e7eb;color:#374151;padding:14px 10px;border-radius:10px;cursor:pointer;font-size:20px;font-weight:600;font-family:inherit;line-height:1.4}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{color:white;font-size:20px;font-weight:600}
-
 .suc-icon{width:72px;height:72px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px}
 .suc-title{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px}
 .suc-ticket{background:var(--g100);border-radius:8px;padding:12px 28px;margin:14px 0;font-family:monospace;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:.06em;border:1.5px solid var(--g200)}
@@ -211,13 +210,51 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .us-success p{font-size:20px;font-weight:700;color:var(--completed)}
 .us-err{background:#fef2f2;border:1px solid #fecaca;color:var(--red);border-radius:var(--r8);padding:10px 12px;font-size:20px;margin-top:8px;display:none}
 .us-err.show{display:block}
+
+/* ─── MANAGER VIEW PAGE ─── */
+.mv-wrap{max-width:600px;margin:0 auto;padding:14px 14px 32px}
+.mv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.mv-stat{background:white;border-radius:12px;border:1px solid var(--g200);padding:14px 10px;text-align:center}
+.mv-stat-num{font-size:32px;font-weight:800;line-height:1}
+.mv-stat-lbl{font-size:18px;color:var(--g400);margin-top:4px;font-weight:600}
+.mv-stat.red .mv-stat-num{color:#c0392b}
+.mv-stat.orange .mv-stat-num{color:#e65100}
+.mv-stat.blue .mv-stat-num{color:#1565c0}
+
+/* Filter chips */
+.mv-dept-filter{width:100%;padding:10px 14px;border:1.5px solid var(--g200);border-radius:10px;font-size:18px;font-family:inherit;color:var(--g900);background:white;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
+
+.mv-section-title{font-size:20px;font-weight:700;color:var(--g600);margin:18px 0 8px;display:flex;align-items:center;justify-content:space-between}
+.mv-section-count{font-size:17px;background:var(--g100);color:var(--g600);padding:2px 10px;border-radius:12px;font-weight:700}
+.mv-ticket{background:white;border-radius:12px;border:1px solid var(--g200);margin-bottom:10px;overflow:hidden}
+.mv-ticket.urgent{border-color:#fca5a5;background:#fffbfb}
+.mv-ticket-head{padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mv-ticket-info{flex:1;min-width:0}
+.mv-ticket-num{font-size:18px;font-weight:700;font-family:monospace;color:var(--g400);margin-bottom:3px}
+.mv-ticket-machine{font-size:22px;font-weight:800;color:var(--navy)}
+.mv-ticket-dept{font-size:19px;color:var(--g600);margin-top:3px}
+.mv-ticket-meta{text-align:right;flex-shrink:0}
+.mv-ticket-age{font-size:18px;color:var(--g400);margin-top:4px}
+.mv-ticket-age.overdue{color:#c0392b;font-weight:700}
+.mv-ticket-status{font-size:17px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
+.mv-cause{font-size:19px;color:var(--g600);padding:0 16px 14px;border-top:1px solid var(--g100);padding-top:10px;line-height:1.6}
+.mv-assign-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
+.mv-assign-btn{padding:13px 8px;border:none;border-radius:10px;cursor:pointer;font-size:19px;font-weight:700;font-family:inherit;transition:all .15s;line-height:1.4}
+.mv-assign-btn:active{transform:scale(.97)}
+.mv-assign-btn.general{background:#1a2744;color:white}
+.mv-assign-btn.electrical{background:#1565c0;color:white}
+.mv-assign-btn:disabled{opacity:.4;cursor:not-allowed}
+.mv-assigned-badge{margin:0 16px 14px;background:#e8f5e9;border-radius:10px;padding:10px 14px;font-size:19px;color:#1b5e20;font-weight:700}
+.mv-empty{text-align:center;padding:32px 16px;color:var(--g400);font-size:20px;background:white;border-radius:12px;border:1px solid var(--g200)}
+.mv-refresh-btn{width:100%;padding:14px;background:var(--g100);color:var(--navy);border:1.5px solid var(--g200);border-radius:10px;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.mv-refresh-btn:hover{background:var(--g200)}
+.mv-show-more{width:100%;padding:11px;background:white;color:var(--navy);border:1.5px solid var(--g200);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;margin-bottom:8px;transition:all .15s}
+.mv-show-more:hover{background:var(--g100)}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     LOADING OVERLAY (shared)
-══════════════════════════════════════════ -->
+<!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">กำลังดำเนินการ… Please wait…</div>
@@ -253,27 +290,34 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="suc-subtitle" style="color:#dc2626">ส่งไม่สำเร็จ / Submission Failed</div>
     <div class="err-msg">
       ไม่สามารถส่งคำร้องได้ กรุณาลองอีกครั้ง<br>
-      ไม่สามารถส่งได้ / Unable to submit your request. Please try again.<br>
+      Unable to submit. Please try again.<br>
       <span style="font-size:19px;color:#dc2626" id="errDetail"></span>
     </div>
     <div class="suc-btns">
-      <button class="suc-btn-new" style="background:#dc2626" onclick="retrySubmit()">↻ ลองอีกครั้ง / ลองอีกครั้ง / Try Again</button>
+      <button class="suc-btn-new" style="background:#dc2626" onclick="retrySubmit()">↻ ลองอีกครั้ง / Try Again</button>
       <button class="suc-btn-home" onclick="goHome()">← กลับหน้าหลัก / Back to Home</button>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     PAGE 0: HOME
-══════════════════════════════════════════ -->
+<!-- ══════ PAGE 0: HOME ══════ -->
 <div id="page-home" class="page active">
   <div class="home-inner">
     <div class="home-logo">
       <div class="logo-icon" style="background:transparent;border:none;padding:0;overflow:hidden"><img src="data:image/png;base64,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" alt="CK Logo" style="width:72px;height:72px;object-fit:contain;border-radius:14px"></div>
-      <div class="logo-name">C.K. Frozen Fish & Food</div>
+      <div class="logo-name">C.K. Frozen Fish &amp; Food</div>
       <div class="logo-sub">ระบบจัดการงานซ่อมบำรุง · ระบบแจ้งซ่อม</div>
     </div>
     <div class="home-cards">
+
+      <div class="home-card hc4" onclick="goPage('page-manager')">
+        <div class="home-card-icon">📊</div>
+        <div class="home-card-text">
+          <div class="hct-th">Daily Summary Dashboard</div>
+          <div class="hct-desc">ภาพรวมงานซ่อมทั้งหมด · ดูได้ทุกคน</div>
+        </div>
+        <div class="home-card-arrow">›</div>
+      </div>
 
       <div class="home-card hc1" onclick="goPage('page-form')">
         <div class="home-card-icon">📝</div>
@@ -288,7 +332,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="home-card-icon">🔍</div>
         <div class="home-card-text">
           <div class="hct-th">ตรวจสอบสถานะ / Check Progress</div>
-          <div class="hct-desc">ติดตามความคืบหน้าของคำร้องซ่อม / Track your repair status</div>
+          <div class="hct-desc">ติดตามความคืบหน้าของคำร้องซ่อม</div>
         </div>
         <div class="home-card-arrow">›</div>
       </div>
@@ -310,9 +354,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     PAGE 1: MAINTENANCE FORM
-══════════════════════════════════════════ -->
+<!-- ══════ PAGE 1: MAINTENANCE FORM ══════ -->
 <div id="page-form" class="page">
   <div class="app-header">
     <div>
@@ -327,12 +369,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="back-btn" onclick="goHome()">✕</button>
     </div>
   </div>
-
   <div class="container">
     <div class="info-strip">
       <div class="group"><div class="lbl2">วันที่แจ้ง / Report Date</div><div class="val" id="displayDate">—</div></div>
     </div>
-
     <div class="urgent-row" id="urgentRow" onclick="toggleUrgent()">
       <div class="urg-left">
         <div class="urg-dot" id="urgDot">!</div>
@@ -343,7 +383,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="tog" id="urgTog"></div>
     </div>
-
     <div class="card">
       <div class="sec-hdr">
         <div class="sec-num">1</div>
@@ -359,7 +398,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="field">
-          <label class="lbl" for="rname">ชื่อ-นามสกุล <span class="en">ชื่อ-นามสกุล / Name-Surname</span> <span class="req">*</span></label>
+          <label class="lbl" for="rname">ชื่อ-นามสกุล <span class="en">Name-Surname</span> <span class="req">*</span></label>
           <input type="text" id="rname" placeholder="ชื่อผู้แจ้งซ่อม / Reporter Name">
         </div>
         <div class="field">
@@ -381,7 +420,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </select>
         </div>
         <div class="field">
-          <label class="lbl" for="mname">ชื่อเครื่อง/อุปกรณ์ <span class="en">เครื่องจักร / Machine</span> <span class="req">*</span></label>
+          <label class="lbl" for="mname">ชื่อเครื่อง/อุปกรณ์ <span class="en">Machine / Device</span> <span class="req">*</span></label>
           <input type="text" id="mname" placeholder="เช่น: เครื่องแพ็ค, ปั๊มน้ำ, แอร์...">
         </div>
         <div class="field">
@@ -407,10 +446,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="previews" id="previews"></div>
           <div class="photo-count" id="photoCount"></div>
         </div>
-
       </div>
     </div>
-
     <div class="card" style="opacity:.55">
       <div class="sec-hdr">
         <div class="sec-num" style="background:#9ca3af">2</div>
@@ -423,16 +460,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div><div class="sec-th" style="color:#6b7280">ส่วนของผู้ตรวจรับงานซ่อม</div><div class="sec-en">Inspection Section — filled by inspector</div></div>
       </div>
     </div>
-
     <div class="err" id="errMsg">กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบ / Please fill in all required fields.</div>
     <button class="submit-btn" id="submitBtn" onclick="submitForm()">ส่งคำร้องซ่อม — Submit Repair Request</button>
     <div class="footer">บริษัท ซี.เค. โฟรเซน ฟิช แอนด์ ฟูด จำกัด · FM-MT-001.2 Rev.03</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     PAGE 2: CHECK PROGRESS
-══════════════════════════════════════════ -->
+<!-- ══════ PAGE 2: CHECK PROGRESS ══════ -->
 <div id="page-check" class="page">
   <div class="app-header">
     <div><div class="hdr-title">🔍 ตรวจสอบสถานะ</div><div class="hdr-sub">Check Progress</div></div>
@@ -441,19 +475,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="cp-wrap">
     <div class="cp-search-card">
       <h2>ค้นหาคำร้องซ่อม / Find Your Ticket</h2>
-      <p>กรอกหมายเลข Ticket ที่ได้รับหลังจากส่งคำร้องซ่อม<br>กรอกหมายเลข Ticket ที่ได้รับ / Enter your ticket number received after submitting</p>
+      <p>กรอกหมายเลข Ticket ที่ได้รับหลังจากส่งคำร้องซ่อม<br>Enter your ticket number received after submitting</p>
       <div class="search-row">
         <input type="text" id="searchInput" placeholder="MT-20260401-1234" style="text-transform:uppercase;font-family:monospace">
-        <button class="search-btn" onclick="searchTicket()">ค้นหา / Search</button>
+        <button class="search-btn" onclick="searchTicket()">ค้นหา</button>
       </div>
     </div>
     <div id="cpResult"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     PAGE 3: UPDATE STATUS
-══════════════════════════════════════════ -->
+<!-- ══════ PAGE 3: UPDATE STATUS ══════ -->
 <div id="page-update" class="page">
   <div class="app-header">
     <div><div class="hdr-title">🔧 อัปเดตสถานะ</div><div class="hdr-sub">Update Status — ทีมช่าง</div></div>
@@ -462,28 +494,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="us-wrap">
     <div class="us-card">
       <h2>อัปเดตสถานะ / Update Ticket Status</h2>
-      <p>กรอกหมายเลข Ticket แล้วกด "ค้นหา" เพื่อดึงข้อมูล<br>กรอกหมายเลข Ticket แล้วกด "ค้นหา" / Enter ticket number then search to load details</p>
-
+      <p>กรอกหมายเลข Ticket แล้วกด "ค้นหา" เพื่อดึงข้อมูล<br>Enter ticket number then search to load details</p>
       <div class="us-field">
-        <label>🎫 หมายเลข Ticket / Ticket Number</label>
+        <label>หมายเลข Ticket / Ticket Number</label>
         <div class="search-row">
           <input type="text" id="usTicketInput" placeholder="MT-20260401-1234" style="font-family:monospace;text-transform:uppercase">
           <button class="search-btn" onclick="lookupTicket()">ค้นหา</button>
         </div>
       </div>
-
       <div class="found-ticket" id="foundTicket">
         <div class="ft-num" id="ftNum">—</div>
         <div class="ft-machine" id="ftMachine">—</div>
         <div class="ft-dept" id="ftDept">—</div>
       </div>
-
       <div id="usFields" style="display:none">
         <div class="us-field">
           <label>🔴 สถานะใหม่ / New Status <span style="color:var(--red)">*</span></label>
           <select id="usStatus">
             <option value="">— เลือกสถานะ / Select status —</option>
-            <option value="🟠 ส่งแล้ว">🟠 ส่งแล้ว — รอดำเนินการ</option>
+            <option value="🟠 Submitted">🟠 Submitted — รอดำเนินการ</option>
             <option value="🔵 In Progress">🔵 In Progress — กำลังดำเนินการ</option>
             <option value="📋 Inquiring for Quotation">📋 Inquiring for Quotation — กำลังขอใบเสนอราคา</option>
             <option value="🛒 Buying Spare Parts">🛒 Buying Spare Parts — กำลังซื้ออะไหล่</option>
@@ -497,26 +526,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <label>👷 ช่างผู้ดำเนินการ / Technician <span style="color:var(--red)">*</span></label>
           <input type="text" id="usTech" placeholder="ชื่อช่างผู้ดำเนินการ / Enter technician name">
         </div>
-        <!-- Quotation alert — shown when Inquiring for Quotation is selected -->
         <div id="quotationAlert" style="display:none;background:#fff8e1;border:1.5px solid #f59e0b;border-radius:8px;padding:12px 14px;margin-bottom:14px">
           <div style="font-size:19px;font-weight:700;color:#92400e;margin-bottom:3px">📋 Purchasing Team will be notified</div>
           <div style="font-size:19px;color:#b45309;line-height:1.6">ทีมจัดซื้อจะได้รับอีเมลแจ้งเตือนอัตโนมัติ<br>An email will be sent to the Purchasing team automatically.</div>
         </div>
-
-        <!-- PO Number field — shown when status is Inquiring or Buying -->
         <div class="us-field" id="poNumberWrap" style="display:none">
           <label>🔖 เลขที่ใบสั่งซื้อ / Purchase Order No.</label>
           <input type="text" id="usPoNumber" placeholder="เช่น: PO-2026-0001 / Enter PO number">
           <div style="font-size:19px;color:var(--g400);margin-top:4px">กรอกโดยทีมจัดซื้อ / To be filled by Purchasing team</div>
         </div>
-
-        <!-- Label changes based on status -->
         <div class="us-field">
           <label id="correctionLabel">🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span></label>
           <textarea id="usCorrection" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ / Describe the fix or action taken..."></textarea>
         </div>
-
-        <!-- Photo upload — shown only for Inquiring for Quotation -->
         <div class="us-field" id="quotationPhotoWrap" style="display:none">
           <label>📷 รูปภาพอ้างอิง / Reference Photos</label>
           <div class="photo-drop" id="usUploadArea" onclick="document.getElementById('usFileInput').click()" style="padding:16px;text-align:center;border:2px dashed var(--g300);border-radius:var(--r8);cursor:pointer;background:var(--g50)">
@@ -533,9 +555,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <input type="text" id="usParts" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP...">
           <div style="font-size:19px;color:var(--g400);margin-top:4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div>
         </div>
-
         <div class="us-err" id="usErr">กรุณากรอกข้อมูลที่จำเป็น / Please fill in all required fields.</div>
-        <button class="update-btn" id="updateBtn" onclick="submitUpdate()">💾 บันทึกการอัปเดต / บันทึก / Save Update</button>
+        <button class="update-btn" id="updateBtn" onclick="submitUpdate()">💾 บันทึกการอัปเดต / Save Update</button>
         <div class="us-success" id="usSuccess">
           <p>✅ อัปเดตสำเร็จแล้ว! / Update saved successfully!</p>
         </div>
@@ -544,9 +565,80 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCRIPTS
-══════════════════════════════════════════ -->
+<!-- ══════ PAGE 4: MANAGER VIEW ══════ -->
+<div id="page-manager" class="page">
+  <div class="app-header">
+    <div><div class="hdr-title">📊 Daily Summary Dashboard</div><div class="hdr-sub">ภาพรวมงานซ่อมทั้งหมด · ดูได้ทุกคน</div></div>
+    <button class="back-btn" onclick="goHome()">← หน้าหลัก</button>
+  </div>
+  <div class="mv-wrap">
+
+    <!-- Stats -->
+    <div class="mv-stats">
+      <div class="mv-stat orange">
+        <div class="mv-stat-num" id="mvCountUnassigned">—</div>
+        <div class="mv-stat-lbl">🟠 รอมอบหมาย</div>
+      </div>
+      <div class="mv-stat blue">
+        <div class="mv-stat-num" id="mvCountOpen">—</div>
+        <div class="mv-stat-lbl">🔵 กำลังซ่อม</div>
+      </div>
+      <div class="mv-stat red">
+        <div class="mv-stat-num" id="mvCountOverdue">—</div>
+        <div class="mv-stat-lbl">🚨 เกินกำหนด</div>
+      </div>
+    </div>
+
+    <!-- Department filter -->
+    <select class="mv-dept-filter" id="mvDeptFilter" onchange="renderManagerView(mvTickets)">
+      <option value="">🏭 ทุกแผนก / All Departments</option>
+      <option>ฝ่ายผลิต (Production)</option>
+      <option>ควบคุมคุณภาพ (Quality Control / QC)</option>
+      <option>ฝ่ายช่าง (Maintenance)</option>
+      <option>คลังสินค้า (Warehouse)</option>
+      <option>ห้องเย็น (Cold Storage)</option>
+      <option>ทรัพยากรบุคคล (HR)</option>
+      <option>ธุรการ (Administration)</option>
+      <option>บัญชี (Accounting)</option>
+      <option>จัดซื้อ (Purchasing)</option>
+      <option>ส่งออก (Export)</option>
+      <option>ผู้บริหาร (Management)</option>
+      <option>อื่นๆ (Other)</option>
+    </select>
+
+    <!-- Refresh -->
+    <button class="mv-refresh-btn" id="mvRefreshBtn" onclick="loadManagerView()" style="margin-top:12px">
+      <span id="mvRefreshIcon">🔄</span> รีเฟรช / Refresh
+    </button>
+
+    <!-- Unassigned -->
+    <div class="mv-section-title">
+      <span>🟠 รอมอบหมาย</span>
+      <span class="mv-section-count" id="mvCntU">0</span>
+    </div>
+    <div id="mvUnassigned"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
+    <div id="mvShowMoreU" style="display:none"><button class="mv-show-more" onclick="showMore('U')">แสดงเพิ่มเติม ▼ / Show more</button></div>
+
+    <!-- In Progress -->
+    <div class="mv-section-title">
+      <span>🔵 กำลังดำเนินการ</span>
+      <span class="mv-section-count" id="mvCntP">0</span>
+    </div>
+    <div id="mvInProgress"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
+    <div id="mvShowMoreP" style="display:none"><button class="mv-show-more" onclick="showMore('P')">แสดงเพิ่มเติม ▼ / Show more</button></div>
+
+    <!-- Waiting -->
+    <div class="mv-section-title">
+      <span>🟡 รอของ / จัดซื้อ</span>
+      <span class="mv-section-count" id="mvCntW">0</span>
+    </div>
+    <div id="mvWaiting"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
+    <div id="mvShowMoreW" style="display:none"><button class="mv-show-more" onclick="showMore('W')">แสดงเพิ่มเติม ▼ / Show more</button></div>
+
+  </div>
+</div>
+
+<!-- ══════ SCRIPTS ══════ -->
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4LpNcK5zecvMa8w99GnnG8KT0WSh5GS-MvMzAQc4ZCzIlXyo4puCNwfPwSDU_G9hzmA/exec';
 
@@ -555,9 +647,10 @@ function goPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-  if (id === 'page-form')   fullResetForm();
-  if (id === 'page-check')  resetCheckProgress();
-  if (id === 'page-update') resetUpdateStatus();
+  if (id === 'page-form')    fullResetForm();
+  if (id === 'page-check')   resetCheckProgress();
+  if (id === 'page-update')  resetUpdateStatus();
+  if (id === 'page-manager') loadManagerView();
 }
 
 function resetCheckProgress() {
@@ -589,26 +682,20 @@ function resetUpdateStatus() {
   usTicket = null;
 }
 
-// Full reset — clears all fields, resets radio to Repair, clears photos
-// Called every time the form page is opened from home
 function fullResetForm() {
   ['rname','dept','mname','refcode','cause','ddate'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
-  // Reset request type to Repair
   document.getElementById('t1').checked = true;
-  // Reset urgent toggle
   if (isUrgent) toggleUrgent();
-  // Clear photos
   photos = [];
   renderPrev();
-  // Clear errors
   document.getElementById('errMsg').classList.remove('show');
   document.getElementById('submitBtn').disabled = false;
-  // Generate fresh ticket number and date
   initForm();
 }
+
 function goHome() {
   document.getElementById('successScreen').classList.remove('show');
   document.getElementById('errorScreen').classList.remove('show');
@@ -619,360 +706,470 @@ function goHome() {
 
 function retrySubmit() {
   document.getElementById('errorScreen').classList.remove('show');
-  document.getElementById('submitBtn').disabled=false;
+  document.getElementById('submitBtn').disabled = false;
   goPage('page-form');
 }
 
 // ─── FORM LOGIC ───────────────────────────────
-let isUrgent=false, photos=[], ticketNumber='';
+let isUrgent = false, photos = [], ticketNumber = '';
 
 function initForm() {
-  const now=new Date();
-  const pad=n=>String(n).padStart(2,'0');
-  const y=now.getFullYear(),m=pad(now.getMonth()+1),d=pad(now.getDate());
-  const h=pad(now.getHours()),mi=pad(now.getMinutes());
-  ticketNumber='MT-'+y+m+d+'-'+h+mi;
-  document.getElementById('ticketDisplay').textContent=ticketNumber;
-  document.getElementById('displayDate').textContent=now.toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const y = now.getFullYear(), m = pad(now.getMonth()+1), d = pad(now.getDate());
+  const h = pad(now.getHours()), mi = pad(now.getMinutes());
+  ticketNumber = 'MT-' + y + m + d + '-' + h + mi;
+  document.getElementById('ticketDisplay').textContent = ticketNumber;
+  document.getElementById('displayDate').textContent = now.toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
 }
 
-function toggleUrgent(){
-  isUrgent=!isUrgent;
-  document.getElementById('urgentRow').classList.toggle('on',isUrgent);
-  document.getElementById('urgTog').classList.toggle('on',isUrgent);
-  document.getElementById('urgTh').textContent=isUrgent?'ด่วน — URGENT':'ทั่วไป — Not Urgent';
+function toggleUrgent() {
+  isUrgent = !isUrgent;
+  document.getElementById('urgentRow').classList.toggle('on', isUrgent);
+  document.getElementById('urgTog').classList.toggle('on', isUrgent);
+  document.getElementById('urgTh').textContent = isUrgent ? 'ด่วน — URGENT' : 'ทั่วไป — Not Urgent';
 }
 
-function handleFiles(files){
-  const max=5,maxSz=5*1024*1024;
-  for(const f of files){
-    if(photos.length>=max)break;
-    if(f.size>maxSz){alert(f.name+': ไฟล์ใหญ่เกิน 5MB');continue}
-    if(!f.type.startsWith('image/'))continue;
-    const r=new FileReader();
-    r.onload=e=>{photos.push({name:f.name,data:e.target.result});renderPrev()};
+function handleFiles(files) {
+  const max = 5, maxSz = 5*1024*1024;
+  for (const f of files) {
+    if (photos.length >= max) break;
+    if (f.size > maxSz) { alert(f.name + ': ไฟล์ใหญ่เกิน 5MB'); continue; }
+    if (!f.type.startsWith('image/')) continue;
+    const r = new FileReader();
+    r.onload = e => { photos.push({name:f.name, data:e.target.result}); renderPrev(); };
     r.readAsDataURL(f);
   }
 }
-function renderPrev(){
-  const c=document.getElementById('previews');c.innerHTML='';
-  photos.forEach((p,i)=>{
-    const d=document.createElement('div');d.className='prev';
-    d.innerHTML='<img src="'+p.data+'" alt="Photo '+(i+1)+'"><button class="rm" onclick="rmPhoto('+i+')">×</button>';
+
+function renderPrev() {
+  const c = document.getElementById('previews'); c.innerHTML = '';
+  photos.forEach((p,i) => {
+    const d = document.createElement('div'); d.className = 'prev';
+    d.innerHTML = '<img src="' + p.data + '" alt="Photo ' + (i+1) + '"><button class="rm" onclick="rmPhoto(' + i + ')">×</button>';
     c.appendChild(d);
   });
-  document.getElementById('photoCount').textContent=photos.length?photos.length+'/5 รูป':'';
+  document.getElementById('photoCount').textContent = photos.length ? photos.length + '/5 รูป' : '';
 }
-function rmPhoto(i){photos.splice(i,1);renderPrev()}
+function rmPhoto(i) { photos.splice(i,1); renderPrev(); }
 
-const uploadArea=document.getElementById('uploadArea');
-uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.classList.add('over')});
-uploadArea.addEventListener('dragleave',()=>uploadArea.classList.remove('over'));
-uploadArea.addEventListener('drop',e=>{e.preventDefault();uploadArea.classList.remove('over');handleFiles(e.dataTransfer.files)});
+const uploadArea = document.getElementById('uploadArea');
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('over'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('over'));
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('over'); handleFiles(e.dataTransfer.files); });
 
-function validateForm(){
-  const ids=['rname','dept','mname','cause'];
-  for(const id of ids){
-    const el=document.getElementById(id);
-    if(!el.value.trim()){el.focus();el.style.borderColor='#ef4444';setTimeout(()=>el.style.borderColor='',2500);return false;}
+function validateForm() {
+  const ids = ['rname','dept','mname','cause'];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.focus(); el.style.borderColor = '#ef4444'; setTimeout(() => el.style.borderColor = '', 2500); return false; }
   }
   return true;
 }
 
-async function submitForm(){
-  const err=document.getElementById('errMsg');
+async function submitForm() {
+  const err = document.getElementById('errMsg');
   err.classList.remove('show');
-  if(!validateForm()){err.classList.add('show');return}
-  const payload={
-    ticketNumber,timestamp:new Date().toISOString(),
-    isUrgent:isUrgent?'ด่วน (Urgent)':'ทั่วไป (Normal)',
-    requestType:document.querySelector('input[name=rtype]:checked').value,
-    reporterName:document.getElementById('rname').value.trim(),
-    department:document.getElementById('dept').value,
-    machineName:document.getElementById('mname').value.trim(),
-    refCode:document.getElementById('refcode').value.trim(),
-    cause:document.getElementById('cause').value.trim(),
-    desiredDate:document.getElementById('ddate').value,
-
-    photos:photos.map(p=>({name:p.name,data:p.data}))
+  if (!validateForm()) { err.classList.add('show'); return; }
+  const payload = {
+    ticketNumber, timestamp: new Date().toISOString(),
+    isUrgent: isUrgent ? 'ด่วน (Urgent)' : 'ทั่วไป (Normal)',
+    requestType: document.querySelector('input[name=rtype]:checked').value,
+    reporterName: document.getElementById('rname').value.trim(),
+    department: document.getElementById('dept').value,
+    machineName: document.getElementById('mname').value.trim(),
+    refCode: document.getElementById('refcode').value.trim(),
+    cause: document.getElementById('cause').value.trim(),
+    desiredDate: document.getElementById('ddate').value,
+    photos: photos.map(p => ({name:p.name, data:p.data}))
   };
   showLoading('กำลังส่งคำร้อง… Submitting…');
-  document.getElementById('submitBtn').disabled=true;
-  const MAX=3;let attempt=0,lastErr='';
-  while(attempt<MAX){
+  document.getElementById('submitBtn').disabled = true;
+  const MAX = 3; let attempt = 0, lastErr = '';
+  while (attempt < MAX) {
     attempt++;
-    try{
-      await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    try {
+      await fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
       hideLoading();
-      document.getElementById('successTicket').textContent=ticketNumber;
+      document.getElementById('successTicket').textContent = ticketNumber;
       document.getElementById('successScreen').classList.add('show');
       return;
-    }catch(e){lastErr=e.message||'Network error';if(attempt<MAX)await new Promise(r=>setTimeout(r,1500*attempt));}
+    } catch(e) { lastErr = e.message || 'Network error'; if (attempt < MAX) await new Promise(r => setTimeout(r, 1500*attempt)); }
   }
   hideLoading();
-  document.getElementById('submitBtn').disabled=false;
-  document.getElementById('errDetail').textContent=lastErr;
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('errDetail').textContent = lastErr;
   document.getElementById('errorScreen').classList.add('show');
 }
 
-function resetForm(){
+function resetForm() {
   document.getElementById('successScreen').classList.remove('show');
-  document.getElementById('submitBtn').disabled=false;
-  ['rname','dept','mname','refcode','cause','ddate'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('t1').checked=true;
-  if(isUrgent)toggleUrgent();
-  photos=[];renderPrev();
+  document.getElementById('submitBtn').disabled = false;
+  ['rname','dept','mname','refcode','cause','ddate'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('t1').checked = true;
+  if (isUrgent) toggleUrgent();
+  photos = []; renderPrev();
   document.getElementById('errMsg').classList.remove('show');
-  initForm();window.scrollTo(0,0);
+  initForm(); window.scrollTo(0,0);
 }
 
-// ─── CHECK PROGRESS LOGIC ─────────────────────
-async function searchTicket(){
-  const num=document.getElementById('searchInput').value.trim().toUpperCase();
-  if(!num){alert('กรุณากรอกหมายเลข Ticket / Please enter a ticket number');return}
-  const res=document.getElementById('cpResult');
-  res.innerHTML='<div class="tr-empty"><div class="spinner-sm"></div>กำลังค้นหา… Searching…</div>';
-  try{
-    const r=await fetch(APPS_SCRIPT_URL+'?action=getTickets');
-    const json=await r.json();
-    if(!json.success)throw new Error(json.error);
-    const ticket=json.tickets.find(t=>t.ticketNumber===num);
-    if(!ticket){
-      res.innerHTML='<div class="ticket-result"><div class="tr-empty">❌ ไม่พบหมายเลข Ticket นี้<br><small>Ticket not found: '+num+'</small></div></div>';
-      return;
-    }
-    res.innerHTML=buildTicketResult(ticket);
-  }catch(e){
-    res.innerHTML='<div class="ticket-result"><div class="tr-empty">⚠️ เกิดข้อผิดพลาด / Error: '+e.message+'</div></div>';
+// ─── CHECK PROGRESS ───────────────────────────
+async function searchTicket() {
+  const num = document.getElementById('searchInput').value.trim().toUpperCase();
+  if (!num) { alert('กรุณากรอกหมายเลข Ticket'); return; }
+  const res = document.getElementById('cpResult');
+  res.innerHTML = '<div class="tr-empty"><div class="spinner-sm"></div>กำลังค้นหา…</div>';
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
+    const json = await r.json();
+    if (!json.success) throw new Error(json.error);
+    const ticket = json.tickets.find(t => t.ticketNumber === num);
+    if (!ticket) { res.innerHTML = '<div class="ticket-result"><div class="tr-empty">❌ ไม่พบหมายเลข Ticket นี้<br><small>Ticket not found: ' + num + '</small></div></div>'; return; }
+    res.innerHTML = buildTicketResult(ticket);
+  } catch(e) {
+    res.innerHTML = '<div class="ticket-result"><div class="tr-empty">⚠️ เกิดข้อผิดพลาด / Error: ' + e.message + '</div></div>';
   }
 }
 
-function buildTicketResult(t){
-  const isSub=t.status.includes('ส่งแล้ว');
-  const isProg=t.status.includes('In Progress')||t.status.includes('Waiting')||t.status.includes('Buying')||t.status.includes('Inquiring');
-  const isDone=t.status.includes('Completed');
-  const isCan=t.status.includes('Cancelled');
-  const waitHrs=t.timestamp?Math.floor((Date.now()-new Date(t.timestamp))/3600000):0;
-  const waitLabel=waitHrs<1?'น้อยกว่า 1 ชั่วโมง / Less than 1 hr':waitHrs+' ชั่วโมง / hrs';
-  const steps=[
-    {en:'ส่งแล้ว',th:'ส่งคำร้องแล้ว',done:true,active:isSub&&!isProg&&!isDone},
-    {th:'กำลังดำเนินการ',en:'In Progress',done:isProg||isDone,active:isProg&&!isDone},
-    {th:'ซ่อมเสร็จแล้ว',en:'Completed',done:isDone,active:false}
+function buildTicketResult(t) {
+  const isSub = t.status.includes('Submitted');
+  const isProg = t.status.includes('In Progress') || t.status.includes('Waiting') || t.status.includes('Buying') || t.status.includes('Inquiring');
+  const isDone = t.status.includes('Completed');
+  const waitHrs = t.timestamp ? Math.floor((Date.now() - new Date(t.timestamp)) / 3600000) : 0;
+  const waitLabel = waitHrs < 1 ? 'น้อยกว่า 1 ชั่วโมง' : waitHrs + ' ชั่วโมง';
+  const steps = [
+    {th:'ส่งคำร้องแล้ว', en:'Submitted', done:true, active:isSub&&!isProg&&!isDone},
+    {th:'กำลังดำเนินการ', en:'In Progress', done:isProg||isDone, active:isProg&&!isDone},
+    {th:'ซ่อมเสร็จแล้ว', en:'Completed', done:isDone, active:false}
   ];
-  const stepsHTML=steps.map((s,i)=>{
-    const cls=s.done?'done':(s.active?'active':'');
-    return '<div class="pt-step '+cls+'"><div class="pt-dot">'+(s.done?'✓':(i+1))+'</div><div class="pt-label-th">'+s.th+'</div><div class="pt-label-en">'+s.en+'</div></div>';
+  const stepsHTML = steps.map((s,i) => {
+    const cls = s.done ? 'done' : (s.active ? 'active' : '');
+    return '<div class="pt-step ' + cls + '"><div class="pt-dot">' + (s.done ? '✓' : (i+1)) + '</div><div class="pt-label-th">' + s.th + '</div><div class="pt-label-en">' + s.en + '</div></div>';
   }).join('');
-  const pillCls=isSub?'pill-submitted':isProg?'pill-inprogress':isDone?'pill-completed':'pill-cancelled';
-  const rows=[
-    ['🕐 ส่งแล้ว / แจ้งเมื่อ', t.timestamp?new Date(t.timestamp).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}):'—'],
-    ['⏳ รอมา / Waiting', waitLabel],
-    ['🏢 แผนก / Department', t.department||'—'],
-    ['👤 ผู้แจ้ง / Reporter', t.reporter||'—'],
-    ['⚙️ เครื่อง / Machine', t.machine||'—'],
-    ['📋 อาการ / Cause', t.cause||'—'],
-    ['👷 ช่าง / Technician', t.technician||'ยังไม่มีการมอบหมาย / Not assigned yet'],
-    ['🛠️ วิธีแก้ / Correction', t.correction||'—'],
-    ['🔩 อะไหล่ / Spare Parts', t.spareParts||'—'],
+  const pillCls = isSub ? 'pill-submitted' : isProg ? 'pill-inprogress' : isDone ? 'pill-completed' : 'pill-cancelled';
+  const rows = [
+    ['🕐 แจ้งเมื่อ', t.timestamp ? new Date(t.timestamp).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}) : '—'],
+    ['⏳ รอมา', waitLabel],
+    ['🏢 แผนก', t.department||'—'],
+    ['👤 ผู้แจ้ง', t.reporter||'—'],
+    ['⚙️ เครื่อง', t.machine||'—'],
+    ['📋 อาการ', t.cause||'—'],
+    ['👷 ช่าง', (function(tech, approver){
+      // Check technician column first (set by Manager View)
+      if (tech && tech.toLowerCase().includes('electrical')) return '⚡ ช่างไฟฟ้า / Electrical Maintenance';
+      if (tech && tech.toLowerCase().includes('general'))    return '🔧 ช่างทั่วไป / General Maintenance';
+      if (tech) return tech;
+      // Fall back to approver column (set by email assignment)
+      if (approver && approver.toLowerCase().includes('electrical')) return '⚡ ช่างไฟฟ้า / Electrical Maintenance';
+      if (approver && approver.toLowerCase().includes('general'))    return '🔧 ช่างทั่วไป / General Maintenance';
+      return 'ยังไม่มีการมอบหมาย / Not assigned yet';
+    })(t.technician, t.approver)],
+    ['🛠️ วิธีแก้', t.correction||'—'],
+    ['🔩 อะไหล่', t.spareParts||'—'],
     ['🔖 PO Number', t.poNumber||'—'],
-    ['📅 ต้องการเสร็จ / Desired Date', t.desiredDate?new Date(t.desiredDate).toLocaleDateString('th-TH',{dateStyle:'medium'}):'—'],
-    ['✅ เสร็จเมื่อ / Completed', t.completedDate?new Date(t.completedDate).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}):'—'],
+    ['📅 ต้องการเสร็จ', t.desiredDate ? new Date(t.desiredDate).toLocaleDateString('th-TH',{dateStyle:'medium'}) : '—'],
+    ['✅ เสร็จเมื่อ', t.completedDate ? new Date(t.completedDate).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}) : '—'],
   ];
-  return '<div class="ticket-result">'+
-    '<div class="tr-header">'+
-      '<div class="tr-num">'+t.ticketNumber+'</div>'+
-      '<div class="tr-machine">'+esc(t.machine)+'</div>'+
-      '<div class="tr-dept">'+esc(t.department)+'</div>'+
-    '</div>'+
-    '<div class="tr-body">'+
-      '<div class="progress-track">'+stepsHTML+'</div>'+
-      '<div class="status-pill-wrap">'+statusPillHtml(t.status,pillCls)+'</div>'+
-      rows.map(r=>'<div class="info-row"><span class="ir-label">'+r[0]+'</span><span class="ir-val">'+esc(r[1])+'</span></div>').join('')+
-    '</div>'+
-  '</div>';
+  return '<div class="ticket-result">' +
+    '<div class="tr-header"><div class="tr-num">' + t.ticketNumber + '</div><div class="tr-machine">' + esc(t.machine) + '</div><div class="tr-dept">' + esc(t.department) + '</div></div>' +
+    '<div class="tr-body"><div class="progress-track">' + stepsHTML + '</div>' +
+    '<div class="status-pill-wrap">' + statusPillHtml(t.status, pillCls) + '</div>' +
+    rows.map(r => '<div class="info-row"><span class="ir-label">' + r[0] + '</span><span class="ir-val">' + esc(r[1]) + '</span></div>').join('') +
+    '</div></div>';
 }
 
-// ─── UPDATE STATUS LOGIC ──────────────────────
-let usTicket=null;
+// ─── UPDATE STATUS ─────────────────────────────
+let usTicket = null;
 
-async function lookupTicket(){
-  const num=document.getElementById('usTicketInput').value.trim().toUpperCase();
-  if(!num){alert('กรุณากรอกหมายเลข Ticket');return}
+async function lookupTicket() {
+  const num = document.getElementById('usTicketInput').value.trim().toUpperCase();
+  if (!num) { alert('กรุณากรอกหมายเลข Ticket'); return; }
   document.getElementById('foundTicket').classList.remove('show');
-  document.getElementById('usFields').style.display='none';
+  document.getElementById('usFields').style.display = 'none';
   document.getElementById('usSuccess').classList.remove('show');
   document.getElementById('usErr').classList.remove('show');
-  try{
-    const r=await fetch(APPS_SCRIPT_URL+'?action=getTickets');
-    const json=await r.json();
-    if(!json.success)throw new Error(json.error);
-    const ticket=json.tickets.find(t=>t.ticketNumber===num);
-    if(!ticket){alert('❌ ไม่พบ Ticket: '+num+'\nTicket not found.');return}
-    usTicket=ticket;
-    document.getElementById('ftNum').textContent=ticket.ticketNumber;
-    document.getElementById('ftMachine').textContent=ticket.machine;
-    document.getElementById('ftDept').textContent=ticket.department;
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
+    const json = await r.json();
+    if (!json.success) throw new Error(json.error);
+    const ticket = json.tickets.find(t => t.ticketNumber === num);
+    if (!ticket) { alert('❌ ไม่พบ Ticket: ' + num); return; }
+    usTicket = ticket;
+    document.getElementById('ftNum').textContent = ticket.ticketNumber;
+    document.getElementById('ftMachine').textContent = ticket.machine;
+    document.getElementById('ftDept').textContent = ticket.department;
     document.getElementById('foundTicket').classList.add('show');
-    document.getElementById('usFields').style.display='block';
-    document.getElementById('usStatus').value=ticket.status;
-    // Pre-fill technician if already saved — only needs to be entered once
+    document.getElementById('usFields').style.display = 'block';
+    document.getElementById('usStatus').value = ticket.status;
     var savedTech = ticket.technician || '';
     var techField = document.getElementById('usTech');
     techField.value = savedTech;
     if (savedTech) {
-      techField.readOnly = true;
-      techField.style.background = '#f0fdf4';
-      techField.style.borderColor = '#86efac';
-      techField.style.color = '#166534';
-      techField.style.fontWeight = '700';
+      techField.readOnly = true; techField.style.background = '#f0fdf4';
+      techField.style.borderColor = '#86efac'; techField.style.color = '#166534'; techField.style.fontWeight = '700';
     } else {
-      techField.readOnly = false;
-      techField.style.background = '';
-      techField.style.borderColor = '';
-      techField.style.color = '';
-      techField.style.fontWeight = '';
+      techField.readOnly = false; techField.style.background = '';
+      techField.style.borderColor = ''; techField.style.color = ''; techField.style.fontWeight = '';
     }
-    document.getElementById('usCorrection').value=ticket.correction||'';
-    document.getElementById('usParts').value=ticket.spareParts||'';
-
-    // PO Number — pre-fill if exists, lock it so it can't be accidentally cleared
-    const existingPO = ticket.poNumber||'';
+    document.getElementById('usCorrection').value = ticket.correction || '';
+    document.getElementById('usParts').value = ticket.spareParts || '';
+    const existingPO = ticket.poNumber || '';
     const poField = document.getElementById('usPoNumber');
     poField.value = existingPO;
-    if(existingPO){
-      poField.readOnly = true;
-      poField.style.background = '#f0fdf4';
-      poField.style.borderColor = '#86efac';
-      poField.style.color = '#166534';
-      poField.style.fontWeight = '700';
-      // Show PO field always if PO exists
-      document.getElementById('poNumberWrap').style.display='block';
-      // Update label to show it's locked
-      document.querySelector('#poNumberWrap label').innerHTML =
-        '🔖 เลขที่ใบสั่งซื้อ / Purchase Order No. <span style="background:#dcfce7;color:#166534;font-size:19px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:4px">✓ Saved</span>';
+    if (existingPO) {
+      poField.readOnly = true; poField.style.background = '#f0fdf4';
+      poField.style.borderColor = '#86efac'; poField.style.color = '#166534'; poField.style.fontWeight = '700';
+      document.getElementById('poNumberWrap').style.display = 'block';
+      document.querySelector('#poNumberWrap label').innerHTML = '🔖 เลขที่ใบสั่งซื้อ / PO No. <span style="background:#dcfce7;color:#166534;font-size:17px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:4px">✓ Saved</span>';
     } else {
-      poField.readOnly = false;
-      poField.style.background = '';
-      poField.style.borderColor = '';
-      poField.style.color = '';
-      poField.style.fontWeight = '';
+      poField.readOnly = false; poField.style.background = '';
+      poField.style.borderColor = ''; poField.style.color = ''; poField.style.fontWeight = '';
     }
-
-    // Trigger status change handler to show/hide correct fields
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
-  }catch(e){alert('Error: '+e.message)}
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
-async function submitUpdate(){
-  const status=document.getElementById('usStatus').value;
-  const tech=document.getElementById('usTech').value.trim();
-  const correction=document.getElementById('usCorrection').value.trim();
-  const parts=document.getElementById('usParts').value.trim();
-  const err=document.getElementById('usErr');
+async function submitUpdate() {
+  const status = document.getElementById('usStatus').value;
+  const tech = document.getElementById('usTech').value.trim();
+  const correction = document.getElementById('usCorrection').value.trim();
+  const parts = document.getElementById('usParts').value.trim();
+  const err = document.getElementById('usErr');
   err.classList.remove('show');
-  if(!status){err.textContent='กรุณาเลือกสถานะ / Please select a status.';err.classList.add('show');return}
-  if(!tech){err.textContent='กรุณากรอกชื่อช่าง / Please enter technician name.';err.classList.add('show');document.getElementById('usTech').focus();return}
-  if(!correction){err.textContent='กรุณากรอกวิธีการแก้ไข / Correction Details is required.';err.classList.add('show');document.getElementById('usCorrection').focus();return}
-  if(!usTicket){alert('กรุณาค้นหา Ticket ก่อน / Please look up a ticket first.');return}
-  document.getElementById('updateBtn').disabled=true;
+  if (!status) { err.textContent = 'กรุณาเลือกสถานะ / Please select a status.'; err.classList.add('show'); return; }
+  if (!tech) { err.textContent = 'กรุณากรอกชื่อช่าง / Please enter technician name.'; err.classList.add('show'); document.getElementById('usTech').focus(); return; }
+  if (!correction) { err.textContent = 'กรุณากรอกวิธีการแก้ไข / Correction Details is required.'; err.classList.add('show'); document.getElementById('usCorrection').focus(); return; }
+  if (!usTicket) { alert('กรุณาค้นหา Ticket ก่อน'); return; }
+  document.getElementById('updateBtn').disabled = true;
   showLoading('กำลังบันทึก… Saving…');
-  try{
-    await fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        action:'updateTicketStatus',
-        ticketNumber:usTicket.ticketNumber,
-        status,
-        technician:tech,
-        correction,
-        spareParts:parts,
-        poNumber:document.getElementById('usPoNumber').value.trim(),
-        notifyPurchasing:status==='📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
-        quotationPhotos:usPhotos.map(p=>({name:p.name,data:p.data}))
-      })});
+  try {
+    await fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'updateTicketStatus',
+        ticketNumber: usTicket.ticketNumber,
+        status, technician: tech, correction, spareParts: parts,
+        poNumber: document.getElementById('usPoNumber').value.trim(),
+        notifyPurchasing: status === '📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
+        quotationPhotos: usPhotos.map(p => ({name:p.name, data:p.data}))
+      })
+    });
     hideLoading();
     document.getElementById('usSuccess').classList.add('show');
-    document.getElementById('updateBtn').disabled=false;
-  }catch(e){
+    document.getElementById('updateBtn').disabled = false;
+  } catch(e) {
     hideLoading();
-    err.textContent='เกิดข้อผิดพลาด / Error: '+e.message;
+    err.textContent = 'เกิดข้อผิดพลาด / Error: ' + e.message;
     err.classList.add('show');
-    document.getElementById('updateBtn').disabled=false;
+    document.getElementById('updateBtn').disabled = false;
   }
 }
 
-// ─── UPDATE STATUS PHOTOS ────────────────────────────────
+// ─── UPDATE STATUS PHOTOS ─────────────────────
 let usPhotos = [];
-
 function handleUsPhotos(files) {
-  const max=3, maxSz=5*1024*1024;
-  for(const f of files){
-    if(usPhotos.length>=max)break;
-    if(f.size>maxSz){alert(f.name+': ไฟล์ใหญ่เกิน 5MB');continue}
-    if(!f.type.startsWith('image/'))continue;
-    const r=new FileReader();
-    r.onload=e=>{usPhotos.push({name:f.name,data:e.target.result});renderUsPrev()};
+  const max = 3, maxSz = 5*1024*1024;
+  for (const f of files) {
+    if (usPhotos.length >= max) break;
+    if (f.size > maxSz) { alert(f.name + ': ไฟล์ใหญ่เกิน 5MB'); continue; }
+    if (!f.type.startsWith('image/')) continue;
+    const r = new FileReader();
+    r.onload = e => { usPhotos.push({name:f.name, data:e.target.result}); renderUsPrev(); };
     r.readAsDataURL(f);
   }
 }
-function renderUsPrev(){
-  const c=document.getElementById('usPreviews');c.innerHTML='';
-  usPhotos.forEach((p,i)=>{
-    const d=document.createElement('div');d.className='prev';
-    d.innerHTML='<img src="'+p.data+'" alt="Photo '+(i+1)+'"><button class="rm" onclick="rmUsPhoto('+i+')">×</button>';
+function renderUsPrev() {
+  const c = document.getElementById('usPreviews'); c.innerHTML = '';
+  usPhotos.forEach((p,i) => {
+    const d = document.createElement('div'); d.className = 'prev';
+    d.innerHTML = '<img src="' + p.data + '" alt="Photo ' + (i+1) + '"><button class="rm" onclick="rmUsPhoto(' + i + ')">×</button>';
     c.appendChild(d);
   });
-  document.getElementById('usPhotoCount').textContent=usPhotos.length?usPhotos.length+'/3 รูป':'';
+  document.getElementById('usPhotoCount').textContent = usPhotos.length ? usPhotos.length + '/3 รูป' : '';
 }
-function rmUsPhoto(i){usPhotos.splice(i,1);renderUsPrev();}
+function rmUsPhoto(i) { usPhotos.splice(i,1); renderUsPrev(); }
 
 // ─── SHARED UTILS ─────────────────────────────
-function showLoading(msg){
-  document.getElementById('loadingText').textContent=msg||'กำลังดำเนินการ…';
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || 'กำลังดำเนินการ…';
   document.getElementById('loadingOverlay').classList.add('show');
 }
-function hideLoading(){
-  document.getElementById('loadingOverlay').classList.remove('show');
-}
+function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
 function statusPillHtml(status, pillCls) {
   const map = {
-    'ส่งแล้ว'          : 'ส่งคำร้องแล้ว',
-    'In Progress'        : 'กำลังดำเนินการ',
-    'Inquiring'          : 'กำลังขอใบเสนอราคา',
-    'Buying Spare Parts' : 'กำลังซื้ออะไหล่',
-    'Waiting for Parts'  : 'รอรับอะไหล่',
-    'Waiting for Outside': 'รอช่างภายนอก',
-    'Completed'          : 'ซ่อมเสร็จแล้ว',
-    'Cancelled'          : 'ยกเลิก'
+    'Submitted':'ส่งคำร้องแล้ว', 'In Progress':'กำลังดำเนินการ', 'Inquiring':'กำลังขอใบเสนอราคา',
+    'Buying Spare Parts':'กำลังซื้ออะไหล่', 'Waiting for Parts':'รอรับอะไหล่',
+    'Waiting for Outside':'รอช่างภายนอก', 'Completed':'ซ่อมเสร็จแล้ว', 'Cancelled':'ยกเลิก'
   };
   let thaiText = '';
-  for (const key in map) {
-    if (status.includes(key)) { thaiText = map[key]; break; }
-  }
-  return '<div class="status-pill '+pillCls+'">' +
-    '<div style="font-size:19px;font-weight:800;line-height:1.3">' + (thaiText||status) + '</div>' +
-    '<div style="font-size:19px;font-weight:500;opacity:.75;margin-top:2px">' + status.replace(/[🟠🔵🛒⏳🚧🟢❌📋]/g,'').trim() + '</div>' +
+  for (const key in map) { if (status.includes(key)) { thaiText = map[key]; break; } }
+  return '<div class="status-pill ' + pillCls + '">' +
+    '<div style="font-size:20px;font-weight:800;line-height:1.3">' + (thaiText||status) + '</div>' +
+    '<div style="font-size:18px;font-weight:500;opacity:.75;margin-top:2px">' + status.replace(/[🟠🔵🛒⏳🚧🟢❌📋]/g,'').trim() + '</div>' +
     '</div>';
 }
 
-function esc(s){
+function esc(s) {
   return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Enter key on search inputs
-document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchTicket()});
+// ─── MANAGER VIEW ─────────────────────────────
+let mvTickets = [];
+const MV_PAGE_SIZE = 5;
+let mvShownU = MV_PAGE_SIZE, mvShownP = MV_PAGE_SIZE, mvShownW = MV_PAGE_SIZE;
 
-// Show/hide quotation alert and PO field based on selected status
+function showMore(section) {
+  if (section === 'U') mvShownU += MV_PAGE_SIZE;
+  if (section === 'P') mvShownP += MV_PAGE_SIZE;
+  if (section === 'W') mvShownW += MV_PAGE_SIZE;
+  renderManagerView(mvTickets);
+}
+
+async function loadManagerView() {
+  const btn = document.getElementById('mvRefreshBtn');
+  const icon = document.getElementById('mvRefreshIcon');
+  btn.disabled = true; icon.textContent = '⏳';
+  mvShownU = mvShownP = mvShownW = MV_PAGE_SIZE;
+  ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div>';
+  });
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
+    const json = await r.json();
+    if (!json.success) throw new Error(json.error);
+    mvTickets = json.tickets;
+    renderManagerView(mvTickets);
+  } catch(e) {
+    ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div class="mv-empty">⚠️ โหลดไม่ได้ / Error: ' + e.message + '</div>';
+    });
+  } finally {
+    btn.disabled = false; icon.textContent = '🔄';
+  }
+}
+
+function renderManagerView(tickets) {
+  const now = new Date();
+  const deptEl = document.getElementById('mvDeptFilter');
+  const deptSel = deptEl ? deptEl.value : '';
+  let filtered = tickets.slice();
+  if (deptSel) filtered = filtered.filter(t => t.department === deptSel);
+
+  const allActive = tickets.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
+  document.getElementById('mvCountUnassigned').textContent = allActive.filter(t => t.status.includes('Submitted')).length;
+  document.getElementById('mvCountOpen').textContent = allActive.filter(t => t.status.includes('In Progress')).length;
+  document.getElementById('mvCountOverdue').textContent = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now).length;
+
+  const active     = filtered.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
+  const unassigned = active.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
+  const inProgress = active.filter(t => t.status.includes('In Progress'));
+  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Buying') || t.status.includes('Waiting'));
+
+  document.getElementById('mvCntU').textContent = unassigned.length;
+  document.getElementById('mvCntP').textContent = inProgress.length;
+  document.getElementById('mvCntW').textContent = waiting.length;
+
+  renderSection('mvUnassigned', 'mvShowMoreU', unassigned, mvShownU, true, now);
+  renderSection('mvInProgress', 'mvShowMoreP', inProgress, mvShownP, false, now);
+  renderSection('mvWaiting',    'mvShowMoreW', waiting,    mvShownW, false, now);
+}
+
+function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
+  const container  = document.getElementById(containerId);
+  const showMoreEl = document.getElementById(showMoreId);
+  if (items.length === 0) {
+    container.innerHTML = '<div class="mv-empty">✅ ไม่มีงาน<br><small>None</small></div>';
+    showMoreEl.style.display = 'none';
+    return;
+  }
+  container.innerHTML = items.slice(0, shown).map(t => buildMvTicket(t, showAssign, now)).join('');
+  showMoreEl.style.display = items.length > shown ? 'block' : 'none';
+}
+
+function buildMvTicket(t, showAssign, now) {
+  const isUrgentT = t.isUrgent && t.isUrgent.includes('Urgent');
+  const isOverdue = t.desiredDate && new Date(t.desiredDate) < now;
+  const ageDays   = t.timestamp ? Math.floor((now - new Date(t.timestamp)) / 86400000) : 0;
+  const ageLabel  = ageDays === 0 ? 'วันนี้' : ageDays + ' วัน';
+
+  const statusColor = t.status.includes('Submitted') ? 'background:#fff3e0;color:#e65100' :
+    t.status.includes('In Progress') ? 'background:#e3f2fd;color:#1565c0' :
+    t.status.includes('Inquiring')   ? 'background:#fce4ec;color:#880e4f' :
+    t.status.includes('Buying')      ? 'background:#f3e5f5;color:#6a1b9a' :
+    'background:#fff8e1;color:#f57f17';
+
+  const urgentBadge  = isUrgentT ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px">🔴 ด่วน</span>' : '';
+  const overdueBadge = isOverdue  ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">⚠️ เกินกำหนด</span>' : '';
+
+  const assignRow = showAssign ? `
+    <div class="mv-assign-row">
+      <button class="mv-assign-btn general" onclick="assignTicket('${esc(t.ticketNumber)}','general',this)">
+        🔧 ช่างทั่วไป<br><small style="font-weight:500;opacity:.8">General Maintenance</small>
+      </button>
+      <button class="mv-assign-btn electrical" onclick="assignTicket('${esc(t.ticketNumber)}','electrical',this)">
+        ⚡ ช่างไฟฟ้า<br><small style="font-weight:500;opacity:.8">Electrical</small>
+      </button>
+    </div>` :
+    ((function(tech, approver) {
+      const s = (tech||'') + (approver||'');
+      if (s.toLowerCase().includes('electrical')) return '<div class="mv-assigned-badge">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div>';
+      if (s.toLowerCase().includes('general'))    return '<div class="mv-assigned-badge">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div>';
+      return '';
+    })(t.technician, t.approver));
+
+  return `
+    <div class="mv-ticket${isUrgentT ? ' urgent' : ''}" id="mvt-${esc(t.ticketNumber)}">
+      <div class="mv-ticket-head">
+        <div class="mv-ticket-info">
+          <div class="mv-ticket-num">${esc(t.ticketNumber)}${urgentBadge}${overdueBadge}</div>
+          <div class="mv-ticket-machine">${esc(t.machine || '—')}</div>
+          <div class="mv-ticket-dept">🏭 ${esc(t.department || '—')} · 👤 ${esc(t.reporter || '—')}</div>
+        </div>
+        <div class="mv-ticket-meta">
+          <div class="mv-ticket-status" style="${statusColor}">${t.status.replace(/[🟠🔵📋🛒⏳🚧🟢❌]/g,'').trim()}</div>
+          <div class="mv-ticket-age${isOverdue ? ' overdue' : ''}">${ageLabel}</div>
+        </div>
+      </div>
+      ${t.cause ? `<div class="mv-cause">💬 ${esc(t.cause)}</div>` : ''}
+      ${assignRow}
+    </div>`;
+}
+
+async function assignTicket(ticketNumber, dept, btn) {
+  const row = btn.closest('.mv-assign-row');
+  row.querySelectorAll('button').forEach(b => b.disabled = true);
+  btn.innerHTML = '⏳ กำลังมอบหมาย…';
+  const deptLabel = dept === 'electrical' ? 'Electrical Maintenance Team' : 'General Maintenance Team';
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel})
+    });
+    row.outerHTML = `<div class="mv-assigned-badge">✅ มอบหมายให้ ${dept === 'electrical' ? '⚡ ช่างไฟฟ้า' : '🔧 ช่างทั่วไป'} แล้ว</div>`;
+    const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
+    if (idx !== -1) { mvTickets[idx].status = '🔵 In Progress'; mvTickets[idx].technician = deptLabel; }
+    const now = new Date();
+    const active = mvTickets.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
+    document.getElementById('mvCountUnassigned').textContent = active.filter(t => t.status.includes('Submitted')).length;
+    document.getElementById('mvCountOpen').textContent = active.filter(t => t.status.includes('In Progress')).length;
+  } catch(e) {
+    row.querySelectorAll('button').forEach(b => b.disabled = false);
+    btn.innerHTML = dept === 'electrical' ? '⚡ ช่างไฟฟ้า<br><small>Electrical</small>' : '🔧 ช่างทั่วไป<br><small>General Maintenance</small>';
+    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+  }
+}
+
+// ─── EVENT LISTENERS ──────────────────────────
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchTicket(); });
+document.getElementById('usTicketInput').addEventListener('keydown', e => { if (e.key === 'Enter') lookupTicket(); });
+
 document.getElementById('usStatus').addEventListener('change', function() {
   const val = this.value;
   const isQuotation = val === '📋 Inquiring for Quotation';
   const showPO = isQuotation || val.includes('Buying') || val.includes('Waiting') || val.includes('Inquiring');
   const existingPO = document.getElementById('usPoNumber').value.trim();
-
-  // Show/hide quotation alert
   document.getElementById('quotationAlert').style.display = (isQuotation && !existingPO) ? 'block' : 'none';
   document.getElementById('poNumberWrap').style.display = (showPO || existingPO) ? 'block' : 'none';
-
-  // Change correction label + show photo upload based on status
   const corrLabel = document.getElementById('correctionLabel');
   const photoWrap = document.getElementById('quotationPhotoWrap');
   if (isQuotation) {
@@ -985,7 +1182,6 @@ document.getElementById('usStatus').addEventListener('change', function() {
     photoWrap.style.display = 'none';
   }
 });
-document.getElementById('usTicketInput').addEventListener('keydown',e=>{if(e.key==='Enter')lookupTicket()});
 </script>
 </body>
 </html>
