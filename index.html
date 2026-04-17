@@ -703,6 +703,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button class="mv-reassign-opt electrical" onclick="confirmReassign('electrical')" style="margin-top:10px">
             ⚡ ช่างไฟฟ้า<br><small style="font-weight:500;opacity:.8">Electrical Maintenance</small>
           </button>
+          <button onclick="confirmResetToSubmitted()" style="margin-top:10px;width:100%;padding:14px;background:#fff3e0;color:#e65100;border:1.5px solid #fcd34d;border-radius:10px;font-size:19px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s">
+            🔙 คืนสถานะรอมอบหมาย<br><small style="font-weight:500;opacity:.8">Reset back to Submitted</small>
+          </button>
           <button class="mv-reassign-cancel" style="margin-top:10px" onclick="closeReassignModal()">ยกเลิก / Cancel</button>
         </div>
       </div>
@@ -1232,7 +1235,7 @@ function buildMvTicket(t, now) {
 // ─── RE-ASSIGN MODAL ──────────────────────────
 let mvReassignTicket = null;
 let mvPasscodeInput  = '';
-const MV_PASSCODE    = '8520'; // ← CHANGE THIS to your 4-digit passcode
+const MV_PASSCODE    = '2580'; // ← CHANGE THIS to your 4-digit passcode
 
 function openReassignModal(ticketNumber) {
   mvReassignTicket = ticketNumber;
@@ -1245,6 +1248,8 @@ function openReassignModal(ticketNumber) {
   document.getElementById('mvTeamStep').style.display = 'none';
   document.getElementById('mvReassignModal').classList.add('show');
   document.body.style.overflow = 'hidden';
+  // Enable keyboard input
+  document.addEventListener('keydown', mvPasscodeKeyHandler);
 }
 
 function closeReassignModal() {
@@ -1252,6 +1257,22 @@ function closeReassignModal() {
   document.body.style.overflow = '';
   mvReassignTicket = null;
   mvPasscodeInput  = '';
+  // Remove keyboard listener
+  document.removeEventListener('keydown', mvPasscodeKeyHandler);
+}
+
+function mvPasscodeKeyHandler(e) {
+  // Only active when passcode step is visible
+  if (document.getElementById('mvPasscodeStep').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') {
+    mvNumpadPress(e.key);
+  } else if (e.key === 'Backspace') {
+    mvNumpadDelete();
+  } else if (e.key === 'Escape') {
+    closeReassignModal();
+  } else if (e.key === 'Delete') {
+    mvNumpadClear();
+  }
 }
 
 function mvNumpadPress(digit) {
@@ -1298,6 +1319,37 @@ function checkPasscode() {
     document.getElementById('mvPasscodeError').style.display = 'block';
     mvPasscodeInput = '';
     updatePasscodeDots();
+  }
+}
+
+async function confirmResetToSubmitted() {
+  if (!mvReassignTicket) return;
+  const ticketNumber = mvReassignTicket;
+  const btns = document.querySelectorAll('#mvTeamStep button');
+  btns.forEach(b => b.disabled = true);
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action: 'updateTicketStatus',
+        ticketNumber: ticketNumber,
+        status: '🟠 Submitted',
+        technician: '',
+        correction: '',
+        spareParts: ''
+      })
+    });
+    const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
+    if (idx !== -1) {
+      mvTickets[idx].status = '🟠 Submitted';
+      mvTickets[idx].technician = '';
+      mvTickets[idx].approver = '';
+    }
+    closeReassignModal();
+    renderManagerView(mvTickets);
+  } catch(e) {
+    btns.forEach(b => b.disabled = false);
+    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
   }
 }
 
