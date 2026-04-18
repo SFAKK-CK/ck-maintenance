@@ -558,8 +558,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="ft-dept" id="ftDept">—</div>
       </div>
       <div id="usFields" style="display:none">
-        <div class="us-field">
-          <label>🔴 สถานะใหม่ / New Status <span style="color:var(--red)">*</span></label>
+        <div id="usFieldsInner">
           <select id="usStatus">
             <option value="">— เลือกสถานะ / Select status —</option>
             <option value="🟠 Submitted">🟠 Submitted — รอดำเนินการ</option>
@@ -606,6 +605,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="font-size:19px;color:var(--g400);margin-top:4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div>
         </div>
         <div class="us-err" id="usErr">กรุณากรอกข้อมูลที่จำเป็น / Please fill in all required fields.</div>
+        <button class="update-btn" id="updateBtn" onclick="submitUpdate()">💾 บันทึกการอัปเดต / Save Update</button>
+        </div><!-- end usFieldsInner -->
 
         <!-- Inquiring lock notice -->
         <div id="usInquiringLock" style="display:none;background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:16px;margin-top:8px">
@@ -908,6 +909,8 @@ function resetUpdateStatus() {
   if (lockDiv) lockDiv.style.display = 'none';
   if (overrideDiv) overrideDiv.style.display = 'none';
   if (updateBtn) updateBtn.style.display = 'block';
+  const inner = document.getElementById('usFieldsInner');
+  if (inner) inner.style.display = 'block';
   usOverrideInput = '';
 }
 
@@ -1166,18 +1169,25 @@ async function lookupTicket() {
     }
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
 
-    // ── Inquiring lock: if ticket is Inquiring and no PO yet, lock for non-GM ──
+    // ── Inquiring lock: if ticket is Inquiring and no PO yet, lock everything ──
     const isInquiring = ticket.status.includes('Inquiring');
     const hasPO = !!(ticket.poNumber && ticket.poNumber.trim());
     const lockDiv = document.getElementById('usInquiringLock');
-    const usFieldsDiv = document.getElementById('usFields');
+    const overrideDiv = document.getElementById('usGMOverride');
+    const updateBtn = document.getElementById('updateBtn');
+    const usFieldsInner = document.getElementById('usFieldsInner');
+
     if (isInquiring && !hasPO) {
+      // Hide all fields, show lock notice only
+      if (usFieldsInner) usFieldsInner.style.display = 'none';
       lockDiv.style.display = 'block';
-      // Hide update button — only GM override can unlock
-      document.getElementById('updateBtn').style.display = 'none';
+      if (overrideDiv) overrideDiv.style.display = 'none';
+      if (updateBtn) updateBtn.style.display = 'none';
     } else {
+      if (usFieldsInner) usFieldsInner.style.display = 'block';
       lockDiv.style.display = 'none';
-      document.getElementById('updateBtn').style.display = 'block';
+      if (overrideDiv) overrideDiv.style.display = 'none';
+      if (updateBtn) updateBtn.style.display = 'block';
     }
   } catch(e) { alert('Error: ' + e.message); }
 }
@@ -1529,9 +1539,10 @@ function updateUSDots() {
 
 function checkUSOverride() {
   if (usOverrideInput === '2580') {
-    // Unlock
     document.getElementById('usGMOverride').style.display = 'none';
     document.getElementById('usInquiringLock').style.display = 'none';
+    const inner = document.getElementById('usFieldsInner');
+    if (inner) inner.style.display = 'block';
     document.getElementById('updateBtn').style.display = 'block';
   } else {
     document.getElementById('usOverrideError').style.display = 'block';
