@@ -255,7 +255,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-assign-btn.general{background:#1a2744;color:white}
 .mv-assign-btn.electrical{background:#1565c0;color:white}
 .mv-assign-btn:disabled{opacity:.4;cursor:not-allowed}
-.mv-assigned-badge{margin:0 16px 14px;background:#e8f5e9;border-radius:10px;padding:10px 14px;font-size:19px;color:#1b5e20;font-weight:700}
+.mv-assigned-badge{margin:0 16px 6px;background:#e8f5e9;border-radius:10px;padding:10px 14px;font-size:19px;color:#1b5e20;font-weight:700}
+.mv-reassign-row{padding:0 16px 14px}
+.mv-reassign-btn{width:100%;padding:12px;background:linear-gradient(135deg,#e65100,#c0392b);color:white;border:none;border-radius:10px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.mv-reassign-btn:active{transform:scale(.98)}
+/* Numpad */
+.mv-numpad-btn{padding:16px;background:var(--g100);border:1.5px solid var(--g200);border-radius:10px;font-size:22px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .12s;color:var(--navy)}
+.mv-numpad-btn:active{background:var(--navy);color:white;transform:scale(.94)}
+.mv-numpad-clear{background:#fde8e8;border-color:#fca5a5;color:#c0392b}
+.mv-numpad-del{background:#fff3e0;border-color:#fcd34d;color:#92400e}
+/* Re-assign modal */
+.mv-reassign-modal{display:none;position:fixed;inset:0;background:rgba(15,30,61,.6);z-index:600;align-items:center;justify-content:center;padding:20px}
+.mv-reassign-modal.show{display:flex}
+.mv-reassign-panel{background:white;border-radius:16px;width:100%;max-width:400px;overflow:hidden}
+.mv-reassign-panel-head{background:var(--navy);color:white;padding:16px 18px}
+.mv-reassign-panel-title{font-size:20px;font-weight:700}
+.mv-reassign-panel-sub{font-size:17px;opacity:.65;margin-top:3px}
+.mv-reassign-panel-body{padding:18px;display:flex;flex-direction:column;gap:12px}
+.mv-reassign-opt{padding:14px;border:none;border-radius:10px;font-size:19px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;text-align:left;line-height:1.4}
+.mv-reassign-opt.general{background:#1a2744;color:white}
+.mv-reassign-opt.electrical{background:#1565c0;color:white}
+.mv-reassign-opt:active{transform:scale(.98)}
+.mv-reassign-cancel{padding:12px;background:var(--g100);color:var(--g700);border:none;border-radius:10px;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer}
 
 
 .mv-empty{text-align:center;padding:32px 16px;color:var(--g400);font-size:20px;background:white;border-radius:12px;border:1px solid var(--g200)}
@@ -635,6 +656,60 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <option>ผู้บริหาร (Management)</option>
       <option>อื่นๆ (Other)</option>
     </select>
+
+    <!-- Re-assign modal -->
+    <div class="mv-reassign-modal" id="mvReassignModal">
+      <div class="mv-reassign-panel">
+        <div class="mv-reassign-panel-head">
+          <div class="mv-reassign-panel-title">🔄 มอบหมายใหม่ / Re-assign</div>
+          <div class="mv-reassign-panel-sub" id="mvReassignTicketNum">—</div>
+        </div>
+        <!-- Step 1: Passcode -->
+        <div class="mv-reassign-panel-body" id="mvPasscodeStep">
+          <div style="text-align:center;padding:6px 0 4px">
+            <div style="font-size:36px;margin-bottom:8px">🔐</div>
+            <div style="font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px">กรอกรหัสผ่าน</div>
+            <div style="font-size:17px;color:var(--g400);margin-bottom:16px">Enter passcode to continue</div>
+            <div style="display:flex;justify-content:center;gap:12px;margin-bottom:16px">
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="mvDot1"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="mvDot2"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="mvDot3"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="mvDot4"></div>
+            </div>
+            <div id="mvPasscodeError" style="font-size:17px;color:#c0392b;font-weight:700;margin-bottom:12px;display:none">❌ รหัสไม่ถูกต้อง / Wrong passcode</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('1')">1</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('2')">2</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('3')">3</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('4')">4</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('5')">5</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('6')">6</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('7')">7</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('8')">8</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('9')">9</button>
+            <button class="mv-numpad-btn mv-numpad-clear" onclick="mvNumpadClear()">✕</button>
+            <button class="mv-numpad-btn" onclick="mvNumpadPress('0')">0</button>
+            <button class="mv-numpad-btn mv-numpad-del" onclick="mvNumpadDelete()">⌫</button>
+          </div>
+          <button class="mv-reassign-cancel" style="margin-top:10px" onclick="closeReassignModal()">ยกเลิก / Cancel</button>
+        </div>
+        <!-- Step 2: Choose action -->
+        <div class="mv-reassign-panel-body" id="mvTeamStep" style="display:none">
+          <div style="text-align:center;font-size:18px;color:var(--g600);margin-bottom:14px">เลือกการดำเนินการ / Select action</div>
+          <button class="mv-reassign-opt general" onclick="confirmReassign('general')">
+            🔧 ช่างทั่วไป<br><small style="font-weight:500;opacity:.8">General Maintenance</small>
+          </button>
+          <button class="mv-reassign-opt electrical" onclick="confirmReassign('electrical')" style="margin-top:10px">
+            ⚡ ช่างไฟฟ้า<br><small style="font-weight:500;opacity:.8">Electrical Maintenance</small>
+          </button>
+          <button onclick="confirmResetToSubmitted()" style="margin-top:10px;width:100%;padding:14px;background:#fff3e0;color:#e65100;border:1.5px solid #fcd34d;border-radius:10px;font-size:19px;font-weight:700;font-family:inherit;cursor:pointer">
+            🔙 คืนสถานะรอมอบหมาย<br><small style="font-weight:500;opacity:.8">Reset back to Submitted</small>
+          </button>
+          <button class="mv-reassign-cancel" style="margin-top:10px" onclick="closeReassignModal()">ยกเลิก / Cancel</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Refresh -->
     <button class="mv-refresh-btn" id="mvRefreshBtn" onclick="loadManagerView()" style="margin-top:12px">
@@ -1141,8 +1216,8 @@ function buildMvTicket(t, showAssign, now) {
     </div>` :
     ((function(tech, approver) {
       const s = (tech||'') + (approver||'');
-      if (s.toLowerCase().includes('electrical')) return '<div class="mv-assigned-badge">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div>';
-      if (s.toLowerCase().includes('general'))    return '<div class="mv-assigned-badge">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div>';
+      if (s.toLowerCase().includes('electrical')) return '<div class="mv-assigned-badge">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div><div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>';
+      if (s.toLowerCase().includes('general'))    return '<div class="mv-assigned-badge">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div><div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>';
       return '';
     })(t.technician, t.approver));
   return `
@@ -1171,7 +1246,7 @@ async function assignTicket(ticketNumber, dept, btn) {
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel})
+      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true})
     });
     row.outerHTML = `<div class="mv-assigned-badge">✅ มอบหมายให้ ${dept === 'electrical' ? '⚡ ช่างไฟฟ้า' : '🔧 ช่างทั่วไป'} แล้ว</div>`;
     const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
@@ -1183,6 +1258,111 @@ async function assignTicket(ticketNumber, dept, btn) {
   } catch(e) {
     row.querySelectorAll('button').forEach(b => b.disabled = false);
     btn.innerHTML = dept === 'electrical' ? '⚡ ช่างไฟฟ้า<br><small>Electrical</small>' : '🔧 ช่างทั่วไป<br><small>General Maintenance</small>';
+    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+  }
+}
+
+// ─── RE-ASSIGN MODAL WITH PASSCODE ───────────
+let mvReassignTicket = null;
+let mvPasscodeInput  = '';
+const MV_PASSCODE    = '2580'; // ← Change this to your passcode
+
+function openReassignModal(ticketNumber) {
+  mvReassignTicket = ticketNumber;
+  document.getElementById('mvReassignTicketNum').textContent = ticketNumber;
+  mvPasscodeInput = '';
+  updatePasscodeDots();
+  document.getElementById('mvPasscodeError').style.display = 'none';
+  document.getElementById('mvPasscodeStep').style.display = 'block';
+  document.getElementById('mvTeamStep').style.display = 'none';
+  document.getElementById('mvReassignModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', mvPasscodeKeyHandler);
+}
+
+function closeReassignModal() {
+  document.getElementById('mvReassignModal').classList.remove('show');
+  document.body.style.overflow = '';
+  mvReassignTicket = null;
+  mvPasscodeInput  = '';
+  document.removeEventListener('keydown', mvPasscodeKeyHandler);
+}
+
+function mvPasscodeKeyHandler(e) {
+  if (document.getElementById('mvPasscodeStep').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') mvNumpadPress(e.key);
+  else if (e.key === 'Backspace') mvNumpadDelete();
+  else if (e.key === 'Delete')    mvNumpadClear();
+  else if (e.key === 'Escape')    closeReassignModal();
+}
+
+function mvNumpadPress(digit) {
+  if (mvPasscodeInput.length >= 4) return;
+  mvPasscodeInput += digit;
+  updatePasscodeDots();
+  if (mvPasscodeInput.length === 4) setTimeout(checkPasscode, 150);
+}
+function mvNumpadDelete() { mvPasscodeInput = mvPasscodeInput.slice(0,-1); updatePasscodeDots(); document.getElementById('mvPasscodeError').style.display='none'; }
+function mvNumpadClear()  { mvPasscodeInput = ''; updatePasscodeDots(); document.getElementById('mvPasscodeError').style.display='none'; }
+
+function updatePasscodeDots() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('mvDot' + i);
+    dot.style.background   = i <= mvPasscodeInput.length ? 'var(--navy)' : 'white';
+    dot.style.borderColor  = i <= mvPasscodeInput.length ? 'var(--navy)' : 'var(--g300)';
+  }
+}
+
+function checkPasscode() {
+  if (mvPasscodeInput === MV_PASSCODE) {
+    document.getElementById('mvPasscodeStep').style.display = 'none';
+    document.getElementById('mvTeamStep').style.display = 'block';
+  } else {
+    document.getElementById('mvPasscodeError').style.display = 'block';
+    mvPasscodeInput = '';
+    updatePasscodeDots();
+  }
+}
+
+async function confirmReassign(dept) {
+  if (!mvReassignTicket) return;
+  const ticketNumber = mvReassignTicket;
+  const deptLabel = dept === 'electrical' ? 'Electrical Maintenance Team' : 'General Maintenance Team';
+  document.querySelectorAll('.mv-reassign-opt').forEach(b => b.disabled = true);
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel})
+    });
+    const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
+    if (idx !== -1) { mvTickets[idx].technician = deptLabel; mvTickets[idx].status = '🔵 In Progress'; }
+    closeReassignModal();
+    renderManagerView(mvTickets);
+  } catch(e) {
+    document.querySelectorAll('.mv-reassign-opt').forEach(b => b.disabled = false);
+    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+  }
+}
+
+async function confirmResetToSubmitted() {
+  if (!mvReassignTicket) return;
+  const ticketNumber = mvReassignTicket;
+  document.querySelectorAll('#mvTeamStep button').forEach(b => b.disabled = true);
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:'updateTicketStatus', ticketNumber,
+        status:'🟠 Submitted', technician:'', correction:'', spareParts:'',
+        notifyReset: true
+      })
+    });
+    const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
+    if (idx !== -1) { mvTickets[idx].status = '🟠 Submitted'; mvTickets[idx].technician = ''; mvTickets[idx].approver = ''; }
+    closeReassignModal();
+    renderManagerView(mvTickets);
+  } catch(e) {
+    document.querySelectorAll('#mvTeamStep button').forEach(b => b.disabled = false);
     alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
   }
 }
