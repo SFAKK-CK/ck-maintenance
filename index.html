@@ -559,6 +559,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div id="usFields" style="display:none">
         <div id="usFieldsInner">
+        <div class="us-field">
+          <label>🔴 สถานะใหม่ / New Status <span style="color:var(--red)">*</span></label>
           <select id="usStatus">
             <option value="">— เลือกสถานะ / Select status —</option>
             <option value="🟠 Submitted">🟠 Submitted — รอดำเนินการ</option>
@@ -642,7 +644,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button onclick="cancelGMOverride()" style="width:100%;padding:10px;background:var(--g100);color:var(--g700);border:none;border-radius:8px;font-size:18px;font-family:inherit;cursor:pointer">ยกเลิก / Cancel</button>
         </div>
 
-        <button class="update-btn" id="updateBtn" onclick="submitUpdate()">💾 บันทึกการอัปเดต / Save Update</button>
         <div class="us-success" id="usSuccess">
           <p>✅ อัปเดตสำเร็จแล้ว! / Update saved successfully!</p>
         </div>
