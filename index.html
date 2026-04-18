@@ -566,7 +566,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <option value="🟠 Submitted">🟠 Submitted — รอดำเนินการ</option>
             <option value="🔵 In Progress">🔵 In Progress — กำลังดำเนินการ</option>
             <option value="📋 Inquiring for Quotation">📋 Inquiring for Quotation — กำลังขอใบเสนอราคา</option>
-            <option value="🛒 Buying Spare Parts">🛒 Buying Spare Parts — กำลังซื้ออะไหล่</option>
             <option value="⏳ Waiting for Parts">⏳ Waiting for Parts — รอรับอะไหล่</option>
             <option value="🚧 Waiting for Outside Team">🚧 Waiting for Outside Team — รอช่างภายนอก</option>
             <option value="🟢 Completed">🟢 Completed — ซ่อมเสร็จแล้ว</option>
@@ -1076,7 +1075,7 @@ async function searchTicket() {
 
 function buildTicketResult(t) {
   const isSub = t.status.includes('Submitted');
-  const isProg = t.status.includes('In Progress') || t.status.includes('Waiting') || t.status.includes('Buying') || t.status.includes('Inquiring');
+  const isProg = t.status.includes('In Progress') || t.status.includes('Waiting') || t.status.includes('Inquiring');
   const isDone = t.status.includes('Completed');
   const waitHrs = t.timestamp ? Math.floor((Date.now() - new Date(t.timestamp)) / 3600000) : 0;
   const waitLabel = waitHrs < 1 ? 'น้อยกว่า 1 ชั่วโมง' : waitHrs + ' ชั่วโมง';
@@ -1286,14 +1285,14 @@ function hideLoading() { document.getElementById('loadingOverlay').classList.rem
 function statusPillHtml(status, pillCls) {
   const map = {
     'Submitted':'ส่งคำร้องแล้ว', 'In Progress':'กำลังดำเนินการ', 'Inquiring':'กำลังขอใบเสนอราคา',
-    'Buying Spare Parts':'กำลังซื้ออะไหล่', 'Waiting for Parts':'รอรับอะไหล่',
+    'Waiting for Parts':'รอรับอะไหล่',
     'Waiting for Outside':'รอช่างภายนอก', 'Completed':'ซ่อมเสร็จแล้ว', 'Cancelled':'ยกเลิก'
   };
   let thaiText = '';
   for (const key in map) { if (status.includes(key)) { thaiText = map[key]; break; } }
   return '<div class="status-pill ' + pillCls + '">' +
     '<div style="font-size:20px;font-weight:800;line-height:1.3">' + (thaiText||status) + '</div>' +
-    '<div style="font-size:18px;font-weight:500;opacity:.75;margin-top:2px">' + status.replace(/[🟠🔵🛒⏳🚧🟢❌📋]/g,'').trim() + '</div>' +
+    '<div style="font-size:18px;font-weight:500;opacity:.75;margin-top:2px">' + status.replace(/[🟠🔵⏳🚧🟢❌📋]/g,'').trim() + '</div>' +
     '</div>';
 }
 
@@ -1431,7 +1430,7 @@ function renderManagerView(tickets) {
   const active     = filtered.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
   const unassigned = active.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
   const inProgress = active.filter(t => t.status.includes('In Progress'));
-  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Buying') || t.status.includes('Waiting'));
+  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Waiting'));
 
   document.getElementById('mvCntU').textContent = unassigned.length;
   document.getElementById('mvCntP').textContent = inProgress.length;
@@ -1463,7 +1462,6 @@ function buildMvTicket(t, showAssign, now) {
   const statusColor = t.status.includes('Submitted') ? 'background:#fff3e0;color:#e65100' :
     t.status.includes('In Progress') ? 'background:#e3f2fd;color:#1565c0' :
     t.status.includes('Inquiring')   ? 'background:#fce4ec;color:#880e4f' :
-    t.status.includes('Buying')      ? 'background:#f3e5f5;color:#6a1b9a' :
     'background:#fff8e1;color:#f57f17';
 
   const urgentBadge  = isUrgentT ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px">🔴 ด่วน</span>' : '';
@@ -1494,7 +1492,7 @@ function buildMvTicket(t, showAssign, now) {
           <div class="mv-ticket-dept">🏭 ${esc(t.department || '—')} · 👤 ${esc(t.reporter || '—')}</div>
         </div>
         <div class="mv-ticket-meta">
-          <div class="mv-ticket-status" style="${statusColor}">${t.status.replace(/[🟠🔵📋🛒⏳🚧🟢❌]/g,'').trim()}</div>
+          <div class="mv-ticket-status" style="${statusColor}">${t.status.replace(/[🟠🔵📋⏳🚧🟢❌]/g,'').trim()}</div>
           <div class="mv-ticket-age${isOverdue ? ' overdue' : ''}">${ageLabel}</div>
         </div>
       </div>
@@ -1585,7 +1583,7 @@ function openDrilldown(type) {
     items = allActive.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
     title = '🟠 รอมอบหมายทั้งหมด / All Unassigned';
   } else if (type === 'inprogress') {
-    items = allActive.filter(t => t.status.includes('In Progress') || t.status.includes('Inquiring') || t.status.includes('Buying') || t.status.includes('Waiting'));
+    items = allActive.filter(t => t.status.includes('In Progress') || t.status.includes('Inquiring') || t.status.includes('Waiting'));
     title = '🔵 กำลังดำเนินการทั้งหมด / All In Progress';
   } else if (type === 'overdue') {
     items = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now);
@@ -1722,7 +1720,7 @@ document.getElementById('usTicketInput').addEventListener('keydown', e => { if (
 document.getElementById('usStatus').addEventListener('change', function() {
   const val = this.value;
   const isQuotation = val === '📋 Inquiring for Quotation';
-  const showPO = isQuotation || val.includes('Buying') || val.includes('Waiting') || val.includes('Inquiring');
+  const showPO = isQuotation || val.includes('Waiting') || val.includes('Inquiring');
   const existingPO = document.getElementById('usPoNumber').value.trim();
   document.getElementById('quotationAlert').style.display = (isQuotation && !existingPO) ? 'block' : 'none';
   document.getElementById('poNumberWrap').style.display = (showPO || existingPO) ? 'block' : 'none';
