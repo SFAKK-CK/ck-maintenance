@@ -1118,7 +1118,31 @@ function buildTicketResult(t) {
     '<div class="tr-body"><div class="progress-track">' + stepsHTML + '</div>' +
     '<div class="status-pill-wrap">' + statusPillHtml(t.status, pillCls) + '</div>' +
     rows.map(r => '<div class="info-row"><span class="ir-label">' + r[0] + '</span><span class="ir-val">' + esc(r[1]) + '</span></div>').join('') +
+    buildPhotosSection(t.photos) +
     '</div></div>';
+}
+
+function buildPhotosSection(photosStr) {
+  if (!photosStr || !photosStr.trim()) return '';
+  // Photos are stored as newline-separated URLs
+  const urls = photosStr.split(/[\n,]+/).map(s => s.trim()).filter(s => s && s.startsWith('http'));
+  if (urls.length === 0) return '';
+  const items = urls.map((url, i) => {
+    // Convert Google Drive view URLs to thumbnail URLs for inline preview
+    // Pattern: https://drive.google.com/file/d/FILE_ID/view?...
+    const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const fileId = m ? m[1] : null;
+    const thumbUrl = fileId ? 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w400' : url;
+    return '<a href="' + esc(url) + '" target="_blank" rel="noopener" style="display:block;text-decoration:none;border-radius:10px;overflow:hidden;border:1.5px solid var(--g200);background:var(--g50)">' +
+      '<img src="' + esc(thumbUrl) + '" alt="Photo ' + (i+1) + '" style="width:100%;height:120px;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">' +
+      '<div style="display:none;padding:30px 10px;text-align:center;font-size:15px;color:var(--g600)">📷 Photo ' + (i+1) + '<br><small>คลิกเพื่อเปิด</small></div>' +
+    '</a>';
+  }).join('');
+  return '<div style="margin-top:14px;padding:14px;background:var(--g50);border-radius:var(--r8)">' +
+    '<div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:10px">📷 รูปภาพแนบ / Attached Photos <span style="font-weight:500;color:var(--g500)">(' + urls.length + ')</span></div>' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">' + items + '</div>' +
+    '<div style="font-size:14px;color:var(--g500);margin-top:8px;text-align:center">แตะรูปเพื่อเปิดขนาดเต็ม / Tap photo to view full size</div>' +
+  '</div>';
 }
 
 // ─── UPDATE STATUS ─────────────────────────────
