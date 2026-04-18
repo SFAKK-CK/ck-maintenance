@@ -284,6 +284,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-refresh-btn:hover{background:var(--g200)}
 .mv-show-more{width:100%;padding:11px;background:white;color:var(--navy);border:1.5px solid var(--g200);border-radius:10px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;margin-bottom:8px;transition:all .15s}
 .mv-show-more:hover{background:var(--g100)}
+/* Role selection modal */
+.mv-role-modal{display:none;position:fixed;inset:0;background:rgba(15,30,61,.7);z-index:700;align-items:center;justify-content:center;padding:20px}
+.mv-role-modal.show{display:flex}
+.mv-role-panel{background:white;border-radius:20px;width:100%;max-width:380px;overflow:hidden}
+.mv-role-header{background:var(--navy);color:white;padding:20px 22px;text-align:center}
+.mv-role-title{font-size:22px;font-weight:800}
+.mv-role-sub{font-size:17px;opacity:.6;margin-top:4px}
+.mv-role-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.mv-role-btn{padding:18px;border:2px solid var(--g200);border-radius:14px;cursor:pointer;font-family:inherit;background:white;text-align:left;transition:all .15s;display:flex;align-items:center;gap:14px}
+.mv-role-btn:hover{border-color:var(--navy);background:var(--g50)}
+.mv-role-btn-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.mv-role-btn.staff .mv-role-btn-icon{background:#e3f2fd}
+.mv-role-btn.gm .mv-role-btn-icon{background:#fff3e0}
+.mv-role-btn-text{}
+.mv-role-btn-name{font-size:20px;font-weight:800;color:var(--navy)}
+.mv-role-btn-desc{font-size:17px;color:var(--g400);margin-top:2px}
 </style>
 </head>
 <body>
@@ -603,7 +619,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div id="page-manager" class="page">
   <div class="app-header">
     <div><div class="hdr-title">📊 Daily Summary Dashboard</div><div class="hdr-sub">ภาพรวมงานซ่อมทั้งหมด · ดูได้ทุกคน</div></div>
-    <button class="back-btn" onclick="goHome()">← หน้าหลัก</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="mvRoleBadge" style="font-size:14px;font-weight:700;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.15);color:white"></div>
+      <button class="back-btn" onclick="goHome()">← หน้าหลัก</button>
+    </div>
   </div>
   <div class="mv-wrap">
 
@@ -656,6 +675,68 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <option>ผู้บริหาร (Management)</option>
       <option>อื่นๆ (Other)</option>
     </select>
+
+    <!-- Role selection modal -->
+    <div class="mv-role-modal" id="mvRoleModal">
+      <div class="mv-role-panel">
+        <div class="mv-role-header">
+          <div class="mv-role-title">📊 Daily Summary Dashboard</div>
+          <div class="mv-role-sub">กรุณาเลือกสิทธิ์การเข้าใช้งาน<br>Please select your access level</div>
+        </div>
+        <div class="mv-role-body">
+          <button class="mv-role-btn staff" onclick="selectRole('staff')">
+            <div class="mv-role-btn-icon">👤</div>
+            <div class="mv-role-btn-text">
+              <div class="mv-role-btn-name">พนักงาน / Staff</div>
+              <div class="mv-role-btn-desc">ดูภาพรวม · ไม่สามารถมอบหมายงาน<br>View only · Cannot assign work</div>
+            </div>
+          </button>
+          <button class="mv-role-btn gm" onclick="selectRole('gm')">
+            <div class="mv-role-btn-icon">👑</div>
+            <div class="mv-role-btn-text">
+              <div class="mv-role-btn-name">ผู้จัดการ / GM</div>
+              <div class="mv-role-btn-desc">มอบหมายงาน · คืนสถานะ · Re-assign<br>Full access — passcode required</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GM Passcode modal -->
+    <div class="mv-role-modal" id="mvGMPasscodeModal">
+      <div class="mv-role-panel">
+        <div class="mv-role-header">
+          <div class="mv-role-title">👑 ผู้จัดการ / GM Access</div>
+          <div class="mv-role-sub">กรอกรหัสผ่าน / Enter passcode</div>
+        </div>
+        <div class="mv-role-body" style="padding:20px">
+          <div style="text-align:center;margin-bottom:12px">
+            <div style="display:flex;justify-content:center;gap:12px;margin-bottom:12px">
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="gmDot1"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="gmDot2"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="gmDot3"></div>
+              <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--g300);background:white" id="gmDot4"></div>
+            </div>
+            <div id="gmPasscodeError" style="font-size:17px;color:#c0392b;font-weight:700;display:none;margin-bottom:8px">❌ รหัสไม่ถูกต้อง / Wrong passcode</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('1')">1</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('2')">2</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('3')">3</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('4')">4</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('5')">5</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('6')">6</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('7')">7</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('8')">8</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('9')">9</button>
+            <button class="mv-numpad-btn mv-numpad-clear" onclick="gmNumpadClear()">✕</button>
+            <button class="mv-numpad-btn" onclick="gmNumpadPress('0')">0</button>
+            <button class="mv-numpad-btn mv-numpad-del" onclick="gmNumpadDelete()">⌫</button>
+          </div>
+          <button class="mv-reassign-cancel" style="margin-top:10px;width:100%;padding:12px;background:var(--g100);color:var(--g700);border:none;border-radius:10px;font-size:18px;font-weight:600;font-family:inherit;cursor:pointer" onclick="backToRoleSelect()">← กลับ / Back</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Re-assign modal -->
     <div class="mv-reassign-modal" id="mvReassignModal">
@@ -755,7 +836,7 @@ function goPage(id) {
   if (id === 'page-form')    fullResetForm();
   if (id === 'page-check')   resetCheckProgress();
   if (id === 'page-update')  resetUpdateStatus();
-  if (id === 'page-manager') loadManagerView();
+  if (id === 'page-manager') showRoleModal();
 }
 
 function resetCheckProgress() {
@@ -807,6 +888,16 @@ function goHome() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-home').classList.add('active');
   window.scrollTo(0,0);
+  // Reset role on leaving dashboard
+  mvCurrentRole = null;
+  // Close any open modals
+  ['mvRoleModal','mvGMPasscodeModal','mvReassignModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', gmKeyHandler);
+  document.removeEventListener('keydown', mvPasscodeKeyHandler);
 }
 
 function retrySubmit() {
@@ -1118,6 +1209,83 @@ function esc(s) {
   return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ─── ROLE SYSTEM ──────────────────────────────
+let mvCurrentRole = null; // 'staff' or 'gm'
+let gmPasscodeInput = '';
+const GM_PASSCODE = '2580';
+
+function showRoleModal() {
+  mvCurrentRole = null;
+  document.getElementById('mvRoleModal').classList.add('show');
+  document.getElementById('mvGMPasscodeModal').classList.remove('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function selectRole(role) {
+  if (role === 'staff') {
+    mvCurrentRole = 'staff';
+    document.getElementById('mvRoleModal').classList.remove('show');
+    document.body.style.overflow = '';
+    loadManagerView();
+  } else {
+    // Show GM passcode
+    gmPasscodeInput = '';
+    updateGMDots();
+    document.getElementById('gmPasscodeError').style.display = 'none';
+    document.getElementById('mvRoleModal').classList.remove('show');
+    document.getElementById('mvGMPasscodeModal').classList.add('show');
+    document.addEventListener('keydown', gmKeyHandler);
+  }
+}
+
+function backToRoleSelect() {
+  document.getElementById('mvGMPasscodeModal').classList.remove('show');
+  document.getElementById('mvRoleModal').classList.add('show');
+  document.removeEventListener('keydown', gmKeyHandler);
+  gmPasscodeInput = '';
+}
+
+function gmKeyHandler(e) {
+  if (e.key >= '0' && e.key <= '9') gmNumpadPress(e.key);
+  else if (e.key === 'Backspace') gmNumpadDelete();
+  else if (e.key === 'Delete')    gmNumpadClear();
+  else if (e.key === 'Escape')    backToRoleSelect();
+}
+
+function gmNumpadPress(digit) {
+  if (gmPasscodeInput.length >= 4) return;
+  gmPasscodeInput += digit;
+  updateGMDots();
+  if (gmPasscodeInput.length === 4) setTimeout(checkGMPasscode, 150);
+}
+function gmNumpadDelete() { gmPasscodeInput = gmPasscodeInput.slice(0,-1); updateGMDots(); document.getElementById('gmPasscodeError').style.display='none'; }
+function gmNumpadClear()  { gmPasscodeInput = ''; updateGMDots(); document.getElementById('gmPasscodeError').style.display='none'; }
+
+function updateGMDots() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('gmDot' + i);
+    dot.style.background  = i <= gmPasscodeInput.length ? 'var(--navy)' : 'white';
+    dot.style.borderColor = i <= gmPasscodeInput.length ? 'var(--navy)' : 'var(--g300)';
+  }
+}
+
+function checkGMPasscode() {
+  if (gmPasscodeInput === GM_PASSCODE) {
+    mvCurrentRole = 'gm';
+    document.getElementById('mvGMPasscodeModal').classList.remove('show');
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', gmKeyHandler);
+    loadManagerView();
+  } else {
+    document.getElementById('gmPasscodeError').style.display = 'block';
+    gmPasscodeInput = '';
+    updateGMDots();
+  }
+}
+
+// Also reset role when going home
+const _origGoHome = goHome;
+
 // ─── MANAGER VIEW ─────────────────────────────
 let mvTickets = [];
 const MV_PAGE_SIZE = 3;
@@ -1135,6 +1303,9 @@ async function loadManagerView() {
   const icon = document.getElementById('mvRefreshIcon');
   btn.disabled = true; icon.textContent = '⏳';
   mvShownU = mvShownP = mvShownW = MV_PAGE_SIZE;
+  // Show role badge
+  const badge = document.getElementById('mvRoleBadge');
+  if (badge) badge.textContent = mvCurrentRole === 'gm' ? '👑 GM' : '👤 Staff';
   ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
     document.getElementById(id).innerHTML = '<div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div>';
   });
@@ -1205,7 +1376,8 @@ function buildMvTicket(t, showAssign, now) {
 
   const urgentBadge  = isUrgentT ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px">🔴 ด่วน</span>' : '';
   const overdueBadge = isOverdue  ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">⚠️ เกินกำหนด</span>' : '';
-  const assignRow = showAssign ? `
+  const isGM = mvCurrentRole === 'gm';
+  const assignRow = showAssign && isGM ? `
     <div class="mv-assign-row">
       <button class="mv-assign-btn general" onclick="assignTicket('${esc(t.ticketNumber)}','general',this)">
         🔧 ช่างทั่วไป<br><small style="font-weight:500;opacity:.8">General Maintenance</small>
@@ -1216,8 +1388,9 @@ function buildMvTicket(t, showAssign, now) {
     </div>` :
     ((function(tech, approver) {
       const s = (tech||'') + (approver||'');
-      if (s.toLowerCase().includes('electrical')) return '<div class="mv-assigned-badge">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div><div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>';
-      if (s.toLowerCase().includes('general'))    return '<div class="mv-assigned-badge">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div><div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>';
+      if (s.toLowerCase().includes('electrical')) return '<div class="mv-assigned-badge">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div>' + (isGM ? '<div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>' : '');
+      if (s.toLowerCase().includes('general'))    return '<div class="mv-assigned-badge">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div>' + (isGM ? '<div class="mv-reassign-row"><button class="mv-reassign-btn" onclick="openReassignModal(\'' + esc(t.ticketNumber) + '\')">🔄 มอบหมายใหม่ / Re-assign</button></div>' : '');
+      if (showAssign && !isGM) return '<div style="margin:0 16px 14px;background:#fff3e0;border-radius:10px;padding:10px 14px;font-size:18px;color:#e65100;font-weight:600">⏳ รอการมอบหมายจาก GM<br><small style="font-weight:400;font-size:16px">Awaiting assignment via email</small></div>';
       return '';
     })(t.technician, t.approver));
   return `
