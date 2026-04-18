@@ -606,6 +606,41 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div style="font-size:19px;color:var(--g400);margin-top:4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div>
         </div>
         <div class="us-err" id="usErr">กรุณากรอกข้อมูลที่จำเป็น / Please fill in all required fields.</div>
+
+        <!-- Inquiring lock notice -->
+        <div id="usInquiringLock" style="display:none;background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:16px;margin-top:8px">
+          <div style="font-size:20px;font-weight:700;color:#880e4f;margin-bottom:6px">🔒 รอ PO Number จากทีมจัดซื้อ</div>
+          <div style="font-size:18px;color:#880e4f;line-height:1.6;margin-bottom:14px">สถานะนี้อยู่ระหว่างรอใบเสนอราคา ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting PO from Purchasing. Updates are locked until PO is saved.</small></div>
+          <button onclick="showGMOverride()" style="width:100%;padding:12px;background:var(--navy);color:white;border:none;border-radius:8px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer">👑 GM Override — บังคับอัปเดต</button>
+        </div>
+
+        <!-- GM Override passcode for Update Status -->
+        <div id="usGMOverride" style="display:none;background:#f8fafc;border:1.5px solid var(--g200);border-radius:10px;padding:16px;margin-top:8px">
+          <div style="font-size:19px;font-weight:700;color:var(--navy);margin-bottom:12px;text-align:center">👑 GM Override — กรอกรหัสผ่าน</div>
+          <div style="display:flex;justify-content:center;gap:12px;margin-bottom:14px">
+            <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--g300);background:white" id="usDot1"></div>
+            <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--g300);background:white" id="usDot2"></div>
+            <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--g300);background:white" id="usDot3"></div>
+            <div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--g300);background:white" id="usDot4"></div>
+          </div>
+          <div id="usOverrideError" style="font-size:17px;color:#c0392b;font-weight:700;text-align:center;display:none;margin-bottom:8px">❌ รหัสไม่ถูกต้อง</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+            <button class="mv-numpad-btn" onclick="usNumpadPress('1')">1</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('2')">2</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('3')">3</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('4')">4</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('5')">5</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('6')">6</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('7')">7</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('8')">8</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('9')">9</button>
+            <button class="mv-numpad-btn mv-numpad-clear" onclick="usNumpadClear()">✕</button>
+            <button class="mv-numpad-btn" onclick="usNumpadPress('0')">0</button>
+            <button class="mv-numpad-btn mv-numpad-del" onclick="usNumpadDelete()">⌫</button>
+          </div>
+          <button onclick="cancelGMOverride()" style="width:100%;padding:10px;background:var(--g100);color:var(--g700);border:none;border-radius:8px;font-size:18px;font-family:inherit;cursor:pointer">ยกเลิก / Cancel</button>
+        </div>
+
         <button class="update-btn" id="updateBtn" onclick="submitUpdate()">💾 บันทึกการอัปเดต / Save Update</button>
         <div class="us-success" id="usSuccess">
           <p>✅ อัปเดตสำเร็จแล้ว! / Update saved successfully!</p>
@@ -866,6 +901,14 @@ function resetUpdateStatus() {
   usPhotos = [];
   renderUsPrev();
   usTicket = null;
+  // Reset lock UI
+  const lockDiv = document.getElementById('usInquiringLock');
+  const overrideDiv = document.getElementById('usGMOverride');
+  const updateBtn = document.getElementById('updateBtn');
+  if (lockDiv) lockDiv.style.display = 'none';
+  if (overrideDiv) overrideDiv.style.display = 'none';
+  if (updateBtn) updateBtn.style.display = 'block';
+  usOverrideInput = '';
 }
 
 function fullResetForm() {
@@ -1122,6 +1165,20 @@ async function lookupTicket() {
       poField.style.borderColor = ''; poField.style.color = ''; poField.style.fontWeight = '';
     }
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
+
+    // ── Inquiring lock: if ticket is Inquiring and no PO yet, lock for non-GM ──
+    const isInquiring = ticket.status.includes('Inquiring');
+    const hasPO = !!(ticket.poNumber && ticket.poNumber.trim());
+    const lockDiv = document.getElementById('usInquiringLock');
+    const usFieldsDiv = document.getElementById('usFields');
+    if (isInquiring && !hasPO) {
+      lockDiv.style.display = 'block';
+      // Hide update button — only GM override can unlock
+      document.getElementById('updateBtn').style.display = 'none';
+    } else {
+      lockDiv.style.display = 'none';
+      document.getElementById('updateBtn').style.display = 'block';
+    }
   } catch(e) { alert('Error: ' + e.message); }
 }
 
@@ -1433,6 +1490,88 @@ async function assignTicket(ticketNumber, dept, btn) {
     btn.innerHTML = dept === 'electrical' ? '⚡ ช่างไฟฟ้า<br><small>Electrical</small>' : '🔧 ช่างทั่วไป<br><small>General Maintenance</small>';
     alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
   }
+}
+
+// ─── GM OVERRIDE FOR UPDATE STATUS ───────────
+let usOverrideInput = '';
+
+function showGMOverride() {
+  usOverrideInput = '';
+  updateUSDots();
+  document.getElementById('usOverrideError').style.display = 'none';
+  document.getElementById('usInquiringLock').style.display = 'none';
+  document.getElementById('usGMOverride').style.display = 'block';
+}
+
+function cancelGMOverride() {
+  document.getElementById('usGMOverride').style.display = 'none';
+  document.getElementById('usInquiringLock').style.display = 'block';
+  usOverrideInput = '';
+}
+
+function usNumpadPress(d) {
+  if (usOverrideInput.length >= 4) return;
+  usOverrideInput += d;
+  updateUSDots();
+  if (usOverrideInput.length === 4) setTimeout(checkUSOverride, 150);
+}
+function usNumpadDelete() { usOverrideInput = usOverrideInput.slice(0,-1); updateUSDots(); }
+function usNumpadClear()  { usOverrideInput = ''; updateUSDots(); }
+
+function updateUSDots() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('usDot' + i);
+    if (!dot) return;
+    dot.style.background  = i <= usOverrideInput.length ? 'var(--navy)' : 'white';
+    dot.style.borderColor = i <= usOverrideInput.length ? 'var(--navy)' : 'var(--g300)';
+  }
+}
+
+function checkUSOverride() {
+  if (usOverrideInput === '2580') {
+    // Unlock
+    document.getElementById('usGMOverride').style.display = 'none';
+    document.getElementById('usInquiringLock').style.display = 'none';
+    document.getElementById('updateBtn').style.display = 'block';
+  } else {
+    document.getElementById('usOverrideError').style.display = 'block';
+    usOverrideInput = '';
+    updateUSDots();
+  }
+}
+
+// ─── DRILLDOWN OVERLAY ────────────────────────
+function openDrilldown(type) {
+  const now = new Date();
+  const allActive = mvTickets.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
+  let items = [], title = '';
+  if (type === 'unassigned') {
+    items = allActive.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
+    title = '🟠 รอมอบหมายทั้งหมด / All Unassigned';
+  } else if (type === 'inprogress') {
+    items = allActive.filter(t => t.status.includes('In Progress') || t.status.includes('Inquiring') || t.status.includes('Buying') || t.status.includes('Waiting'));
+    title = '🔵 กำลังดำเนินการทั้งหมด / All In Progress';
+  } else if (type === 'overdue') {
+    items = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now);
+    title = '🚨 เกินกำหนดทั้งหมด / All Overdue';
+  }
+  document.getElementById('mvDrillTitle').textContent = title;
+  document.getElementById('mvDrillCount').textContent = items.length + ' tickets';
+  document.getElementById('mvDrillBody').innerHTML = items.length
+    ? items.map(t => buildMvTicket(t, type === 'unassigned', now)).join('')
+    : '<div class="mv-empty">✅ ไม่มีงาน / None</div>';
+  document.getElementById('mvDrilldown').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrilldown(e) {
+  if (e.target === document.getElementById('mvDrilldown')) closeDrilldownBtn();
+}
+
+function closeDrilldownBtn() {
+  document.getElementById('mvDrilldown').classList.remove('show');
+  document.body.style.overflow = '';
+  renderManagerView(mvTickets);
 }
 
 // ─── RE-ASSIGN MODAL WITH PASSCODE ───────────
