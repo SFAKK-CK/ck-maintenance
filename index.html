@@ -264,6 +264,34 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-numpad-btn:active{background:var(--navy);color:white;transform:scale(.94)}
 .mv-numpad-clear{background:#fde8e8;border-color:#fca5a5;color:#c0392b}
 .mv-numpad-del{background:#fff3e0;border-color:#fcd34d;color:#92400e}
+
+/* Ticket Detail Modal (slide-up, read-only) */
+.mv-detail{display:none;position:fixed;inset:0;background:rgba(15,30,61,.55);z-index:550;align-items:flex-end;justify-content:center}
+.mv-detail.show{display:flex}
+.mv-detail-panel{background:#f0f4f8;width:100%;max-width:600px;max-height:92vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:mvDetailSlideUp .25s ease-out}
+@keyframes mvDetailSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mv-detail-header{background:var(--navy);color:white;padding:16px 18px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;gap:10px}
+.mv-detail-header-info{flex:1;min-width:0}
+.mv-detail-title{font-size:15px;opacity:.7;font-weight:500}
+.mv-detail-ticket-num{font-size:22px;font-weight:800;font-family:monospace;margin-top:2px}
+.mv-detail-close{background:rgba(255,255,255,.15);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mv-detail-body{overflow-y:auto;padding:16px;flex:1}
+.mv-detail-status-card{background:white;border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border:1px solid var(--g200)}
+.mv-detail-status-lbl{font-size:17px;color:var(--g600);font-weight:600}
+.mv-detail-status-pill{font-size:17px;font-weight:700;padding:5px 14px;border-radius:20px}
+.mv-detail-section{background:white;border-radius:12px;margin-bottom:12px;overflow:hidden;border:1px solid var(--g200)}
+.mv-detail-section-title{background:var(--g50);padding:10px 16px;font-size:16px;font-weight:700;color:var(--g700);border-bottom:1px solid var(--g200)}
+.mv-detail-row{display:flex;padding:11px 16px;gap:12px;border-bottom:1px solid var(--g100);align-items:flex-start}
+.mv-detail-row:last-child{border-bottom:none}
+.mv-detail-row-lbl{flex:0 0 135px;font-size:17px;color:var(--g400);font-weight:500}
+.mv-detail-row-val{flex:1;font-size:18px;color:var(--g900);font-weight:600;word-break:break-word;min-width:0}
+.mv-detail-row-val.multiline{white-space:pre-wrap;font-weight:400;line-height:1.55}
+.mv-detail-photos{padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px}
+.mv-detail-photo{width:calc(33.333% - 6px);aspect-ratio:4/3;border-radius:8px;border:1px solid var(--g200);object-fit:cover;cursor:pointer;transition:transform .15s;background:var(--g100)}
+.mv-detail-photo:active{transform:scale(.96)}
+.mv-detail-empty{padding:14px 16px;font-size:17px;color:var(--g400);font-style:italic}
+.mv-detail-urgent-banner{background:#c0392b;color:white;padding:10px 16px;font-size:17px;font-weight:700;text-align:center;border-radius:10px;margin-bottom:12px}
+
 /* Re-assign modal */
 .mv-reassign-modal{display:none;position:fixed;inset:0;background:rgba(15,30,61,.6);z-index:600;align-items:center;justify-content:center;padding:20px}
 .mv-reassign-modal.show{display:flex}
@@ -692,6 +720,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="mv-drill-body" id="mvDrillBody"></div>
+      </div>
+    </div>
+
+    <!-- Ticket Detail Modal (read-only, slide-up) -->
+    <div class="mv-detail" id="mvDetail" onclick="closeDetail(event)">
+      <div class="mv-detail-panel">
+        <div class="mv-detail-header">
+          <div class="mv-detail-header-info">
+            <div class="mv-detail-title">รายละเอียดใบแจ้งซ่อม / Ticket Details</div>
+            <div class="mv-detail-ticket-num" id="mvDetailTicketNum">—</div>
+          </div>
+          <button class="mv-detail-close" onclick="closeDetailBtn()">✕</button>
+        </div>
+        <div class="mv-detail-body" id="mvDetailBody"></div>
       </div>
     </div>
 
@@ -1485,7 +1527,7 @@ function buildMvTicket(t, showAssign, now) {
     })(t.technician, t.approver));
   return `
     <div class="mv-ticket${isUrgentT ? ' urgent' : ''}" id="mvt-${esc(t.ticketNumber)}">
-      <div class="mv-ticket-head">
+      <div class="mv-ticket-head" onclick="openDetail('${esc(t.ticketNumber)}')" style="cursor:pointer">
         <div class="mv-ticket-info">
           <div class="mv-ticket-num">${esc(t.ticketNumber)}${urgentBadge}${overdueBadge}</div>
           <div class="mv-ticket-machine">${esc(t.machine || '—')}</div>
@@ -1496,7 +1538,8 @@ function buildMvTicket(t, showAssign, now) {
           <div class="mv-ticket-age${isOverdue ? ' overdue' : ''}">${ageLabel}</div>
         </div>
       </div>
-      ${t.cause ? `<div class="mv-cause">💬 ${esc(t.cause)}</div>` : ''}
+      ${t.cause ? `<div class="mv-cause" onclick="openDetail('${esc(t.ticketNumber)}')" style="cursor:pointer">💬 ${esc(t.cause)}</div>` : ''}
+      <div style="padding:0 16px 10px;font-size:15px;color:var(--g400);text-align:center;cursor:pointer" onclick="openDetail('${esc(t.ticketNumber)}')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>
       ${assignRow}
     </div>`;
 }
@@ -1606,6 +1649,137 @@ function closeDrilldownBtn() {
   document.getElementById('mvDrilldown').classList.remove('show');
   document.body.style.overflow = '';
   renderManagerView(mvTickets);
+}
+
+// ─── TICKET DETAIL MODAL (read-only) ──────────
+function openDetail(ticketNumber) {
+  const t = mvTickets.find(x => x.ticketNumber === ticketNumber);
+  if (!t) return;
+  document.getElementById('mvDetailTicketNum').textContent = t.ticketNumber;
+  document.getElementById('mvDetailBody').innerHTML = buildDetailContent(t);
+  document.getElementById('mvDetail').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('mvDetail')) closeDetailBtn();
+}
+
+function closeDetailBtn() {
+  document.getElementById('mvDetail').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function buildDetailContent(t) {
+  const now = new Date();
+  const isUrgentT = t.isUrgent && t.isUrgent.includes('Urgent');
+  const isOverdue = t.desiredDate && new Date(t.desiredDate) < now && !t.status.includes('Completed') && !t.status.includes('Cancelled');
+
+  // Status pill
+  const statusColor = t.status.includes('Submitted') ? 'background:#fff3e0;color:#e65100' :
+    t.status.includes('In Progress') ? 'background:#e3f2fd;color:#1565c0' :
+    t.status.includes('Inquiring')   ? 'background:#fce4ec;color:#880e4f' :
+    t.status.includes('Completed')   ? 'background:#e8f5e9;color:#1b5e20' :
+    t.status.includes('Cancelled')   ? 'background:#f5f5f5;color:#616161' :
+    'background:#fff8e1;color:#f57f17';
+  const statusText = t.status.replace(/[🟠🔵📋⏳🚧🟢❌]/g,'').trim();
+
+  // Date formatting
+  const fmtDate = (iso) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('th-TH', {year:'numeric',month:'short',day:'numeric'}) +
+      ' ' + d.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'});
+  };
+  const fmtDateOnly = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('th-TH', {year:'numeric',month:'short',day:'numeric'});
+  };
+
+  // Technician display (prefer technician col, fallback to approver col)
+  const techDisplay = (() => {
+    const s = ((t.technician||'') + (t.approver||'')).toLowerCase();
+    if (s.includes('electrical')) return '⚡ ช่างไฟฟ้า / Electrical Maintenance';
+    if (s.includes('general'))    return '🔧 ช่างทั่วไป / General Maintenance';
+    if (t.technician) return esc(t.technician);
+    return '—';
+  })();
+
+  // Parse photo URLs
+  const photoUrls = (t.photos || '').split('\n').filter(u => u && u.indexOf('http') === 0);
+
+  // Banner
+  const urgentBanner = isUrgentT ? '<div class="mv-detail-urgent-banner">🔴 งานด่วน / URGENT REQUEST</div>' : '';
+  const overdueBanner = isOverdue ? '<div class="mv-detail-urgent-banner" style="background:#f57f17">⚠️ เกินกำหนดส่งมอบ / OVERDUE</div>' : '';
+
+  // Status card at top
+  let html = urgentBanner + overdueBanner + `
+    <div class="mv-detail-status-card">
+      <div class="mv-detail-status-lbl">⏳ สถานะปัจจุบัน / Status</div>
+      <div class="mv-detail-status-pill" style="${statusColor}">${esc(statusText)}</div>
+    </div>`;
+
+  // Reporter info section
+  html += `
+    <div class="mv-detail-section">
+      <div class="mv-detail-section-title">📋 ข้อมูลผู้แจ้ง / Reporter Info</div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">ประเภทคำร้อง</div><div class="mv-detail-row-val">${esc(t.requestType || '—')}</div></div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">ผู้แจ้ง</div><div class="mv-detail-row-val">${esc(t.reporter || '—')}</div></div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">แผนก</div><div class="mv-detail-row-val">${esc(t.department || '—')}</div></div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">ความเร่งด่วน</div><div class="mv-detail-row-val">${esc(t.isUrgent || '—')}</div></div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">วันที่แจ้ง</div><div class="mv-detail-row-val">${fmtDate(t.timestamp)}</div></div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">กำหนดเสร็จ</div><div class="mv-detail-row-val${isOverdue ? '" style="color:#c0392b' : ''}">${fmtDateOnly(t.desiredDate)}</div></div>
+    </div>`;
+
+  // Machine & issue section
+  html += `
+    <div class="mv-detail-section">
+      <div class="mv-detail-section-title">⚙️ เครื่อง / อาการ · Machine & Issue</div>
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">เครื่อง / อุปกรณ์</div><div class="mv-detail-row-val">${esc(t.machine || '—')}</div></div>
+      ${t.refCode ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">รหัสอ้างอิง</div><div class="mv-detail-row-val">${esc(t.refCode)}</div></div>` : ''}
+      <div class="mv-detail-row"><div class="mv-detail-row-lbl">อาการ / ปัญหา</div><div class="mv-detail-row-val multiline">${esc(t.cause || '—')}</div></div>
+    </div>`;
+
+  // Photos section
+  if (photoUrls.length > 0) {
+    html += `
+      <div class="mv-detail-section">
+        <div class="mv-detail-section-title">📷 รูปภาพ / Photos (${photoUrls.length})</div>
+        <div class="mv-detail-photos">
+          ${photoUrls.map(url => {
+            const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            const thumb = m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w400' : url;
+            return `<img class="mv-detail-photo" src="${esc(thumb)}" onclick="window.open('${esc(url)}','_blank')" alt="photo" loading="lazy">`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Assignment / Progress section
+  const hasProgressInfo = t.technician || t.approver || t.correction || t.spareParts || t.poNumber;
+  if (hasProgressInfo) {
+    html += `
+      <div class="mv-detail-section">
+        <div class="mv-detail-section-title">🔧 การดำเนินการ / Progress</div>
+        <div class="mv-detail-row"><div class="mv-detail-row-lbl">ทีมช่าง</div><div class="mv-detail-row-val">${techDisplay}</div></div>
+        ${t.approver ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">มอบหมายโดย</div><div class="mv-detail-row-val">${esc(t.approver)}</div></div>` : ''}
+        ${t.correction ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">วิธีแก้ไข</div><div class="mv-detail-row-val multiline">${esc(t.correction)}</div></div>` : ''}
+        ${t.spareParts ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">อะไหล่ที่ใช้</div><div class="mv-detail-row-val multiline">${esc(t.spareParts)}</div></div>` : ''}
+        ${t.poNumber ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">PO Number</div><div class="mv-detail-row-val" style="font-family:monospace">${esc(t.poNumber)}</div></div>` : ''}
+      </div>`;
+  }
+
+  // Completion section
+  if (t.completedDate || t.notes) {
+    html += `
+      <div class="mv-detail-section">
+        <div class="mv-detail-section-title">✅ การปิดงาน / Completion</div>
+        ${t.completedDate ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">วันที่เสร็จ</div><div class="mv-detail-row-val">${fmtDate(t.completedDate)}</div></div>` : ''}
+        ${t.notes ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">หมายเหตุ</div><div class="mv-detail-row-val multiline">${esc(t.notes)}</div></div>` : ''}
+      </div>`;
+  }
+
+  return html;
 }
 
 // ─── RE-ASSIGN MODAL WITH PASSCODE ───────────
