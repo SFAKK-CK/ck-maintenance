@@ -1320,15 +1320,25 @@ async function lookupTicket() {
     }
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
 
-    // ── Inquiring lock: if ticket is Inquiring and no PO yet, lock everything ──
+    // ── Lock: Inquiring OR Outside Team with no PO yet ──
     const isInquiring = ticket.status.includes('Inquiring');
+    const isOutsideTeam = ticket.status.includes('Outside Team');
     const hasPO = !!(ticket.poNumber && ticket.poNumber.trim());
     const lockDiv = document.getElementById('usInquiringLock');
     const overrideDiv = document.getElementById('usGMOverride');
     const updateBtn = document.getElementById('updateBtn');
     const usFieldsInner = document.getElementById('usFieldsInner');
 
-    if (isInquiring && !hasPO) {
+    // Customize lock message based on which state we're in
+    if (isOutsideTeam && !hasPO) {
+      lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
+      lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting Outside Team PO from Purchasing. Updates are locked until PO is saved.</small>';
+    } else if (isInquiring && !hasPO) {
+      lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ';
+      lockDiv.querySelector('div:nth-child(2)').innerHTML = 'สถานะนี้อยู่ระหว่างรอใบเสนอราคา ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting PO from Purchasing. Updates are locked until PO is saved.</small>';
+    }
+
+    if ((isInquiring || isOutsideTeam) && !hasPO) {
       // Hide all fields, show lock notice only
       if (usFieldsInner) usFieldsInner.style.display = 'none';
       lockDiv.style.display = 'block';
@@ -2000,6 +2010,7 @@ document.getElementById('usStatus').addEventListener('change', function() {
   const val = this.value;
   const isQuotation  = val === '📋 Inquiring for Quotation';
   const isOutside    = val === '🚧 Waiting for Outside Team';
+  const isWaitParts  = val === '⏳ Waiting for Parts';
   const showPO       = isQuotation || val.includes('Waiting') || val.includes('Inquiring');
   const existingPO   = document.getElementById('usPoNumber').value.trim();
   const corrLabel    = document.getElementById('correctionLabel');
@@ -2009,8 +2020,8 @@ document.getElementById('usStatus').addEventListener('change', function() {
   document.getElementById('quotationAlert').style.display = (isQuotation && !existingPO) ? 'block' : 'none';
   document.getElementById('poNumberWrap').style.display = (showPO || existingPO) ? 'block' : 'none';
 
-  // Spare Parts: hide for Outside Team (no parts used — it's going to an external team)
-  sparesWrap.style.display = isOutside ? 'none' : 'block';
+  // Hide Spare Parts when status is waiting-for-something (parts info belongs on the PO/quotation, not the ticket)
+  sparesWrap.style.display = (isOutside || isWaitParts || isQuotation) ? 'none' : 'block';
 
   if (isQuotation) {
     corrLabel.innerHTML = '📋 รายละเอียดสินค้าที่ต้องการซื้อ / Details of Purchase Item <span style="color:var(--red)">*</span>';
@@ -2020,6 +2031,10 @@ document.getElementById('usStatus').addEventListener('change', function() {
     corrLabel.innerHTML = '🚧 สาเหตุที่ต้องใช้ทีมภายนอก / Reason for Outside Team <span style="color:var(--red)">*</span>';
     document.getElementById('usCorrection').placeholder = 'ระบุสาเหตุที่ไม่สามารถซ่อมภายในได้ / Describe why in-house repair is not possible...';
     photoWrap.style.display = 'block';
+  } else if (isWaitParts) {
+    corrLabel.innerHTML = '⏳ รายละเอียดอะไหล่ที่รอ / Parts Awaited <span style="color:var(--red)">*</span>';
+    document.getElementById('usCorrection').placeholder = 'ระบุรายการอะไหล่ที่รอและสถานะการจัดส่ง / Describe the parts awaited and delivery status...';
+    photoWrap.style.display = 'none';
   } else {
     corrLabel.innerHTML = '🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span>';
     document.getElementById('usCorrection').placeholder = 'อธิบายวิธีการซ่อมหรือดำเนินการ / Describe the fix or action taken...';
