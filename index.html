@@ -122,9 +122,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .success-screen.show,.error-screen.show{display:block}
 .success-screen{background:#f0fdf4}
 .error-screen{background:#fef2f2}
+.suc-inner{max-width:420px;margin:0 auto;padding:60px 20px 40px;text-align:center}
 .suc-inner{max-width:400px;width:100%;text-align:center}
 .suc-circle{width:72px;height:72px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#16a34a;margin:0 auto 20px;font-weight:700;border:none}
 .err-circle{width:72px;height:72px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#dc2626;margin:0 auto 20px;font-weight:700;border:none}
+.suc-title{font-size:24px;font-weight:800;color:#1a2744;margin-bottom:4px}
 .suc-subtitle{font-size:20px;color:#6b7280;margin-bottom:24px}
 .suc-ticket-wrap{background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px 24px;margin-bottom:20px}
 .suc-ticket-lbl{font-size:20px;color:#9ca3af;margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase}
@@ -296,6 +298,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-reassign-panel{background:white;border-radius:16px;width:100%;max-width:400px;overflow:hidden}
 .mv-reassign-panel-head{background:var(--navy);color:white;padding:16px 18px}
 .mv-reassign-panel-title{font-size:20px;font-weight:700}
+
+/* Cancel ticket modal */
+.tr-cancel-modal{display:none;position:fixed;inset:0;background:rgba(15,30,61,.6);z-index:650;align-items:center;justify-content:center;padding:20px}
+.tr-cancel-modal.show{display:flex}
+.tr-cancel-panel{background:white;border-radius:16px;width:100%;max-width:420px;overflow:hidden}
+.tr-cancel-head{background:#c0392b;color:white;padding:16px 18px}
+.tr-cancel-btn{width:100%;padding:14px;background:#c0392b;color:white;border:none;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer;margin-top:4px}
+.tr-cancel-btn:disabled{opacity:.5;cursor:not-allowed}
 .mv-reassign-panel-sub{font-size:17px;opacity:.65;margin-top:3px}
 .mv-reassign-panel-body{padding:18px;display:flex;flex-direction:column;gap:12px}
 .mv-reassign-opt{padding:14px;border:none;border-radius:10px;font-size:19px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;text-align:left;line-height:1.4}
@@ -626,7 +636,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="previews" id="usPreviews" style="margin-top:8px"></div>
           <div style="font-size:19px;color:var(--g400);text-align:right;margin-top:4px" id="usPhotoCount"></div>
         </div>
-        <div class="us-field">
+        <div id="sparesWrap" class="us-field">
           <label>🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</label>
           <input type="text" id="usParts" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP...">
           <div style="font-size:19px;color:var(--g400);margin-top:4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div>
@@ -677,7 +687,38 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<!-- ══════ PAGE 4: MANAGER VIEW ══════ -->
+<!-- ══════ CANCEL TICKET MODAL ══════ -->
+<div class="tr-cancel-modal" id="trCancelModal" onclick="closeCancelModal(event)">
+  <div class="tr-cancel-panel">
+    <div class="tr-cancel-head">
+      <div style="font-size:18px;font-weight:700">❌ ยกเลิกใบแจ้งซ่อม / Cancel Ticket</div>
+      <div style="font-size:12px;opacity:.7;margin-top:3px">C.K. Frozen Fish &amp; Food · GM Only</div>
+    </div>
+    <div style="padding:20px">
+      <div style="background:#f8fafc;border-radius:8px;padding:12px 14px;margin-bottom:16px">
+        <div style="font-size:12px;color:#9ca3af;margin-bottom:2px">Ticket</div>
+        <div style="font-size:20px;font-weight:700;color:#1a2744;font-family:monospace" id="cancelModalTicketNum">—</div>
+      </div>
+      <div id="cancelPOWarning" style="display:none;background:#fde8e8;border:1.5px solid #fca5a5;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:14px;color:#c0392b;font-weight:600">
+        ⚠️ มี PO เปิดอยู่ในระบบ / Open PO exists<br>
+        <span style="font-weight:400;font-size:13px">กรุณาแจ้งทีมจัดซื้อให้ยกเลิก PO ด้วยตนเอง<br>Please notify Purchasing to cancel the PO manually.</span>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:6px">เหตุผลการยกเลิก / Cancellation Reason <span style="color:#c0392b">*</span></label>
+        <textarea id="cancelReason" rows="3" placeholder="ระบุเหตุผล / Enter reason for cancellation..." style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;resize:none"></textarea>
+        <div id="cancelReasonErr" style="display:none;color:#c0392b;font-size:13px;margin-top:4px">⚠️ กรุณาระบุเหตุผล / Reason is required</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:6px">ชื่อผู้ยกเลิก / Cancelled By</label>
+        <input type="text" id="cancelledBy" placeholder="ชื่อ GM / GM name" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box">
+      </div>
+      <button class="tr-cancel-btn" id="cancelConfirmBtn" onclick="submitCancel()">❌ ยืนยันการยกเลิก / Confirm Cancel</button>
+      <button onclick="closeCancelModalBtn()" style="width:100%;padding:12px;background:var(--g100);color:var(--g700);border:none;border-radius:8px;font-size:15px;font-family:inherit;cursor:pointer;margin-top:8px">กลับ / Back</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="page-manager" class="page">
   <div class="app-header">
     <div><div class="hdr-title">📊 Daily Summary Dashboard</div><div class="hdr-sub">ภาพรวมงานซ่อมทั้งหมด · ดูได้ทุกคน</div></div>
@@ -889,9 +930,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="mvInProgress"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
     <div id="mvShowMoreP" style="display:none"><button class="mv-show-more" onclick="showMore('P')">แสดงเพิ่มเติม ▼ / Show more</button></div>
 
-    <!-- Waiting -->
+    <!-- Waiting / Outside -->
     <div class="mv-section-title">
-      <span>🟡 รอของ / จัดซื้อ</span>
+      <span>🟡 รอของ / ภายนอก / จัดซื้อ</span>
       <span class="mv-section-count" id="mvCntW">0</span>
     </div>
     <div id="mvWaiting"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
@@ -1102,17 +1143,12 @@ async function searchTicket() {
   const res = document.getElementById('cpResult');
   res.innerHTML = '<div class="tr-empty"><div class="spinner-sm"></div>กำลังค้นหา…</div>';
   try {
-    // FIX: fetch only the single requested ticket
-    const r = await fetch(APPS_SCRIPT_URL + '?action=getTicket&ticket=' + encodeURIComponent(num));
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
     const json = await r.json();
-    if (!json.success) {
-      if (json.error === 'Ticket not found.') {
-        res.innerHTML = '<div class="ticket-result"><div class="tr-empty">❌ ไม่พบหมายเลข Ticket นี้<br><small>Ticket not found: ' + num + '</small></div></div>';
-        return;
-      }
-      throw new Error(json.error);
-    }
-    res.innerHTML = buildTicketResult(json.ticket);
+    if (!json.success) throw new Error(json.error);
+    const ticket = json.tickets.find(t => t.ticketNumber === num);
+    if (!ticket) { res.innerHTML = '<div class="ticket-result"><div class="tr-empty">❌ ไม่พบหมายเลข Ticket นี้<br><small>Ticket not found: ' + num + '</small></div></div>'; return; }
+    res.innerHTML = buildTicketResult(ticket);
   } catch(e) {
     res.innerHTML = '<div class="ticket-result"><div class="tr-empty">⚠️ เกิดข้อผิดพลาด / Error: ' + e.message + '</div></div>';
   }
@@ -1122,19 +1158,38 @@ function buildTicketResult(t) {
   const isSub       = t.status.includes('Submitted');
   const isProg      = t.status.includes('In Progress');
   const isInquiring = t.status.includes('Inquiring');
-  const isWaiting   = t.status.includes('Waiting') || t.status.includes('Buying');
+  const isWaiting   = t.status.includes('Waiting for Parts') || t.status.includes('Buying');
+  const isOutside   = t.status.includes('Outside Team') || !!(t.outsidePath && t.outsidePath.trim());
   const isDone      = t.status.includes('Completed') || t.status.includes('Cancelled');
 
   // Does this ticket involve the parts/quotation path?
-  // Yes if: currently in that path, OR a PO number was ever saved
-  const isParts = isInquiring || isWaiting || !!(t.poNumber && t.poNumber.trim());
+  const isParts = isInquiring || isWaiting || (!isOutside && !!(t.poNumber && t.poNumber.trim()));
+
+  // Dynamic step 3 label for Outside Team path
+  const outsideStep3 = t.outsidePath === 'buy_new'  ? {th:'รอสินค้าใหม่',    en:'New Product'}  :
+                       t.outsidePath === 'repair'   ? {th:'รอช่างภายนอก',   en:'Outside Repair'} :
+                                                      {th:'รอทีมภายนอก',    en:'Outside Team'};
 
   const waitHrs = t.timestamp ? Math.floor((Date.now() - new Date(t.timestamp)) / 3600000) : 0;
   const waitLabel = waitHrs < 1 ? 'น้อยกว่า 1 ชั่วโมง' : waitHrs + ' ชั่วโมง';
 
   let steps;
-  if (isParts) {
-    // 5-step path: Submitted → In Progress → Inquiring → Waiting → Completed
+  if (isOutside) {
+    // 5-step Outside Team path
+    const outsideHasPO = !!(t.poNumber && t.poNumber.trim());
+    const s2d = isProg || isOutside || isDone;
+    const s3d = !!(t.outsidePath) || outsideHasPO || isDone;
+    const s4d = outsideHasPO || isDone;
+    const s5d = isDone;
+    steps = [
+      {th:'ส่งคำร้อง',             en:'Submitted',          done:true, active:isSub},
+      {th:'กำลังซ่อม',             en:'In Progress',        done:s2d,  active:isProg},
+      {th:outsideStep3.th,          en:outsideStep3.en,      done:s3d,  active:isOutside && !outsideHasPO},
+      {th:'ดำเนินการจัดซื้อ',       en:'PO / Paperwork',     done:s4d,  active:outsideHasPO && !isDone},
+      {th:'เสร็จสิ้น',             en:'Completed',          done:s5d,  active:isDone}
+    ];
+  } else if (isParts) {
+    // 5-step parts path: Submitted → In Progress → Inquiring → Waiting → Completed
     const s1d = true;
     const s2d = isProg || isInquiring || isWaiting || isDone;
     const s3d = isInquiring || isWaiting || isDone;
@@ -1148,11 +1203,11 @@ function buildTicketResult(t) {
       {th:'เสร็จสิ้น',   en:'Completed',  done:s5d, active:isDone}
     ];
   } else {
-    // 3-step path: Submitted → In Progress → Completed
+    // 3-step simple repair path
     steps = [
-      {th:'ส่งคำร้องแล้ว', en:'Submitted',   done:true,                   active:isSub},
-      {th:'กำลังดำเนินการ', en:'In Progress', done:isProg||isDone,         active:isProg},
-      {th:'ซ่อมเสร็จแล้ว', en:'Completed',   done:isDone,                  active:isDone}
+      {th:'ส่งคำร้องแล้ว', en:'Submitted',   done:true,          active:isSub},
+      {th:'กำลังดำเนินการ', en:'In Progress', done:isProg||isDone, active:isProg},
+      {th:'ซ่อมเสร็จแล้ว', en:'Completed',   done:isDone,         active:isDone}
     ];
   }
 
@@ -1160,7 +1215,7 @@ function buildTicketResult(t) {
     const cls = s.done ? 'done' : (s.active ? 'active' : '');
     return '<div class="pt-step ' + cls + '"><div class="pt-dot">' + (s.done ? '✓' : (i+1)) + '</div><div class="pt-label-th">' + s.th + '</div><div class="pt-label-en">' + s.en + '</div></div>';
   }).join('');
-  const pillCls = isSub ? 'pill-submitted' : (isProg || isInquiring || isWaiting) ? 'pill-inprogress' : isDone ? 'pill-completed' : 'pill-cancelled';
+  const pillCls = isSub ? 'pill-submitted' : (isProg || isInquiring || isWaiting || isOutside) ? 'pill-inprogress' : isDone ? 'pill-completed' : 'pill-cancelled';
   const rows = [
     ['🕐 แจ้งเมื่อ', t.timestamp ? new Date(t.timestamp).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}) : '—'],
     ['⏳ รอมา', waitLabel],
@@ -1227,14 +1282,11 @@ async function lookupTicket() {
   document.getElementById('usSuccess').classList.remove('show');
   document.getElementById('usErr').classList.remove('show');
   try {
-    // FIX: fetch only the single requested ticket
-    const r = await fetch(APPS_SCRIPT_URL + '?action=getTicket&ticket=' + encodeURIComponent(num));
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
     const json = await r.json();
-    if (!json.success) {
-      if (json.error === 'Ticket not found.') { alert('❌ ไม่พบ Ticket: ' + num); return; }
-      throw new Error(json.error);
-    }
-    const ticket = json.ticket;
+    if (!json.success) throw new Error(json.error);
+    const ticket = json.tickets.find(t => t.ticketNumber === num);
+    if (!ticket) { alert('❌ ไม่พบ Ticket: ' + num); return; }
     usTicket = ticket;
     document.getElementById('ftNum').textContent = ticket.ticketNumber;
     document.getElementById('ftMachine').textContent = ticket.machine;
@@ -1288,6 +1340,11 @@ async function lookupTicket() {
       if (overrideDiv) overrideDiv.style.display = 'none';
       if (updateBtn) updateBtn.style.display = 'block';
     }
+
+    // Pre-fill cancel modal ticket number
+    document.getElementById('cancelModalTicketNum').textContent = ticket.ticketNumber;
+    // Show PO warning in cancel modal if ticket has a PO
+    document.getElementById('cancelPOWarning').style.display = hasPO ? 'block' : 'none';
   } catch(e) { alert('Error: ' + e.message); }
 }
 
@@ -1312,6 +1369,7 @@ async function submitUpdate() {
         status, technician: tech, correction, spareParts: parts,
         poNumber: document.getElementById('usPoNumber').value.trim(),
         notifyPurchasing: status === '📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
+        notifyOutsideTeam: status === '🚧 Waiting for Outside Team',
         quotationPhotos: usPhotos.map(p => ({name:p.name, data:p.data}))
       })
     });
@@ -1505,7 +1563,7 @@ function renderManagerView(tickets) {
   const active     = filtered.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
   const unassigned = active.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
   const inProgress = active.filter(t => t.status.includes('In Progress'));
-  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Waiting'));
+  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Waiting') || t.status.includes('Outside'));
 
   document.getElementById('mvCntU').textContent = unassigned.length;
   document.getElementById('mvCntP').textContent = inProgress.length;
@@ -1534,9 +1592,10 @@ function buildMvTicket(t, showAssign, now) {
   const ageDays   = t.timestamp ? Math.floor((now - new Date(t.timestamp)) / 86400000) : 0;
   const ageLabel  = ageDays === 0 ? 'วันนี้' : ageDays + ' วัน';
 
-  const statusColor = t.status.includes('Submitted') ? 'background:#fff3e0;color:#e65100' :
-    t.status.includes('In Progress') ? 'background:#e3f2fd;color:#1565c0' :
-    t.status.includes('Inquiring')   ? 'background:#fce4ec;color:#880e4f' :
+  const statusColor = t.status.includes('Submitted')    ? 'background:#fff3e0;color:#e65100' :
+    t.status.includes('In Progress')  ? 'background:#e3f2fd;color:#1565c0' :
+    t.status.includes('Inquiring')    ? 'background:#fce4ec;color:#880e4f' :
+    t.status.includes('Outside Team') ? 'background:#f3e5f5;color:#4a235a' :
     'background:#fff8e1;color:#f57f17';
 
   const urgentBadge  = isUrgentT ? '<span style="background:#fde8e8;color:#c0392b;font-size:16px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px">🔴 ด่วน</span>' : '';
@@ -1789,13 +1848,16 @@ function buildDetailContent(t) {
   }
 
   // Assignment / Progress section
-  const hasProgressInfo = t.technician || t.approver || t.correction || t.spareParts || t.poNumber;
+  const outsidePathLabel = t.outsidePath === 'buy_new' ? '🛒 ซื้อใหม่ / Buy New' :
+                           t.outsidePath === 'repair'  ? '🔧 ซ่อมภายนอก / Outside Repair' : '';
+  const hasProgressInfo = t.technician || t.approver || t.correction || t.spareParts || t.poNumber || t.outsidePath;
   if (hasProgressInfo) {
     html += `
       <div class="mv-detail-section">
         <div class="mv-detail-section-title">🔧 การดำเนินการ / Progress</div>
         <div class="mv-detail-row"><div class="mv-detail-row-lbl">ทีมช่าง</div><div class="mv-detail-row-val">${techDisplay}</div></div>
         ${t.approver ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">มอบหมายโดย</div><div class="mv-detail-row-val">${esc(t.approver)}</div></div>` : ''}
+        ${outsidePathLabel ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">แนวทางภายนอก</div><div class="mv-detail-row-val" style="color:#4a235a;font-weight:700">${outsidePathLabel}</div></div>` : ''}
         ${t.correction ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">วิธีแก้ไข</div><div class="mv-detail-row-val multiline">${esc(t.correction)}</div></div>` : ''}
         ${t.spareParts ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">อะไหล่ที่ใช้</div><div class="mv-detail-row-val multiline">${esc(t.spareParts)}</div></div>` : ''}
         ${t.poNumber ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">PO Number</div><div class="mv-detail-row-val" style="font-family:monospace">${esc(t.poNumber)}</div></div>` : ''}
@@ -1812,10 +1874,20 @@ function buildDetailContent(t) {
       </div>`;
   }
 
+  // GM-only cancel button — shown for any status except already Cancelled
+  if (mvCurrentRole === 'gm' && !t.status.includes('Cancelled')) {
+    html += `
+      <div style="padding:4px 16px 20px">
+        <button onclick="openCancelModal('${esc(t.ticketNumber)}','${t.poNumber ? 'yes' : 'no'}')"
+          style="width:100%;padding:14px;background:white;color:#c0392b;border:2px solid #c0392b;
+                 border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit">
+          ❌ ยกเลิกใบแจ้งซ่อม / Cancel Ticket
+        </button>
+      </div>`;
+  }
+
   return html;
 }
-
-// ─── RE-ASSIGN MODAL WITH PASSCODE ───────────
 let mvReassignTicket = null;
 let mvPasscodeInput  = '';
 const MV_PASSCODE    = '2580'; // ← Change this to your passcode
@@ -1926,16 +1998,27 @@ document.getElementById('usTicketInput').addEventListener('keydown', e => { if (
 
 document.getElementById('usStatus').addEventListener('change', function() {
   const val = this.value;
-  const isQuotation = val === '📋 Inquiring for Quotation';
-  const showPO = isQuotation || val.includes('Waiting') || val.includes('Inquiring');
-  const existingPO = document.getElementById('usPoNumber').value.trim();
+  const isQuotation  = val === '📋 Inquiring for Quotation';
+  const isOutside    = val === '🚧 Waiting for Outside Team';
+  const showPO       = isQuotation || val.includes('Waiting') || val.includes('Inquiring');
+  const existingPO   = document.getElementById('usPoNumber').value.trim();
+  const corrLabel    = document.getElementById('correctionLabel');
+  const photoWrap    = document.getElementById('quotationPhotoWrap');
+  const sparesWrap   = document.getElementById('sparesWrap');
+
   document.getElementById('quotationAlert').style.display = (isQuotation && !existingPO) ? 'block' : 'none';
   document.getElementById('poNumberWrap').style.display = (showPO || existingPO) ? 'block' : 'none';
-  const corrLabel = document.getElementById('correctionLabel');
-  const photoWrap = document.getElementById('quotationPhotoWrap');
+
+  // Spare Parts: hide for Outside Team (no parts used — it's going to an external team)
+  sparesWrap.style.display = isOutside ? 'none' : 'block';
+
   if (isQuotation) {
     corrLabel.innerHTML = '📋 รายละเอียดสินค้าที่ต้องการซื้อ / Details of Purchase Item <span style="color:var(--red)">*</span>';
     document.getElementById('usCorrection').placeholder = 'ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase...';
+    photoWrap.style.display = 'block';
+  } else if (isOutside) {
+    corrLabel.innerHTML = '🚧 สาเหตุที่ต้องใช้ทีมภายนอก / Reason for Outside Team <span style="color:var(--red)">*</span>';
+    document.getElementById('usCorrection').placeholder = 'ระบุสาเหตุที่ไม่สามารถซ่อมภายในได้ / Describe why in-house repair is not possible...';
     photoWrap.style.display = 'block';
   } else {
     corrLabel.innerHTML = '🛠️ วิธีการแก้ไข / Correction Details <span style="color:var(--red)">*</span>';
@@ -1943,6 +2026,86 @@ document.getElementById('usStatus').addEventListener('change', function() {
     photoWrap.style.display = 'none';
   }
 });
+
+// ─── CANCEL TICKET MODAL ───────────────────────
+let cpCancelTicketNum = null;
+
+function openCancelModal(ticketNumber, hasPO) {
+  cpCancelTicketNum = ticketNumber;
+  document.getElementById('cancelModalTicketNum').textContent = ticketNumber;
+  document.getElementById('cancelPOWarning').style.display = (hasPO === 'yes') ? 'block' : 'none';
+  document.getElementById('cancelReason').value = '';
+  document.getElementById('cancelledBy').value = '';
+  document.getElementById('cancelReasonErr').style.display = 'none';
+  document.getElementById('cancelConfirmBtn').disabled = false;
+  document.getElementById('cancelConfirmBtn').textContent = '❌ ยืนยันการยกเลิก / Confirm Cancel';
+  document.getElementById('trCancelModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCancelModal(e) {
+  if (e && e.target !== document.getElementById('trCancelModal')) return;
+  closeCancelModalBtn();
+}
+
+function closeCancelModalBtn() {
+  document.getElementById('trCancelModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+async function submitCancel() {
+  const reason = document.getElementById('cancelReason').value.trim();
+  const cancelledBy = document.getElementById('cancelledBy').value.trim();
+  const errDiv = document.getElementById('cancelReasonErr');
+  const btn = document.getElementById('cancelConfirmBtn');
+
+  if (!reason) { errDiv.style.display = 'block'; return; }
+  errDiv.style.display = 'none';
+  if (!cpCancelTicketNum) { alert('ไม่พบข้อมูล Ticket / Ticket not loaded'); return; }
+
+  const confirmed = confirm(
+    '⚠️ ยืนยันการยกเลิก Ticket ' + cpCancelTicketNum + '?\n' +
+    'การยกเลิกไม่สามารถย้อนกลับได้\n\n' +
+    'Confirm cancellation? This cannot be undone.'
+  );
+  if (!confirmed) return;
+
+  btn.disabled = true;
+  btn.textContent = 'กำลังยกเลิก... / Cancelling...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action       : 'cancelTicket',
+        ticketNumber : cpCancelTicketNum,
+        reason       : reason,
+        cancelledBy  : cancelledBy || 'GM'
+      })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'Unknown error');
+
+    closeCancelModalBtn();
+    closeDetailBtn();           // close the detail slide-up
+    loadManagerView();          // refresh the dashboard
+
+    if (json.hasPO) {
+      setTimeout(() => {
+        alert(
+          '⚠️ มี PO เปิดอยู่ในระบบ!\n' +
+          'กรุณาแจ้งทีมจัดซื้อให้ยกเลิก PO ด้วยตนเอง\n\n' +
+          'Open PO exists — please notify Purchasing to cancel it manually.'
+        );
+      }, 400);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '❌ ยืนยันการยกเลิก / Confirm Cancel';
+    alert('Error: ' + e.message);
+  }
+}
 </script>
 </body>
 </html>
