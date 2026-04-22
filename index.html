@@ -137,6 +137,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .suc-btn-new{background:#1a2744;border:none;color:white;padding:15px 10px;border-radius:10px;cursor:pointer;font-size:20px;font-weight:700;font-family:inherit;line-height:1.4}
 .suc-btn-home{background:white;border:1.5px solid #e5e7eb;color:#374151;padding:14px 10px;border-radius:10px;cursor:pointer;font-size:20px;font-weight:600;font-family:inherit;line-height:1.4}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .loading-text{color:white;font-size:20px;font-weight:600}
 .suc-icon{width:72px;height:72px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px}
 .suc-title{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px}
@@ -270,6 +273,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-detail.show{display:flex}
 .mv-detail-panel{background:#f0f4f8;width:100%;max-width:600px;max-height:92vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:mvDetailSlideUp .25s ease-out}
 @keyframes mvDetailSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+/* Page transitions */
+.page.active{animation:fadeIn .18s ease-out}
+
+/* Ticket result slide-up */
+.ticket-result{animation:slideUp .22s ease-out}
+
+/* Dashboard ticket cards */
+.mv-ticket{animation:fadeInUp .2s ease-out both}
+
+/* Button tap feedback */
+.submit-btn:active{transform:scale(.97);opacity:.9}
+.update-btn:active{transform:scale(.97);opacity:.9}
+.search-btn:active{transform:scale(.97)}
+.mv-show-more:active{transform:scale(.98)}
+
+/* Success/error fade in */
+.us-success.show{animation:fadeIn .25s ease-out}
+.us-err.show{animation:fadeIn .2s ease-out}
+.found-ticket.show{animation:fadeInUp .18s ease-out}
 .mv-detail-header{background:var(--navy);color:white;padding:16px 18px;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;gap:10px}
 .mv-detail-header-info{flex:1;min-width:0}
 .mv-detail-title{font-size:15px;opacity:.7;font-weight:500}
@@ -814,6 +837,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
               <div class="mv-role-btn-name">ผู้จัดการ / GM</div>
               <div class="mv-role-btn-desc">มอบหมายงาน · คืนสถานะ · Re-assign<br>Full access — passcode required</div>
             </div>
+          </button>
+          <button onclick="goHome()" style="width:100%;padding:12px;background:var(--g100);color:var(--g600);border:1.5px solid var(--g200);border-radius:12px;font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:4px">
+            ← กลับหน้าหลัก / Back to Main Menu
           </button>
         </div>
       </div>
@@ -1592,7 +1618,11 @@ function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
     showMoreEl.style.display = 'none';
     return;
   }
-  container.innerHTML = items.slice(0, shown).map(t => buildMvTicket(t, showAssign, now)).join('');
+  container.innerHTML = items.slice(0, shown).map((t, idx) => {
+    const card = buildMvTicket(t, showAssign, now);
+    // Add stagger delay via inline style — each card appears 40ms after the previous
+    return card.replace('class="mv-ticket', `style="animation-delay:${idx * 40}ms" class="mv-ticket`);
+  }).join('');
   showMoreEl.style.display = items.length > shown ? 'block' : 'none';
 }
 
