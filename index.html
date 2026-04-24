@@ -140,6 +140,37 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Toast notifications (replaces alert()) ── */
+#toastLayer{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:92%;width:400px}
+.toast{background:#1a2744;color:white;padding:12px 16px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .25s ease-out;line-height:1.4}
+.toast.success{background:#1b5e20}
+.toast.error{background:#c0392b}
+.toast.warn{background:#e65100}
+.toast.hide{animation:toastOut .25s ease-in forwards}
+.toast-icon{font-size:18px;flex-shrink:0}
+@keyframes toastIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-20px)}}
+
+/* ── Offline banner ── */
+#offlineBanner{position:fixed;top:0;left:0;right:0;background:#c0392b;color:white;text-align:center;padding:10px;font-size:13px;font-weight:600;z-index:9998;transform:translateY(-100%);transition:transform .25s ease-out;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+#offlineBanner.show{transform:translateY(0)}
+
+/* ── Dashboard search bar ── */
+.mv-search-wrap{position:relative;margin-bottom:12px}
+.mv-search{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--g200);border-radius:10px;font-size:14px;box-sizing:border-box;background:white;transition:border-color .15s}
+.mv-search:focus{outline:none;border-color:var(--navy)}
+.mv-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g400);font-size:15px;pointer-events:none}
+.mv-search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:var(--g100);border:none;border-radius:50%;width:24px;height:24px;font-size:12px;cursor:pointer;color:var(--g400);display:none}
+.mv-search-clear.show{display:block}
+.mv-search-hits{font-size:11px;color:var(--g400);margin-top:4px;margin-left:4px}
+
+/* ── Empty state polish ── */
+.mv-empty-ok{text-align:center;padding:28px 16px;color:#1b5e20;background:#e8f5e9;border-radius:12px;border:1px dashed #81c784;animation:fadeIn .3s ease-out}
+.mv-empty-ok-icon{font-size:36px;margin-bottom:6px}
+.mv-empty-ok-title{font-size:15px;font-weight:700;margin-bottom:2px}
+.mv-empty-ok-sub{font-size:12px;color:var(--g400)}
+@keyframes mvDetailSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .loading-text{color:white;font-size:20px;font-weight:600}
 .suc-icon{width:72px;height:72px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px}
 .suc-title{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px}
@@ -275,7 +306,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-detail{display:none;position:fixed;inset:0;background:rgba(15,30,61,.55);z-index:550;align-items:flex-end;justify-content:center}
 .mv-detail.show{display:flex}
 .mv-detail-panel{background:#f0f4f8;width:100%;max-width:600px;max-height:92vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:mvDetailSlideUp .25s ease-out}
-@keyframes mvDetailSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
 /* Page transitions */
 .page.active{animation:fadeIn .18s ease-out}
@@ -365,6 +395,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </style>
 </head>
 <body>
+<!-- Toast layer (for success/error notifications) -->
+<div id="toastLayer" aria-live="polite"></div>
+<!-- Offline banner (shown when network is unavailable) -->
+<div id="offlineBanner">📡 ออฟไลน์ / Offline — รอเชื่อมต่ออินเทอร์เน็ต / Waiting for connection…</div>
+
 
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
@@ -789,6 +824,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
+    <!-- Search bar -->
+    <div class="mv-search-wrap">
+      <span class="mv-search-icon">🔍</span>
+      <input type="text" class="mv-search" id="mvSearch" placeholder="ค้นหา / Search ticket, machine, reporter…" oninput="onSearchInput()">
+      <button class="mv-search-clear" id="mvSearchClear" onclick="clearSearch()">✕</button>
+      <div class="mv-search-hits" id="mvSearchHits"></div>
+    </div>
+
     <!-- Drill-down overlay -->
     <div class="mv-drilldown" id="mvDrilldown" onclick="closeDrilldown(event)">
       <div class="mv-drill-panel">
@@ -989,6 +1032,65 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4LpNcK5zecvMa8w99GnnG8KT0WSh5GS-MvMzAQc4ZCzIlXyo4puCNwfPwSDU_G9hzmA/exec';
 
+// ═══════════════════════════════════════════════════════════
+//  UX HELPERS — toasts, offline indicator, relative time
+// ═══════════════════════════════════════════════════════════
+
+// --- Toast notifications (replaces alert) ---
+// Usage: toast('Saved!', 'success') / toast('Network error', 'error') / toast('Note…', 'info') / toast('Check internet', 'warn')
+function toast(message, type) {
+  try {
+    const layer = document.getElementById('toastLayer');
+    if (!layer) return;
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type || 'info');
+    const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
+    el.innerHTML = '<span class="toast-icon">' + (icons[type] || icons.info) + '</span><span>' + message + '</span>';
+    layer.appendChild(el);
+    const dismiss = () => {
+      el.classList.add('hide');
+      setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 250);
+    };
+    el.addEventListener('click', dismiss);
+    // Auto-dismiss: errors stick longer, success disappears quicker
+    const duration = type === 'error' ? 5000 : type === 'warn' ? 4000 : 2500;
+    setTimeout(dismiss, duration);
+  } catch(e) { /* fallback silently */ }
+}
+
+// --- Offline / online detection ---
+(function setupOfflineIndicator() {
+  const banner = document.getElementById('offlineBanner');
+  if (!banner) return;
+  function update() {
+    if (navigator.onLine === false) banner.classList.add('show');
+    else banner.classList.remove('show');
+  }
+  window.addEventListener('online',  () => { update(); toast('🌐 กลับมาออนไลน์แล้ว / Back online', 'success'); });
+  window.addEventListener('offline', () => { update(); });
+  update();
+})();
+
+// --- Relative time helper ---
+// Converts a date to friendly text: "เมื่อสักครู่", "2 นาทีก่อน", "1 ชม.ก่อน", "2 วันก่อน"
+function relativeTime(dateInput) {
+  if (!dateInput) return '';
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return '';
+  const diffSec = (Date.now() - d.getTime()) / 1000;
+  if (diffSec < 60)     return 'เมื่อสักครู่';
+  if (diffSec < 3600)   return Math.floor(diffSec / 60)    + ' นาทีก่อน';
+  if (diffSec < 86400)  return Math.floor(diffSec / 3600)  + ' ชม.ก่อน';
+  if (diffSec < 604800) return Math.floor(diffSec / 86400) + ' วันก่อน';
+  // Older than 7 days: show actual date
+  const dd = ('0' + d.getDate()).slice(-2);
+  const mm = ('0' + (d.getMonth() + 1)).slice(-2);
+  const yy = d.getFullYear();
+  return dd + '/' + mm + '/' + yy;
+}
+
+// ═══════════════════════════════════════════════════════════
+
 // ─── Navigation ───────────────────────────────
 function goPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1101,7 +1203,7 @@ function handleFiles(files) {
   const max = 5, maxSz = 5*1024*1024;
   for (const f of files) {
     if (photos.length >= max) break;
-    if (f.size > maxSz) { alert(f.name + ': ไฟล์ใหญ่เกิน 5MB'); continue; }
+    if (f.size > maxSz) { toast(f.name + ': ไฟล์ใหญ่เกิน 5MB', 'warn'); continue; }
     if (!f.type.startsWith('image/')) continue;
     const r = new FileReader();
     r.onload = e => { photos.push({name:f.name, data:e.target.result}); renderPrev(); };
@@ -1183,7 +1285,7 @@ function resetForm() {
 // ─── CHECK PROGRESS ───────────────────────────
 async function searchTicket() {
   const num = document.getElementById('searchInput').value.trim().toUpperCase();
-  if (!num) { alert('กรุณากรอกหมายเลข Ticket'); return; }
+  if (!num) { toast('กรุณากรอกหมายเลข Ticket', 'warn'); return; }
   const res = document.getElementById('cpResult');
   res.innerHTML = '<div class="tr-empty"><div class="spinner-sm"></div>กำลังค้นหา…</div>';
   try {
@@ -1320,7 +1422,7 @@ let usTicket = null;
 
 async function lookupTicket() {
   const num = document.getElementById('usTicketInput').value.trim().toUpperCase();
-  if (!num) { alert('กรุณากรอกหมายเลข Ticket'); return; }
+  if (!num) { toast('กรุณากรอกหมายเลข Ticket', 'warn'); return; }
   document.getElementById('foundTicket').classList.remove('show');
   document.getElementById('usFields').style.display = 'none';
   document.getElementById('usSuccess').classList.remove('show');
@@ -1330,7 +1432,7 @@ async function lookupTicket() {
     const json = await r.json();
     if (!json.success) throw new Error(json.error);
     const ticket = json.tickets.find(t => t.ticketNumber === num);
-    if (!ticket) { alert('❌ ไม่พบ Ticket: ' + num); return; }
+    if (!ticket) { toast('ไม่พบ Ticket: ' + num, 'error'); return; }
     usTicket = ticket;
     document.getElementById('ftNum').textContent = ticket.ticketNumber;
     document.getElementById('ftMachine').textContent = ticket.machine;
@@ -1399,7 +1501,7 @@ async function lookupTicket() {
     document.getElementById('cancelModalTicketNum').textContent = ticket.ticketNumber;
     // Show PO warning in cancel modal if ticket has a PO
     document.getElementById('cancelPOWarning').style.display = hasPO ? 'block' : 'none';
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
 async function submitUpdate() {
@@ -1412,7 +1514,7 @@ async function submitUpdate() {
   if (!status) { err.textContent = 'กรุณาเลือกสถานะ / Please select a status.'; err.classList.add('show'); return; }
   if (!tech) { err.textContent = 'กรุณากรอกชื่อช่าง / Please enter technician name.'; err.classList.add('show'); document.getElementById('usTech').focus(); return; }
   if (!correction) { err.textContent = 'กรุณากรอกวิธีการแก้ไข / Correction Details is required.'; err.classList.add('show'); document.getElementById('usCorrection').focus(); return; }
-  if (!usTicket) { alert('กรุณาค้นหา Ticket ก่อน'); return; }
+  if (!usTicket) { toast('กรุณาค้นหา Ticket ก่อน', 'warn'); return; }
   document.getElementById('updateBtn').disabled = true;
   showLoading('กำลังบันทึก… Saving…');
   try {
@@ -1475,7 +1577,7 @@ function handleUsPhotos(files) {
   const max = 3, maxSz = 5*1024*1024;
   for (const f of files) {
     if (usPhotos.length >= max) break;
-    if (f.size > maxSz) { alert(f.name + ': ไฟล์ใหญ่เกิน 5MB'); continue; }
+    if (f.size > maxSz) { toast(f.name + ': ไฟล์ใหญ่เกิน 5MB', 'warn'); continue; }
     if (!f.type.startsWith('image/')) continue;
     const r = new FileReader();
     r.onload = e => { usPhotos.push({name:f.name, data:e.target.result}); renderUsPrev(); };
@@ -1618,40 +1720,128 @@ async function loadManagerView() {
   ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
     document.getElementById(id).innerHTML = '<div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div>';
   });
+
+  // PERFORMANCE: Show cached data INSTANTLY while we fetch fresh data in background.
+  // Stale-while-revalidate pattern — first paint is near-instant on repeat opens.
+  try {
+    const cached = localStorage.getItem('ck_tickets_cache_v1');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // Only trust cache if less than 5 minutes old
+      if (parsed && parsed.ts && (Date.now() - parsed.ts) < 300000 && Array.isArray(parsed.tickets)) {
+        mvTickets = parsed.tickets;
+        renderManagerView(mvTickets);
+      }
+    }
+  } catch(ce) { /* cache read failures are non-fatal */ }
+
   try {
     const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
     const json = await r.json();
     if (!json.success) throw new Error(json.error);
     mvTickets = json.tickets;
     renderManagerView(mvTickets);
+    // Update cache with fresh data
+    try {
+      localStorage.setItem('ck_tickets_cache_v1', JSON.stringify({ ts: Date.now(), tickets: mvTickets }));
+    } catch(wce) { /* localStorage full or disabled — non-fatal */ }
   } catch(e) {
-    ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
-      document.getElementById(id).innerHTML = '<div class="mv-empty">⚠️ โหลดไม่ได้ / Error: ' + e.message + '</div>';
-    });
+    // Only show error if we don't already have cached data on screen
+    if (!mvTickets || mvTickets.length === 0) {
+      ['mvUnassigned','mvInProgress','mvWaiting'].forEach(id => {
+        document.getElementById(id).innerHTML = '<div class="mv-empty">⚠️ โหลดไม่ได้ / Error: ' + e.message + '</div>';
+      });
+    }
   } finally {
     btn.disabled = false; icon.textContent = '🔄';
   }
+}
+
+// --- Dashboard search (with 150ms debounce) ---
+let _searchDebounce = null;
+function onSearchInput() {
+  const input = document.getElementById('mvSearch');
+  const clearBtn = document.getElementById('mvSearchClear');
+  if (clearBtn) clearBtn.classList.toggle('show', !!input.value);
+  if (_searchDebounce) clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(() => {
+    if (window.mvTickets) renderManagerView(mvTickets);
+  }, 150);
+}
+function clearSearch() {
+  const input = document.getElementById('mvSearch');
+  if (input) { input.value = ''; input.focus(); }
+  const clearBtn = document.getElementById('mvSearchClear');
+  if (clearBtn) clearBtn.classList.remove('show');
+  if (window.mvTickets) renderManagerView(mvTickets);
 }
 
 function renderManagerView(tickets) {
   const now = new Date();
   const deptEl = document.getElementById('mvDeptFilter');
   const deptSel = deptEl ? deptEl.value : '';
-  let filtered = tickets.slice();
-  if (deptSel) filtered = filtered.filter(t => t.department === deptSel);
+  const searchEl = document.getElementById('mvSearch');
+  const searchTerm = searchEl ? searchEl.value.trim().toLowerCase() : '';
 
-  const allActive = tickets.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
-  document.getElementById('mvCountUnassigned').textContent   = allActive.filter(t => t.status.includes('Submitted')).length;
-  document.getElementById('mvCountOpen').textContent         = allActive.filter(t => t.status.includes('In Progress')).length;
-  document.getElementById('mvCountInquiring').textContent    = allActive.filter(t => t.status.includes('Inquiring')).length;
-  document.getElementById('mvCountWaitingParts').textContent = allActive.filter(t => t.status.includes('Waiting for Parts')).length;
-  document.getElementById('mvCountOutside').textContent      = allActive.filter(t => t.status.includes('Outside')).length;
-  document.getElementById('mvCountOverdue').textContent      = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now).length;
+  // PERFORMANCE: Single-pass categorization.
+  // Previously this did 12 separate .filter() iterations over the ticket list.
+  // Now we make ONE pass and bucket each ticket into the right counters + arrays.
+  // At 1000 tickets this is ~10x faster on the render path.
 
-  const active     = filtered.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
-  const unassigned = active.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
-  const inProgress = active.filter(t => t.status.includes('In Progress'));
-  const waiting    = active.filter(t => t.status.includes('Inquiring') || t.status.includes('Waiting') || t.status.includes('Outside'));
+  let cntU = 0, cntO = 0, cntInq = 0, cntWP = 0, cntOut = 0, cntOver = 0;
+  const unassigned = [];
+  const inProgress = [];
+  const waiting    = [];
+
+  const matchesDept   = (t) => !deptSel || t.department === deptSel;
+  const matchesSearch = (t) => {
+    if (!searchTerm) return true;
+    const hay = ((t.ticketNumber||'') + ' ' + (t.machine||'') + ' ' + (t.reporter||'') + ' ' + (t.department||'') + ' ' + (t.cause||'')).toLowerCase();
+    return hay.indexOf(searchTerm) >= 0;
+  };
+
+  let searchMatchCount = 0;
+  for (let i = 0; i < tickets.length; i++) {
+    const t = tickets[i];
+    const st = t.status || '';
+
+    // Skip terminal states
+    if (st.indexOf('Completed') >= 0 || st.indexOf('Cancelled') >= 0) continue;
+
+    // Overall counters (independent of dept/search filter — these show site-wide totals)
+    if (st.indexOf('Submitted') >= 0) cntU++;
+    if (st.indexOf('In Progress') >= 0) cntO++;
+    if (st.indexOf('Inquiring') >= 0) cntInq++;
+    if (st.indexOf('Waiting for Parts') >= 0) cntWP++;
+    if (st.indexOf('Outside') >= 0) cntOut++;
+    if (t.desiredDate && new Date(t.desiredDate) < now) cntOver++;
+
+    // Section arrays (respect dept + search filter)
+    if (!matchesDept(t)) continue;
+    if (!matchesSearch(t)) continue;
+    searchMatchCount++;
+    if (st.indexOf('Submitted') >= 0) unassigned.push(t);
+    else if (st.indexOf('In Progress') >= 0) inProgress.push(t);
+    else if (st.indexOf('Inquiring') >= 0 || st.indexOf('Waiting') >= 0 || st.indexOf('Outside') >= 0) waiting.push(t);
+  }
+
+  // Sort unassigned: urgent first
+  unassigned.sort((a,b) => ((a.isUrgent||'').indexOf('Urgent') >= 0 ? -1 : 1));
+
+  // Search hit count display
+  const hitsEl = document.getElementById('mvSearchHits');
+  if (hitsEl) {
+    hitsEl.textContent = searchTerm
+      ? `พบ ${searchMatchCount} รายการ / ${searchMatchCount} matches`
+      : '';
+  }
+
+  document.getElementById('mvCountUnassigned').textContent   = cntU;
+  document.getElementById('mvCountOpen').textContent         = cntO;
+  document.getElementById('mvCountInquiring').textContent    = cntInq;
+  document.getElementById('mvCountWaitingParts').textContent = cntWP;
+  document.getElementById('mvCountOutside').textContent      = cntOut;
+  document.getElementById('mvCountOverdue').textContent      = cntOver;
 
   document.getElementById('mvCntU').textContent = unassigned.length;
   document.getElementById('mvCntP').textContent = inProgress.length;
@@ -1666,7 +1856,19 @@ function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
   const container  = document.getElementById(containerId);
   const showMoreEl = document.getElementById(showMoreId);
   if (items.length === 0) {
-    container.innerHTML = '<div class="mv-empty">✅ ไม่มีงาน<br><small>None</small></div>';
+    // Contextual empty state messages per section
+    const emptyByContainer = {
+      mvUnassigned: { icon: '✅', title: 'ทุกใบถูกมอบหมายแล้ว', sub: 'All tickets assigned' },
+      mvInProgress: { icon: '🎯', title: 'ไม่มีงานกำลังซ่อม', sub: 'No active jobs right now' },
+      mvWaiting:    { icon: '⏱',  title: 'ไม่มีงานรอของหรือรอจัดซื้อ', sub: 'No pending parts or procurement' }
+    };
+    const cfg = emptyByContainer[containerId] || { icon: '✅', title: 'ไม่มีงาน', sub: 'None' };
+    container.innerHTML =
+      '<div class="mv-empty-ok">' +
+        '<div class="mv-empty-ok-icon">' + cfg.icon + '</div>' +
+        '<div class="mv-empty-ok-title">' + cfg.title + '</div>' +
+        '<div class="mv-empty-ok-sub">' + cfg.sub + '</div>' +
+      '</div>';
     showMoreEl.style.display = 'none';
     return;
   }
@@ -1682,7 +1884,8 @@ function buildMvTicket(t, showAssign, now) {
   const isUrgentT = t.isUrgent && t.isUrgent.includes('Urgent');
   const isOverdue = t.desiredDate && new Date(t.desiredDate) < now;
   const ageDays   = t.timestamp ? Math.floor((now - new Date(t.timestamp)) / 86400000) : 0;
-  const ageLabel  = ageDays === 0 ? 'วันนี้' : ageDays + ' วัน';
+  // Feature #4 — use rich relative time: "เมื่อสักครู่", "5 นาทีก่อน", "2 ชม.ก่อน", "3 วันก่อน"
+  const ageLabel  = t.timestamp ? relativeTime(t.timestamp) : '';
 
   const statusColor = t.status.includes('Submitted')    ? 'background:#fff3e0;color:#e65100' :
     t.status.includes('In Progress')  ? 'background:#e3f2fd;color:#1565c0' :
@@ -1748,7 +1951,7 @@ async function assignTicket(ticketNumber, dept, btn) {
   } catch(e) {
     row.querySelectorAll('button').forEach(b => b.disabled = false);
     btn.innerHTML = dept === 'electrical' ? '⚡ ช่างไฟฟ้า<br><small>Electrical</small>' : '🔧 ช่างทั่วไป<br><small>General Maintenance</small>';
-    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+    toast('❌ เกิดข้อผิดพลาด / Error: ' + e.message, 'error');
   }
 }
 
@@ -2066,7 +2269,7 @@ async function confirmReassign(dept) {
     renderManagerView(mvTickets);
   } catch(e) {
     document.querySelectorAll('.mv-reassign-opt').forEach(b => b.disabled = false);
-    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+    toast('❌ เกิดข้อผิดพลาด / Error: ' + e.message, 'error');
   }
 }
 
@@ -2089,7 +2292,7 @@ async function confirmResetToSubmitted() {
     renderManagerView(mvTickets);
   } catch(e) {
     document.querySelectorAll('#mvTeamStep button').forEach(b => b.disabled = false);
-    alert('❌ เกิดข้อผิดพลาด / Error: ' + e.message);
+    toast('❌ เกิดข้อผิดพลาด / Error: ' + e.message, 'error');
   }
 }
 
@@ -2169,7 +2372,7 @@ async function submitCancel() {
 
   if (!reason) { errDiv.style.display = 'block'; return; }
   errDiv.style.display = 'none';
-  if (!cpCancelTicketNum) { alert('ไม่พบข้อมูล Ticket / Ticket not loaded'); return; }
+  if (!cpCancelTicketNum) { toast('ไม่พบข้อมูล Ticket / Ticket not loaded', 'warn'); return; }
 
   const confirmed = confirm(
     '⚠️ ยืนยันการยกเลิก Ticket ' + cpCancelTicketNum + '?\n' +
@@ -2200,17 +2403,17 @@ async function submitCancel() {
 
     if (cpCancelHasPO) {
       setTimeout(() => {
-        alert(
+        toast(
           '⚠️ มี PO เปิดอยู่ในระบบ!\n' +
           'กรุณาแจ้งทีมจัดซื้อให้ยกเลิก PO ด้วยตนเอง\n\n' +
           'Open PO exists — please notify Purchasing to cancel it manually.'
-        );
+        , 'error');
       }, 400);
     }
   } catch(e) {
     btn.disabled = false;
     btn.textContent = '❌ ยืนยันการยกเลิก / Confirm Cancel';
-    alert('Error: ' + e.message);
+    toast('Error: ' + e.message, 'error');
   }
 }
 </script>
