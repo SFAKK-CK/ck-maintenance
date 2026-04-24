@@ -216,15 +216,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* ─── MANAGER VIEW PAGE ─── */
 .mv-wrap{max-width:600px;margin:0 auto;padding:14px 14px 32px}
-.mv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.mv-stat{background:white;border-radius:12px;border:1px solid var(--g200);padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.mv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.mv-stat{background:white;border-radius:10px;border:1px solid var(--g200);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .mv-stat:hover,.mv-stat:active{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
-.mv-stat-num{font-size:32px;font-weight:800;line-height:1}
-.mv-stat-lbl{font-size:18px;color:var(--g400);margin-top:4px;font-weight:600}
-.mv-stat-tap{font-size:15px;color:var(--g400);margin-top:3px;opacity:.7}
+.mv-stat-num{font-size:26px;font-weight:800;line-height:1}
+.mv-stat-lbl{font-size:12px;color:var(--g400);margin-top:4px;font-weight:600;line-height:1.2}
+.mv-stat-tap{font-size:10px;color:var(--g400);margin-top:2px;opacity:.6}
 .mv-stat.red .mv-stat-num{color:#c0392b}
 .mv-stat.orange .mv-stat-num{color:#e65100}
 .mv-stat.blue .mv-stat-num{color:#1565c0}
+.mv-stat.pink .mv-stat-num{color:#880e4f}
+.mv-stat.purple .mv-stat-num{color:#4527a0}
+.mv-stat.yellow .mv-stat-num{color:#f57f17}
 /* Drill-down overlay */
 .mv-drilldown{display:none;position:fixed;inset:0;background:rgba(15,30,61,.55);z-index:500;align-items:flex-end;justify-content:center}
 .mv-drilldown.show{display:flex}
@@ -757,17 +760,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="mv-stat orange" onclick="openDrilldown('unassigned')">
         <div class="mv-stat-num" id="mvCountUnassigned">—</div>
         <div class="mv-stat-lbl">🟠 รอมอบหมาย</div>
-        <div class="mv-stat-tap">แตะเพื่อดูทั้งหมด ›</div>
+        <div class="mv-stat-tap">Submitted ›</div>
       </div>
       <div class="mv-stat blue" onclick="openDrilldown('inprogress')">
         <div class="mv-stat-num" id="mvCountOpen">—</div>
         <div class="mv-stat-lbl">🔵 กำลังซ่อม</div>
-        <div class="mv-stat-tap">แตะเพื่อดูทั้งหมด ›</div>
+        <div class="mv-stat-tap">In Progress ›</div>
+      </div>
+      <div class="mv-stat pink" onclick="openDrilldown('inquiring')">
+        <div class="mv-stat-num" id="mvCountInquiring">—</div>
+        <div class="mv-stat-lbl">📋 รอใบเสนอราคา</div>
+        <div class="mv-stat-tap">Inquiring ›</div>
+      </div>
+      <div class="mv-stat purple" onclick="openDrilldown('waitingparts')">
+        <div class="mv-stat-num" id="mvCountWaitingParts">—</div>
+        <div class="mv-stat-lbl">⏳ รออะไหล่</div>
+        <div class="mv-stat-tap">Waiting Parts ›</div>
+      </div>
+      <div class="mv-stat yellow" onclick="openDrilldown('outside')">
+        <div class="mv-stat-num" id="mvCountOutside">—</div>
+        <div class="mv-stat-lbl">🚧 ทีมภายนอก</div>
+        <div class="mv-stat-tap">Outside Team ›</div>
       </div>
       <div class="mv-stat red" onclick="openDrilldown('overdue')">
         <div class="mv-stat-num" id="mvCountOverdue">—</div>
         <div class="mv-stat-lbl">🚨 เกินกำหนด</div>
-        <div class="mv-stat-tap">แตะเพื่อดูทั้งหมด ›</div>
+        <div class="mv-stat-tap">Overdue ›</div>
       </div>
     </div>
 
@@ -1412,6 +1430,37 @@ async function submitUpdate() {
     hideLoading();
     document.getElementById('usSuccess').classList.add('show');
     document.getElementById('updateBtn').disabled = false;
+
+    // ── Auto-lock UI if new status is Inquiring or Outside Team (no PO yet) ──
+    // Previously the lock only applied after navigating away and coming back.
+    // Now it applies immediately so the user can't re-submit.
+    const newStatusIsInquiring = status.includes('Inquiring');
+    const newStatusIsOutside   = status.includes('Outside Team');
+    const poEntered = document.getElementById('usPoNumber').value.trim();
+    if ((newStatusIsInquiring || newStatusIsOutside) && !poEntered) {
+      const lockDiv      = document.getElementById('usInquiringLock');
+      const overrideDiv  = document.getElementById('usGMOverride');
+      const updateBtn    = document.getElementById('updateBtn');
+      const usFieldsInner= document.getElementById('usFieldsInner');
+      // Swap the lock message based on which state we just entered
+      if (lockDiv) {
+        if (newStatusIsOutside) {
+          lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
+          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting Outside Team PO from Purchasing. Updates are locked until PO is saved.</small>';
+        } else {
+          lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ';
+          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'สถานะนี้อยู่ระหว่างรอใบเสนอราคา ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting PO from Purchasing. Updates are locked until PO is saved.</small>';
+        }
+        lockDiv.style.display = 'block';
+      }
+      if (usFieldsInner) usFieldsInner.style.display = 'none';
+      if (overrideDiv)   overrideDiv.style.display   = 'none';
+      if (updateBtn)     updateBtn.style.display     = 'none';
+      // Keep usTicket in sync so subsequent operations see the new state
+      if (usTicket) {
+        usTicket.status = status;
+      }
+    }
   } catch(e) {
     hideLoading();
     err.textContent = 'เกิดข้อผิดพลาด / Error: ' + e.message;
@@ -1592,9 +1641,12 @@ function renderManagerView(tickets) {
   if (deptSel) filtered = filtered.filter(t => t.department === deptSel);
 
   const allActive = tickets.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
-  document.getElementById('mvCountUnassigned').textContent = allActive.filter(t => t.status.includes('Submitted')).length;
-  document.getElementById('mvCountOpen').textContent = allActive.filter(t => t.status.includes('In Progress')).length;
-  document.getElementById('mvCountOverdue').textContent = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now).length;
+  document.getElementById('mvCountUnassigned').textContent   = allActive.filter(t => t.status.includes('Submitted')).length;
+  document.getElementById('mvCountOpen').textContent         = allActive.filter(t => t.status.includes('In Progress')).length;
+  document.getElementById('mvCountInquiring').textContent    = allActive.filter(t => t.status.includes('Inquiring')).length;
+  document.getElementById('mvCountWaitingParts').textContent = allActive.filter(t => t.status.includes('Waiting for Parts')).length;
+  document.getElementById('mvCountOutside').textContent      = allActive.filter(t => t.status.includes('Outside')).length;
+  document.getElementById('mvCountOverdue').textContent      = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now).length;
 
   const active     = filtered.filter(t => !t.status.includes('Completed') && !t.status.includes('Cancelled'));
   const unassigned = active.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
@@ -1758,8 +1810,17 @@ function openDrilldown(type) {
     items = allActive.filter(t => t.status.includes('Submitted')).sort((a,b) => (a.isUrgent||'').includes('Urgent') ? -1 : 1);
     title = '🟠 รอมอบหมายทั้งหมด / All Unassigned';
   } else if (type === 'inprogress') {
-    items = allActive.filter(t => t.status.includes('In Progress') || t.status.includes('Inquiring') || t.status.includes('Waiting'));
-    title = '🔵 กำลังดำเนินการทั้งหมด / All In Progress';
+    items = allActive.filter(t => t.status.includes('In Progress'));
+    title = '🔵 กำลังซ่อมทั้งหมด / All In Progress';
+  } else if (type === 'inquiring') {
+    items = allActive.filter(t => t.status.includes('Inquiring'));
+    title = '📋 รอใบเสนอราคาทั้งหมด / All Inquiring';
+  } else if (type === 'waitingparts') {
+    items = allActive.filter(t => t.status.includes('Waiting for Parts'));
+    title = '⏳ รออะไหล่ทั้งหมด / All Waiting for Parts';
+  } else if (type === 'outside') {
+    items = allActive.filter(t => t.status.includes('Outside'));
+    title = '🚧 รอทีมภายนอกทั้งหมด / All Outside Team';
   } else if (type === 'overdue') {
     items = allActive.filter(t => t.desiredDate && new Date(t.desiredDate) < now);
     title = '🚨 เกินกำหนดทั้งหมด / All Overdue';
