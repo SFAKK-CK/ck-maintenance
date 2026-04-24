@@ -673,9 +673,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <label>👷 ช่างผู้ดำเนินการ / Technician <span style="color:var(--red)">*</span></label>
           <input type="text" id="usTech" placeholder="ชื่อช่างผู้ดำเนินการ / Enter technician name">
         </div>
-        <div id="quotationAlert" style="display:none;background:#fff8e1;border:1.5px solid #f59e0b;border-radius:8px;padding:12px 14px;margin-bottom:14px">
-          <div style="font-size:19px;font-weight:700;color:#92400e;margin-bottom:3px">📋 Purchasing Team will be notified</div>
-          <div style="font-size:19px;color:#b45309;line-height:1.6">ทีมจัดซื้อจะได้รับอีเมลแจ้งเตือนอัตโนมัติ<br>An email will be sent to the Purchasing team automatically.</div>
+        <div id="quotationAlert" style="display:none;background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:19px;font-weight:700;color:#5b21b6;margin-bottom:3px">📝 PR will be sent to GM for approval</div>
+          <div style="font-size:19px;color:#6d28d9;line-height:1.6">ใบขอซื้อจะถูกส่งให้ GM อนุมัติก่อนส่งต่อทีมจัดซื้อ<br>A Purchase Request will go to GM for approval before Purchasing starts sourcing quotes.</div>
         </div>
         <div class="us-field" id="poNumberWrap" style="display:none">
           <label>🔖 เลขที่ใบสั่งซื้อ / Purchase Order No.</label>
@@ -804,8 +804,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="mv-stat pink" onclick="openDrilldown('inquiring')">
         <div class="mv-stat-num" id="mvCountInquiring">—</div>
-        <div class="mv-stat-lbl">📋 รอใบเสนอราคา</div>
-        <div class="mv-stat-tap">Inquiring ›</div>
+        <div class="mv-stat-lbl">📋 จัดซื้อ (PR/ราคา)</div>
+        <div class="mv-stat-tap">Procurement ›</div>
       </div>
       <div class="mv-stat purple" onclick="openDrilldown('waitingparts')">
         <div class="mv-stat-num" id="mvCountWaitingParts">—</div>
@@ -1303,13 +1303,15 @@ async function searchTicket() {
 function buildTicketResult(t) {
   const isSub       = t.status.includes('Submitted');
   const isProg      = t.status.includes('In Progress');
+  const isPRPending = t.status.includes('PR Approval');
+  const isVendorSel = t.status.includes('Vendor Selection');
   const isInquiring = t.status.includes('Inquiring');
   const isWaiting   = t.status.includes('Waiting for Parts') || t.status.includes('Buying');
   const isOutside   = t.status.includes('Outside Team') || !!(t.outsidePath && t.outsidePath.trim());
   const isDone      = t.status.includes('Completed') || t.status.includes('Cancelled');
 
   // Does this ticket involve the parts/quotation path?
-  const isParts = isInquiring || isWaiting || (!isOutside && !!(t.poNumber && t.poNumber.trim()));
+  const isParts = isPRPending || isVendorSel || isInquiring || isWaiting || (!isOutside && !!(t.poNumber && t.poNumber.trim()));
 
   // Dynamic step 3 label for Outside Team path
   const outsideStep3 = t.outsidePath === 'buy_new'  ? {th:'รอสินค้าใหม่',    en:'New Product'}  :
@@ -1335,18 +1337,24 @@ function buildTicketResult(t) {
       {th:'เสร็จสิ้น',             en:'Completed',          done:s5d,  active:isDone}
     ];
   } else if (isParts) {
-    // 5-step parts path: Submitted → In Progress → Inquiring → Waiting → Completed
+    // 6-step parts path: Submitted → In Progress → PR Review → Procurement → Waiting → Completed
+    // Procurement combines "Inquiring for Quotation" + "Pending Vendor Selection" (both are procurement-in-motion)
+    const prApproved = !!(t.prApprovedAt && (t.prApprovedAt+'').trim());
     const s1d = true;
-    const s2d = isProg || isInquiring || isWaiting || isDone;
-    const s3d = isInquiring || isWaiting || isDone;
-    const s4d = isWaiting || isDone;
-    const s5d = isDone;
+    const s2d = isProg || isPRPending || isVendorSel || isInquiring || isWaiting || isDone;
+    const s3d = prApproved || isVendorSel || isInquiring || isWaiting || isDone;
+    const s4d = (prApproved && (isInquiring || isVendorSel)) || isWaiting || isDone;
+    // procurement step is "complete" once we advance past Inquiring/Vendor into Waiting for Parts
+    const s4Complete = isWaiting || isDone;
+    const s5d = isWaiting || isDone;
+    const s6d = isDone;
     steps = [
-      {th:'ส่งคำร้อง',   en:'Submitted',  done:s1d, active:isSub},
-      {th:'กำลังซ่อม',   en:'In Progress',done:s2d, active:isProg},
-      {th:'ขอใบเสนอ',    en:'Inquiring',  done:s3d, active:isInquiring},
-      {th:'รอรับอะไหล่', en:'Waiting',    done:s4d, active:isWaiting},
-      {th:'เสร็จสิ้น',   en:'Completed',  done:s5d, active:isDone}
+      {th:'ส่งคำร้อง',       en:'Submitted',   done:s1d, active:isSub},
+      {th:'กำลังซ่อม',       en:'In Progress', done:s2d, active:isProg},
+      {th:'รออนุมัติ PR',    en:'PR Review',   done:s3d, active:isPRPending},
+      {th:'เปรียบเทียบราคา', en:'Procurement', done:s4Complete, active:isInquiring || isVendorSel},
+      {th:'รอรับอะไหล่',     en:'Waiting',     done:s5d, active:isWaiting},
+      {th:'เสร็จสิ้น',       en:'Completed',   done:s6d, active:isDone}
     ];
   } else {
     // 3-step simple repair path
@@ -1361,7 +1369,7 @@ function buildTicketResult(t) {
     const cls = s.done ? 'done' : (s.active ? 'active' : '');
     return '<div class="pt-step ' + cls + '"><div class="pt-dot">' + (s.done ? '✓' : (i+1)) + '</div><div class="pt-label-th">' + s.th + '</div><div class="pt-label-en">' + s.en + '</div></div>';
   }).join('');
-  const pillCls = isSub ? 'pill-submitted' : (isProg || isInquiring || isWaiting || isOutside) ? 'pill-inprogress' : isDone ? 'pill-completed' : 'pill-cancelled';
+  const pillCls = isSub ? 'pill-submitted' : (isProg || isPRPending || isVendorSel || isInquiring || isWaiting || isOutside) ? 'pill-inprogress' : isDone ? 'pill-completed' : 'pill-cancelled';
   const rows = [
     ['🕐 แจ้งเมื่อ', t.timestamp ? new Date(t.timestamp).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}) : '—'],
     ['⏳ รอมา', waitLabel],
@@ -1466,35 +1474,51 @@ async function lookupTicket() {
     }
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
 
-    // ── Lock: Inquiring OR Outside Team with no PO yet ──
-    const isInquiring = ticket.status.includes('Inquiring');
-    const isOutsideTeam = ticket.status.includes('Outside Team');
-    const hasPO = !!(ticket.poNumber && ticket.poNumber.trim());
-    const lockDiv = document.getElementById('usInquiringLock');
-    const overrideDiv = document.getElementById('usGMOverride');
-    const updateBtn = document.getElementById('updateBtn');
-    const usFieldsInner = document.getElementById('usFieldsInner');
+    // ── Lock: new multi-state logic for PR / Vendor / Inquiring / Outside Team ──
+    const isPRPending       = ticket.status.includes('PR Approval');
+    const isVendorSel       = ticket.status.includes('Vendor Selection');
+    const isInquiring       = ticket.status.includes('Inquiring');
+    const isOutsideTeam     = ticket.status.includes('Outside Team');
+    const hasPO             = !!(ticket.poNumber && ticket.poNumber.trim());
+    const hasVendorSelected = !!(ticket.vendorSelected && (ticket.vendorSelected+'').trim());
+    const lockDiv           = document.getElementById('usInquiringLock');
+    const overrideDiv       = document.getElementById('usGMOverride');
+    const updateBtn         = document.getElementById('updateBtn');
+    const usFieldsInner     = document.getElementById('usFieldsInner');
 
-    // Customize lock message based on which state we're in
-    if (isOutsideTeam && !hasPO) {
-      lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
-      lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting Outside Team PO from Purchasing. Updates are locked until PO is saved.</small>';
+    // Pick the right lock message for the current state
+    let lockTitle = '', lockBody = '';
+    if (isPRPending) {
+      lockTitle = '🔒 รออนุมัติ PR จาก GM';
+      lockBody  = 'ใบขอซื้อกำลังรอการอนุมัติจาก GM ไม่สามารถอัปเดตได้จนกว่า GM จะอนุมัติหรือปฏิเสธ<br><small>Awaiting GM approval on the Purchase Request. Updates are locked until GM responds.</small>';
+    } else if (isVendorSel) {
+      lockTitle = '🔒 GM กำลังเลือกผู้จำหน่าย';
+      lockBody  = 'ทีมจัดซื้อส่งใบเปรียบเทียบราคาแล้ว รอ GM เลือกผู้จำหน่าย<br><small>Purchasing submitted the vendor comparison. Waiting for GM to pick a vendor.</small>';
+    } else if (isInquiring && hasVendorSelected && !hasPO) {
+      lockTitle = '🔒 เลือกผู้จำหน่ายแล้ว — รอจัดซื้อออก PO';
+      lockBody  = 'GM เลือก <strong>' + esc(ticket.vendorSelected) + '</strong> แล้ว รอทีมจัดซื้อออก PO<br><small>GM selected <strong>' + esc(ticket.vendorSelected) + '</strong>. Waiting for Purchasing to issue the PO.</small>';
     } else if (isInquiring && !hasPO) {
-      lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ';
-      lockDiv.querySelector('div:nth-child(2)').innerHTML = 'สถานะนี้อยู่ระหว่างรอใบเสนอราคา ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting PO from Purchasing. Updates are locked until PO is saved.</small>';
+      lockTitle = '🔒 จัดซื้อกำลังสอบราคา';
+      lockBody  = 'PR อนุมัติแล้ว ทีมจัดซื้อกำลังเก็บใบเสนอราคาจากผู้จำหน่าย<br><small>PR approved. Purchasing is collecting quotes from vendors.</small>';
+    } else if (isOutsideTeam && !hasPO) {
+      lockTitle = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
+      lockBody  = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number<br><small>Awaiting Outside Team PO from Purchasing.</small>';
     }
 
-    if ((isInquiring || isOutsideTeam) && !hasPO) {
-      // Hide all fields, show lock notice only
+    const mustLock = isPRPending || isVendorSel || (isInquiring && !hasPO) || (isOutsideTeam && !hasPO);
+
+    if (mustLock) {
+      lockDiv.querySelector('div:first-child').innerHTML  = lockTitle;
+      lockDiv.querySelector('div:nth-child(2)').innerHTML = lockBody;
       if (usFieldsInner) usFieldsInner.style.display = 'none';
       lockDiv.style.display = 'block';
       if (overrideDiv) overrideDiv.style.display = 'none';
-      if (updateBtn) updateBtn.style.display = 'none';
+      if (updateBtn)   updateBtn.style.display   = 'none';
     } else {
       if (usFieldsInner) usFieldsInner.style.display = 'block';
       lockDiv.style.display = 'none';
       if (overrideDiv) overrideDiv.style.display = 'none';
-      if (updateBtn) updateBtn.style.display = 'block';
+      if (updateBtn)   updateBtn.style.display   = 'block';
     }
 
     // Pre-fill cancel modal ticket number
@@ -1533,34 +1557,34 @@ async function submitUpdate() {
     document.getElementById('usSuccess').classList.add('show');
     document.getElementById('updateBtn').disabled = false;
 
-    // ── Auto-lock UI if new status is Inquiring or Outside Team (no PO yet) ──
-    // Previously the lock only applied after navigating away and coming back.
-    // Now it applies immediately so the user can't re-submit.
+    // ── Auto-lock UI if new status is Inquiring, Outside Team (no PO), or system will flip to PR Approval ──
+    // When ENG picks "Inquiring for Quotation" with no PO, the server actually converts it to
+    // "Waiting for PR Approval" and emails the GM. We must reflect that here immediately.
     const newStatusIsInquiring = status.includes('Inquiring');
     const newStatusIsOutside   = status.includes('Outside Team');
     const poEntered = document.getElementById('usPoNumber').value.trim();
-    if ((newStatusIsInquiring || newStatusIsOutside) && !poEntered) {
+    const willFlipToPRPending  = newStatusIsInquiring && !poEntered; // server-side redirect
+    if (willFlipToPRPending || (newStatusIsOutside && !poEntered)) {
       const lockDiv      = document.getElementById('usInquiringLock');
       const overrideDiv  = document.getElementById('usGMOverride');
       const updateBtn    = document.getElementById('updateBtn');
       const usFieldsInner= document.getElementById('usFieldsInner');
-      // Swap the lock message based on which state we just entered
       if (lockDiv) {
-        if (newStatusIsOutside) {
-          lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
-          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting Outside Team PO from Purchasing. Updates are locked until PO is saved.</small>';
+        if (willFlipToPRPending) {
+          lockDiv.querySelector('div:first-child').innerHTML  = '🔒 รออนุมัติ PR จาก GM';
+          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ใบขอซื้อถูกส่งให้ GM อนุมัติแล้ว รอการตอบกลับทางอีเมล<br><small>Purchase Request has been sent to GM. Awaiting approval via email.</small>';
         } else {
-          lockDiv.querySelector('div:first-child').innerHTML = '🔒 รอ PO Number จากทีมจัดซื้อ';
-          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'สถานะนี้อยู่ระหว่างรอใบเสนอราคา ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting PO from Purchasing. Updates are locked until PO is saved.</small>';
+          lockDiv.querySelector('div:first-child').innerHTML  = '🔒 รอ PO Number จากทีมจัดซื้อ (ทีมภายนอก)';
+          lockDiv.querySelector('div:nth-child(2)').innerHTML = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number ไม่สามารถอัปเดตได้จนกว่าทีมจัดซื้อจะบันทึก PO Number<br><small>Awaiting Outside Team PO from Purchasing. Updates are locked until PO is saved.</small>';
         }
         lockDiv.style.display = 'block';
       }
       if (usFieldsInner) usFieldsInner.style.display = 'none';
       if (overrideDiv)   overrideDiv.style.display   = 'none';
       if (updateBtn)     updateBtn.style.display     = 'none';
-      // Keep usTicket in sync so subsequent operations see the new state
+      // Keep usTicket in sync with what the server now has
       if (usTicket) {
-        usTicket.status = status;
+        usTicket.status = willFlipToPRPending ? '📝 Waiting for PR Approval' : status;
       }
     }
   } catch(e) {
@@ -1811,7 +1835,8 @@ function renderManagerView(tickets) {
     // Overall counters (independent of dept/search filter — these show site-wide totals)
     if (st.indexOf('Submitted') >= 0) cntU++;
     if (st.indexOf('In Progress') >= 0) cntO++;
-    if (st.indexOf('Inquiring') >= 0) cntInq++;
+    // Procurement bucket covers the whole PR→Quote→Vendor→PO pipeline before parts arrive
+    if (st.indexOf('Inquiring') >= 0 || st.indexOf('PR Approval') >= 0 || st.indexOf('Vendor Selection') >= 0) cntInq++;
     if (st.indexOf('Waiting for Parts') >= 0) cntWP++;
     if (st.indexOf('Outside') >= 0) cntOut++;
     if (t.desiredDate && new Date(t.desiredDate) < now) cntOver++;
@@ -1822,7 +1847,7 @@ function renderManagerView(tickets) {
     searchMatchCount++;
     if (st.indexOf('Submitted') >= 0) unassigned.push(t);
     else if (st.indexOf('In Progress') >= 0) inProgress.push(t);
-    else if (st.indexOf('Inquiring') >= 0 || st.indexOf('Waiting') >= 0 || st.indexOf('Outside') >= 0) waiting.push(t);
+    else if (st.indexOf('Inquiring') >= 0 || st.indexOf('PR Approval') >= 0 || st.indexOf('Vendor Selection') >= 0 || st.indexOf('Waiting') >= 0 || st.indexOf('Outside') >= 0) waiting.push(t);
   }
 
   // Sort unassigned: urgent first
@@ -2016,8 +2041,8 @@ function openDrilldown(type) {
     items = allActive.filter(t => t.status.includes('In Progress'));
     title = '🔵 กำลังซ่อมทั้งหมด / All In Progress';
   } else if (type === 'inquiring') {
-    items = allActive.filter(t => t.status.includes('Inquiring'));
-    title = '📋 รอใบเสนอราคาทั้งหมด / All Inquiring';
+    items = allActive.filter(t => t.status.includes('Inquiring') || t.status.includes('PR Approval') || t.status.includes('Vendor Selection'));
+    title = '📋 จัดซื้อทั้งหมด / All Procurement (PR → Quote → Vendor)';
   } else if (type === 'waitingparts') {
     items = allActive.filter(t => t.status.includes('Waiting for Parts'));
     title = '⏳ รออะไหล่ทั้งหมด / All Waiting for Parts';
@@ -2072,11 +2097,13 @@ function buildDetailContent(t) {
   const isOverdue = t.desiredDate && new Date(t.desiredDate) < now && !t.status.includes('Completed') && !t.status.includes('Cancelled');
 
   // Status pill
-  const statusColor = t.status.includes('Submitted') ? 'background:#fff3e0;color:#e65100' :
-    t.status.includes('In Progress') ? 'background:#e3f2fd;color:#1565c0' :
-    t.status.includes('Inquiring')   ? 'background:#fce4ec;color:#880e4f' :
-    t.status.includes('Completed')   ? 'background:#e8f5e9;color:#1b5e20' :
-    t.status.includes('Cancelled')   ? 'background:#f5f5f5;color:#616161' :
+  const statusColor = t.status.includes('Submitted')         ? 'background:#fff3e0;color:#e65100' :
+    t.status.includes('In Progress')     ? 'background:#e3f2fd;color:#1565c0' :
+    t.status.includes('PR Approval')     ? 'background:#ede9fe;color:#5b21b6' :
+    t.status.includes('Vendor Selection')? 'background:#fef3c7;color:#92400e' :
+    t.status.includes('Inquiring')       ? 'background:#fce4ec;color:#880e4f' :
+    t.status.includes('Completed')       ? 'background:#e8f5e9;color:#1b5e20' :
+    t.status.includes('Cancelled')       ? 'background:#f5f5f5;color:#616161' :
     'background:#fff8e1;color:#f57f17';
   const statusText = t.status.replace(/[🟠🔵📋⏳🚧🟢❌]/g,'').trim();
 
