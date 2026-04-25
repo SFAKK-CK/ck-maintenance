@@ -1474,21 +1474,30 @@ async function lookupTicket() {
     }
     document.getElementById('usStatus').dispatchEvent(new Event('change'));
 
-    // ── Lock: new multi-state logic for PR / Vendor / Inquiring / Outside Team ──
+    // ── Lock: new multi-state logic for PR / Vendor / Inquiring / Outside Team / Not-Yet-Accepted ──
     const isPRPending       = ticket.status.includes('PR Approval');
     const isVendorSel       = ticket.status.includes('Vendor Selection');
     const isInquiring       = ticket.status.includes('Inquiring');
     const isOutsideTeam     = ticket.status.includes('Outside Team');
+    const isSubmittedSt     = ticket.status.includes('Submitted');
+    const isInProgressSt    = ticket.status.includes('In Progress');
     const hasPO             = !!(ticket.poNumber && ticket.poNumber.trim());
     const hasVendorSelected = !!(ticket.vendorSelected && (ticket.vendorSelected+'').trim());
+    const hasAcceptedAt     = !!(ticket.acceptedAt && (ticket.acceptedAt+'').trim());
     const lockDiv           = document.getElementById('usInquiringLock');
     const overrideDiv       = document.getElementById('usGMOverride');
     const updateBtn         = document.getElementById('updateBtn');
     const usFieldsInner     = document.getElementById('usFieldsInner');
 
-    // Pick the right lock message for the current state
+    // Pick the right lock message for the current state.
+    // PRIORITY: acceptance lock takes precedence — if ENG hasn't clicked Accept yet,
+    // we block any other action regardless of what else is going on.
     let lockTitle = '', lockBody = '';
-    if (isPRPending) {
+    const notYetAccepted = !hasAcceptedAt && (isSubmittedSt || isInProgressSt);
+    if (notYetAccepted) {
+      lockTitle = '🔒 ทีมช่างยังไม่ได้รับงาน / ENG has not accepted';
+      lockBody  = 'ทีมช่างที่ได้รับมอบหมายต้องกดปุ่ม "Accept Job" ในอีเมลก่อน จึงจะสามารถอัปเดตสถานะใดๆ ได้<br><small>The assigned ENG team must click "Accept Job" in their email before any status change can be made. This prevents tickets from being forgotten or skipped past assignment.</small>';
+    } else if (isPRPending) {
       lockTitle = '🔒 รออนุมัติ PR จาก GM';
       lockBody  = 'ใบขอซื้อกำลังรอการอนุมัติจาก GM ไม่สามารถอัปเดตได้จนกว่า GM จะอนุมัติหรือปฏิเสธ<br><small>Awaiting GM approval on the Purchase Request. Updates are locked until GM responds.</small>';
     } else if (isVendorSel) {
@@ -1505,7 +1514,7 @@ async function lookupTicket() {
       lockBody  = 'ตั๋วนี้อยู่ระหว่างรอทีมภายนอกและ PO Number<br><small>Awaiting Outside Team PO from Purchasing.</small>';
     }
 
-    const mustLock = isPRPending || isVendorSel || (isInquiring && !hasPO) || (isOutsideTeam && !hasPO);
+    const mustLock = notYetAccepted || isPRPending || isVendorSel || (isInquiring && !hasPO) || (isOutsideTeam && !hasPO);
 
     if (mustLock) {
       lockDiv.querySelector('div:first-child').innerHTML  = lockTitle;
