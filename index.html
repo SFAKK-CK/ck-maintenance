@@ -872,30 +872,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
 
-    <!-- Department filter + History toggle -->
-    <div style="display:flex;gap:10px;align-items:center">
-      <select class="mv-dept-filter" id="mvDeptFilter" onchange="renderManagerView(mvTickets)" style="flex:1">
-        <option value="">🏭 ทุกแผนก / All Departments</option>
-        <option>ฝ่ายผลิต (Production)</option>
-        <option>ควบคุมคุณภาพ (Quality Control / QC)</option>
-        <option>ฝ่ายช่าง (Maintenance)</option>
-        <option>คลังสินค้า (Warehouse)</option>
-        <option>ห้องเย็น (Cold Storage)</option>
-        <option>ทรัพยากรบุคคล (HR)</option>
-        <option>ธุรการ (Administration)</option>
-        <option>บัญชี (Accounting)</option>
-        <option>จัดซื้อ (Purchasing)</option>
-        <option>ส่งออก (Export)</option>
-        <option>ผู้บริหาร (Management)</option>
-        <option>อื่นๆ (Other)</option>
-      </select>
-      <button id="mvHistoryBtn" onclick="toggleMVHistory()"
-        style="flex-shrink:0;padding:10px 14px;border:1.5px solid var(--g200);border-radius:10px;
-               background:white;color:var(--g600);font-size:15px;font-family:inherit;cursor:pointer;
-               white-space:nowrap;transition:background 0.15s,color 0.15s">
-        📂 ประวัติ
-      </button>
-    </div>
+    <!-- Department filter -->
+    <select class="mv-dept-filter" id="mvDeptFilter" onchange="renderManagerView(mvTickets)">
+      <option value="">🏭 ทุกแผนก / All Departments</option>
+      <option>ฝ่ายผลิต (Production)</option>
+      <option>ควบคุมคุณภาพ (Quality Control / QC)</option>
+      <option>ฝ่ายช่าง (Maintenance)</option>
+      <option>คลังสินค้า (Warehouse)</option>
+      <option>ห้องเย็น (Cold Storage)</option>
+      <option>ทรัพยากรบุคคล (HR)</option>
+      <option>ธุรการ (Administration)</option>
+      <option>บัญชี (Accounting)</option>
+      <option>จัดซื้อ (Purchasing)</option>
+      <option>ส่งออก (Export)</option>
+      <option>ผู้บริหาร (Management)</option>
+      <option>อื่นๆ (Other)</option>
+    </select>
 
     <!-- Role selection modal -->
     <div class="mv-role-modal" id="mvRoleModal">
@@ -1044,14 +1036,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div id="mvWaiting"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
     <div id="mvShowMoreW" style="display:none"><button class="mv-show-more" onclick="showMore('W')">แสดงเพิ่มเติม ▼ / Show more</button></div>
-
-    <!-- History section — shown when the 📂 button is toggled on -->
-    <div id="mvHistorySection" style="display:none;margin-top:8px">
-      <div class="mv-section-hdr" style="background:#f3f4f6;color:var(--g500)">
-        📂 ประวัติ / Completed &amp; Cancelled
-      </div>
-      <div id="mvHistoryBody"></div>
-    </div>
 
   </div>
 </div>
@@ -1802,7 +1786,6 @@ const _origGoHome = goHome;
 
 // ─── MANAGER VIEW ─────────────────────────────
 let mvTickets = [];
-let mvShowHistory = false;   // toggled by the History button
 const MV_PAGE_SIZE = 3;
 let mvShownU = MV_PAGE_SIZE, mvShownP = MV_PAGE_SIZE, mvShownW = MV_PAGE_SIZE;
 
@@ -1811,19 +1794,6 @@ function showMore(section) {
   if (section === 'P') mvShownP += MV_PAGE_SIZE;
   if (section === 'W') mvShownW += MV_PAGE_SIZE;
   renderManagerView(mvTickets);
-}
-
-function toggleMVHistory() {
-  mvShowHistory = !mvShowHistory;
-  const btn = document.getElementById('mvHistoryBtn');
-  if (btn) {
-    btn.style.background  = mvShowHistory ? '#1a2744' : 'white';
-    btn.style.color       = mvShowHistory ? 'white'   : 'var(--g600)';
-    btn.style.borderColor = mvShowHistory ? '#1a2744' : 'var(--g200)';
-    btn.textContent       = mvShowHistory ? '📂 ประวัติ ✓' : '📂 ประวัติ';
-  }
-  // Reload from server so completed/cancelled tickets are actually fetched
-  loadManagerView();
 }
 
 async function loadManagerView() {
@@ -1853,8 +1823,7 @@ async function loadManagerView() {
   } catch(ce) { /* cache read failures are non-fatal */ }
 
   try {
-    const url = APPS_SCRIPT_URL + '?action=getTickets' + (mvShowHistory ? '&includeAll=true' : '');
-    const r = await fetch(url);
+    const r = await fetch(APPS_SCRIPT_URL + '?action=getTickets');
     const json = await r.json();
     if (!json.success) throw new Error(json.error);
     mvTickets = json.tickets;
@@ -1969,37 +1938,6 @@ function renderManagerView(tickets) {
   renderSection('mvUnassigned', 'mvShowMoreU', unassigned, mvShownU, true, now);
   renderSection('mvInProgress', 'mvShowMoreP', inProgress, mvShownP, false, now);
   renderSection('mvWaiting',    'mvShowMoreW', waiting,    mvShownW, false, now);
-
-  // History section — only visible when mvShowHistory is toggled on
-  const historySection = document.getElementById('mvHistorySection');
-  if (historySection) {
-    if (mvShowHistory) {
-      const done = tickets.filter(t => {
-        const st = t.status || '';
-        if (st.indexOf('Completed') < 0 && st.indexOf('Cancelled') < 0) return false;
-        if (!matchesDept(t)) return false;
-        if (!matchesSearch(t)) return false;
-        return true;
-      }).sort((a,b) => {
-        // Most recently completed first
-        const da = a.completedDate ? new Date(a.completedDate) : new Date(a.timestamp||0);
-        const db = b.completedDate ? new Date(b.completedDate) : new Date(b.timestamp||0);
-        return db - da;
-      });
-      historySection.style.display = 'block';
-      const hBody = document.getElementById('mvHistoryBody');
-      if (done.length === 0) {
-        hBody.innerHTML = '<div class="mv-empty-ok"><div class="mv-empty-ok-icon">📂</div><div class="mv-empty-ok-title">ไม่พบประวัติ</div><div class="mv-empty-ok-sub">No completed or cancelled tickets match the current filter</div></div>';
-      } else {
-        hBody.innerHTML = done.slice(0, 50).map((t, idx) => {
-          const card = buildMvTicket(t, false, now);
-          return card.replace('class="mv-ticket', `style="animation-delay:${idx * 30}ms" class="mv-ticket`);
-        }).join('') + (done.length > 50 ? `<div style="text-align:center;padding:12px;font-size:14px;color:var(--g400)">Showing 50 of ${done.length}. Use department filter or search to narrow results.</div>` : '');
-      }
-    } else {
-      historySection.style.display = 'none';
-    }
-  }
 }
 
 function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
