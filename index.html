@@ -544,6 +544,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <input type="radio" name="rtype" id="t3" value="ย้าย (Move)"><label for="t3">📦 ย้าย<small>Move</small></label>
           </div>
         </div>
+        <!-- Build-specific info box: explains that Build = Purchase Request, no ENG work -->
+        <div id="buildInfoBox" style="display:none;background:#ede9fe;border:1.5px solid #a78bfa;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:18px;font-weight:700;color:#5b21b6;margin-bottom:4px">🏗️ ใบ Build = ใบขอซื้อ / Build = Purchase Request</div>
+          <div style="font-size:17px;color:#6d28d9;line-height:1.55">
+            ตั๋วสร้าง/Build จะถูกส่งให้ GM อนุมัติโดยตรง จากนั้นเข้าสู่ขั้นตอนเปรียบเทียบราคาและออก PO<br>
+            <small>Build tickets skip the maintenance flow and go straight to GM for PR approval → vendor comparison → PO. No engineering work needed.</small>
+          </div>
+          <div style="font-size:14px;color:#92400e;margin-top:8px;padding:8px 10px;background:#fef3c7;border-radius:6px">
+            ⚠️ <strong>ระบุรายละเอียดสิ่งที่ต้องการซื้อให้ชัดเจน</strong> ในช่อง "รายละเอียด / Description" ด้านล่าง<br>
+            <small>Describe the items you want to purchase clearly in the Description field below.</small>
+          </div>
+        </div>
         <div class="field">
           <label class="lbl" for="rname">ชื่อ-นามสกุล <span class="en">Name-Surname</span> <span class="req">*</span></label>
           <input type="text" id="rname" placeholder="ชื่อผู้แจ้งซ่อม / Reporter Name">
@@ -1190,6 +1202,24 @@ function initForm() {
   ticketNumber = 'MT-' + y + m + d + '-' + h + mi;
   document.getElementById('ticketDisplay').textContent = ticketNumber;
   document.getElementById('displayDate').textContent = now.toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
+  // Wire up the Build info box to react to request-type changes.
+  // Using forEach is idempotent — re-attaching the same listener on re-init is harmless.
+  ['t1','t2','t3'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el && !el._buildToggleWired) {
+      el.addEventListener('change', updateBuildInfoBox);
+      el._buildToggleWired = true;
+    }
+  });
+  updateBuildInfoBox();
+}
+
+function updateBuildInfoBox() {
+  var box = document.getElementById('buildInfoBox');
+  if (!box) return;
+  var picked = document.querySelector('input[name=rtype]:checked');
+  var isBuild = picked && (picked.value || '').toLowerCase().indexOf('build') >= 0;
+  box.style.display = isBuild ? 'block' : 'none';
 }
 
 function toggleUrgent() {
@@ -1309,6 +1339,8 @@ function buildTicketResult(t) {
   const isWaiting   = t.status.includes('Waiting for Parts') || t.status.includes('Buying');
   const isOutside   = t.status.includes('Outside Team') || !!(t.outsidePath && t.outsidePath.trim());
   const isDone      = t.status.includes('Completed') || t.status.includes('Cancelled');
+  const isCancelled = t.status.includes('Cancelled');
+  const isBuildReq  = !!(t.requestType && (t.requestType+'').toLowerCase().indexOf('build') >= 0);
 
   // Does this ticket involve the parts/quotation path?
   const isParts = isPRPending || isVendorSel || isInquiring || isWaiting || (!isOutside && !!(t.poNumber && t.poNumber.trim()));
@@ -1322,7 +1354,26 @@ function buildTicketResult(t) {
   const waitLabel = waitHrs < 1 ? 'น้อยกว่า 1 ชั่วโมง' : waitHrs + ' ชั่วโมง';
 
   let steps;
-  if (isOutside) {
+  if (isBuildReq) {
+    // 5-step BUILD path: Submitted → PR Review → Procurement → Waiting for Items → Completed
+    // Build tickets never touch ENG — they skip the "In Progress / maintenance" stage entirely.
+    // Rejection → ticket moves to Cancelled (visible as a red-flagged final step).
+    const prApprovedB = !!(t.prApprovedAt && (t.prApprovedAt+'').trim());
+    const hasPOB      = !!(t.poNumber && (t.poNumber+'').trim());
+    const s1d = true;
+    const s2d = prApprovedB || isVendorSel || isInquiring || isWaiting || isDone;
+    const s3d = (prApprovedB && (isInquiring || isVendorSel)) || isWaiting || isDone;
+    const s3Complete = isWaiting || isDone;
+    const s4d = isWaiting || isDone;
+    const s5d = isDone;
+    steps = [
+      {th:'ส่งคำร้อง',         en:'Submitted',      done:s1d,        active:isSub},
+      {th:'รออนุมัติ PR',      en:'PR Review',      done:s2d,        active:isPRPending},
+      {th:'เปรียบเทียบราคา',   en:'Procurement',    done:s3Complete, active:isInquiring || isVendorSel},
+      {th:'รอรับของ',          en:'Waiting Items',  done:s4d,        active:isWaiting},
+      {th: isCancelled ? 'ยกเลิก' : 'เสร็จสิ้น', en: isCancelled ? 'Cancelled' : 'Completed', done:s5d, active:isDone}
+    ];
+  } else if (isOutside) {
     // 5-step Outside Team path
     const outsideHasPO = !!(t.poNumber && t.poNumber.trim());
     const s2d = isProg || isOutside || isDone;
@@ -1493,13 +1544,16 @@ async function lookupTicket() {
     // PRIORITY: acceptance lock takes precedence — if ENG hasn't clicked Accept yet,
     // we block any other action regardless of what else is going on.
     let lockTitle = '', lockBody = '';
-    const notYetAccepted = !hasAcceptedAt && (isSubmittedSt || isInProgressSt);
+    const isBuildTkt = !!(ticket.requestType && (ticket.requestType+'').toLowerCase().indexOf('build') >= 0);
+    const notYetAccepted = !hasAcceptedAt && (isSubmittedSt || isInProgressSt) && !isBuildTkt;
     if (notYetAccepted) {
       lockTitle = '🔒 ทีมช่างยังไม่ได้รับงาน / ENG has not accepted';
       lockBody  = 'ทีมช่างที่ได้รับมอบหมายต้องกดปุ่ม "Accept Job" ในอีเมลก่อน จึงจะสามารถอัปเดตสถานะใดๆ ได้<br><small>The assigned ENG team must click "Accept Job" in their email before any status change can be made. This prevents tickets from being forgotten or skipped past assignment.</small>';
     } else if (isPRPending) {
-      lockTitle = '🔒 รออนุมัติ PR จาก GM';
-      lockBody  = 'ใบขอซื้อกำลังรอการอนุมัติจาก GM ไม่สามารถอัปเดตได้จนกว่า GM จะอนุมัติหรือปฏิเสธ<br><small>Awaiting GM approval on the Purchase Request. Updates are locked until GM responds.</small>';
+      lockTitle = isBuildTkt ? '🔒 รออนุมัติ Build PR จาก GM' : '🔒 รออนุมัติ PR จาก GM';
+      lockBody  = isBuildTkt
+        ? 'ใบ Build กำลังรอการอนุมัติจาก GM หาก GM อนุมัติ จะเข้าสู่ขั้นตอนเปรียบเทียบราคา หาก GM ปฏิเสธ ตั๋วจะถูกยกเลิก<br><small>Build request awaiting GM approval. If approved → vendor comparison. If rejected → ticket will be cancelled and you must submit a new Build request.</small>'
+        : 'ใบขอซื้อกำลังรอการอนุมัติจาก GM ไม่สามารถอัปเดตได้จนกว่า GM จะอนุมัติหรือปฏิเสธ<br><small>Awaiting GM approval on the Purchase Request. Updates are locked until GM responds.</small>';
     } else if (isVendorSel) {
       lockTitle = '🔒 GM กำลังเลือกผู้จำหน่าย';
       lockBody  = 'ทีมจัดซื้อส่งใบเปรียบเทียบราคาแล้ว รอ GM เลือกผู้จำหน่าย<br><small>Purchasing submitted the vendor comparison. Waiting for GM to pick a vendor.</small>';
@@ -2215,6 +2269,29 @@ function buildDetailContent(t) {
   }
 
   // GM-only cancel button — shown for any status except already Cancelled
+  // Email delivery log — GM-only section so we can spot missed notifications
+  if (mvCurrentRole === 'gm' && t.emailLog && t.emailLog.trim()) {
+    const rawLog = (t.emailLog+'');
+    const hasFailure = rawLog.indexOf('\u274C') >= 0;
+    const headerColor = hasFailure ? '#fef2f2' : '#f0fdf4';
+    const textColor   = hasFailure ? '#991b1b' : '#166534';
+    const titleIcon   = hasFailure ? '\u26A0\uFE0F' : '\u2709\uFE0F';
+    const titleText   = hasFailure ? 'บันทึกการส่งอีเมล — มีการส่งล้มเหลว' : 'บันทึกการส่งอีเมล / Email Delivery Log';
+    html += `
+      <div class="mv-detail-section" style="margin-top:8px">
+        <div class="mv-detail-section-title" style="background:${headerColor};color:${textColor}">
+          ${titleIcon} ${esc(titleText)}
+        </div>
+        <div style="padding:12px 14px;background:#fafafa;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:240px;overflow-y:auto">${esc(rawLog)}</div>
+        ${hasFailure ? `
+        <div style="margin-top:10px;padding:10px 12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e">
+          <strong>\u{1F4A1} Manual follow-up needed:</strong> One or more emails failed to send.
+          Contact the recipient directly (email, phone, or in person) and confirm they received the information.
+          You can also re-trigger the email by clicking the relevant action button again (e.g., re-approve PR, re-select vendor).
+        </div>` : ''}
+      </div>`;
+  }
+
   if (mvCurrentRole === 'gm' && !t.status.includes('Cancelled')) {
     html += `
       <div style="padding:4px 16px 20px">
