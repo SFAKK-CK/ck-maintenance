@@ -2403,12 +2403,13 @@ async function confirmReassign(dept) {
   try {
     await fetch(APPS_SCRIPT_URL, {
       method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel})
+      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true})
     });
     const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
-    if (idx !== -1) { mvTickets[idx].technician = deptLabel; mvTickets[idx].status = '🔵 In Progress'; }
+    if (idx !== -1) { mvTickets[idx].technician = deptLabel; mvTickets[idx].status = '🔵 In Progress'; mvTickets[idx].acceptedAt = ''; }
     closeReassignModal();
     renderManagerView(mvTickets);
+    toast('✅ มอบหมายใหม่แล้ว / Re-assigned — รอทีมรับงานใหม่ / Awaiting Accept', 'success');
   } catch(e) {
     document.querySelectorAll('.mv-reassign-opt').forEach(b => b.disabled = false);
     toast('❌ เกิดข้อผิดพลาด / Error: ' + e.message, 'error');
