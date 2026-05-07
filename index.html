@@ -284,6 +284,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-ticket-meta{text-align:right;flex-shrink:0}
 .mv-ticket-age{font-size:18px;color:var(--g400);margin-top:4px}
 .mv-ticket-age.overdue{color:#c0392b;font-weight:700}
+.sla-badge-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end;margin-top:5px}
+.sla-badge{font-size:12px;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap;line-height:1.4}
+.sla-total{background:#f3f4f6;color:#6b7280}
+.sla-ok{background:#dcfce7;color:#16a34a}
+.sla-warn{background:#fef3c7;color:#d97706}
+.sla-over{background:#fde8e8;color:#c0392b}
 .mv-ticket-status{font-size:17px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
 .mv-cause{font-size:19px;color:var(--g600);padding:0 16px 14px;border-top:1px solid var(--g100);padding-top:10px;line-height:1.6}
 .mv-assign-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px}
@@ -1997,12 +2003,81 @@ function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
   showMoreEl.style.display = items.length > shown ? 'block' : 'none';
 }
 
+// ─── SLA BADGE HELPERS ────────────────────────────────────
+// getSLABadge — returns stage age display + color class based on SLA limits
+// Mirrors the exact limits used in slaBreachChecker (BIZ_DAY = 9h)
+function getSLABadge(t, now) {
+  const st     = t.status || '';
+  const urgent = !!(t.isUrgent && t.isUrgent.includes('Urgent'));
+  const BIZ    = 9; // hours per business day
+  let stageStart = null, limitHours = null;
+
+  if (st.includes('Submitted') && !st.includes('Vendor') && !st.includes('PR Approval')) {
+    stageStart = t.timestamp;
+    limitHours = urgent ? 0.5 : 2;                   // S1
+  } else if (st.includes('In Progress')) {
+    stageStart = t.acceptedAt || t.assignedAt || t.timestamp;
+    limitHours = urgent ? BIZ : 2*BIZ;               // S3A / S3BC
+  } else if (st.includes('PR Approval')) {
+    stageStart = t.inquiringAt || t.timestamp;
+    limitHours = urgent ? BIZ : 2*BIZ;               // SPR
+  } else if (st.includes('Vendor Selection')) {
+    // SVC-B: Purchasing submitted, waiting for GM click
+    stageStart = t.vendorSubmittedAt || t.prApprovedAt || t.outsideAt || t.timestamp;
+    limitHours = urgent ? 4 : BIZ;                   // SVC-B / SOVC
+  } else if (st.includes('Inquiring')) {
+    stageStart = t.inquiringAt || t.timestamp;
+    // If outside team ticket (outsideAt set) → S4C limits, else S4A
+    const isOut = !!(t.outsideAt && (t.outsideAt+'').trim());
+    limitHours = isOut ? (urgent ? BIZ : 2*BIZ) : (urgent ? 2*BIZ : 4*BIZ);
+  } else if (st.includes('Outside Team')) {
+    stageStart = t.outsideAt || t.timestamp;
+    limitHours = urgent ? BIZ : 2*BIZ;               // S4B
+  } else if (st.includes('Waiting for Parts')) {
+    stageStart = t.poSavedAt || t.timestamp;
+    const isOut = !!(t.outsideAt && (t.outsideAt+'').trim());
+    limitHours = isOut ? (urgent ? 3*BIZ : 6*BIZ) : (urgent ? 2*BIZ : 4*BIZ); // S6 vs S5
+  }
+
+  if (!stageStart) return null;
+
+  const elapsed = (now - new Date(stageStart)) / 3600000; // hours
+  const display = elapsed < 1   ? '<1ชม.'
+                : elapsed < 24  ? Math.floor(elapsed)+'ชม.'
+                :                 Math.floor(elapsed/24)+'วัน';
+
+  let cls = 'sla-ok'; // green
+  if (limitHours) {
+    const pct = elapsed / limitHours;
+    if (pct >= 1)    cls = 'sla-over';  // red — breached
+    else if (pct >= 0.75) cls = 'sla-warn'; // amber — approaching
+  }
+
+  // Human-readable limit string
+  const limitStr = limitHours
+    ? (limitHours < 24 ? limitHours+'ชม.' : Math.floor(limitHours/24)+'วัน')
+    : null;
+
+  const pctNum   = limitHours ? Math.min(Math.round(elapsed / limitHours * 100), 999) : null;
+  const barWidth = limitHours ? Math.min(elapsed / limitHours * 100, 100) : 0;
+
+  return { display, cls, elapsed, limitHours, limitStr, pctNum, barWidth };
+}
+
+// getTotalAgeStr — simple calendar age since ticket opened
+function getTotalAgeStr(t, now) {
+  if (!t.timestamp) return '—';
+  const elapsed = (now - new Date(t.timestamp)) / 3600000;
+  if (elapsed < 1)  return '<1ชม.';
+  if (elapsed < 24) return Math.floor(elapsed)+'ชม.';
+  return Math.floor(elapsed/24)+'วัน';
+}
+
 function buildMvTicket(t, showAssign, now) {
   const isUrgentT = t.isUrgent && t.isUrgent.includes('Urgent');
   const isOverdue = t.desiredDate && new Date(t.desiredDate) < now;
-  const ageDays   = t.timestamp ? Math.floor((now - new Date(t.timestamp)) / 86400000) : 0;
-  // Feature #4 — use rich relative time: "เมื่อสักครู่", "5 นาทีก่อน", "2 ชม.ก่อน", "3 วันก่อน"
-  const ageLabel  = t.timestamp ? relativeTime(t.timestamp) : '';
+  const totalAge = getTotalAgeStr(t, now);
+  const sla      = getSLABadge(t, now);
 
   const statusColor = t.status.includes('Submitted')    ? 'background:#fff3e0;color:#e65100' :
     t.status.includes('In Progress')  ? 'background:#e3f2fd;color:#1565c0' :
@@ -2039,7 +2114,10 @@ function buildMvTicket(t, showAssign, now) {
         </div>
         <div class="mv-ticket-meta">
           <div class="mv-ticket-status" style="${statusColor}">${t.status.replace(/[🟠🔵📋⏳🚧🟢❌]/g,'').trim()}</div>
-          <div class="mv-ticket-age${isOverdue ? ' overdue' : ''}">${ageLabel}</div>
+          <div class="sla-badge-wrap">
+            <span class="sla-badge sla-total">📅 ${totalAge}</span>
+            ${sla ? `<span class="sla-badge ${sla.cls}">⏱ ${sla.display}${sla.limitStr ? ' / '+sla.limitStr : ''}</span>` : ''}
+          </div>
         </div>
       </div>
       ${t.cause ? `<div class="mv-cause" onclick="openDetail('${esc(t.ticketNumber)}')" style="cursor:pointer">💬 ${esc(t.cause)}</div>` : ''}
@@ -2233,6 +2311,52 @@ function buildDetailContent(t) {
       <div class="mv-detail-status-lbl">⏳ สถานะปัจจุบัน / Status</div>
       <div class="mv-detail-status-pill" style="${statusColor}">${esc(statusText)}</div>
     </div>`;
+
+  // ── SLA / Timing section ──────────────────────────────
+  const totalAgeD = getTotalAgeStr(t, now);
+  const slaD      = getSLABadge(t, now);
+  const isActive  = !t.status.includes('Completed') && !t.status.includes('Cancelled');
+
+  if (isActive) {
+    const slaColor = slaD ? (slaD.cls === 'sla-over' ? '#c0392b' : slaD.cls === 'sla-warn' ? '#d97706' : '#16a34a') : '#16a34a';
+    const slaBg    = slaD ? (slaD.cls === 'sla-over' ? '#fde8e8' : slaD.cls === 'sla-warn' ? '#fef3c7' : '#dcfce7') : '#dcfce7';
+    html += `
+    <div class="mv-detail-section">
+      <div class="mv-detail-section-title">⏱ ระยะเวลา / SLA Timing</div>
+      <div class="mv-detail-row">
+        <div class="mv-detail-row-lbl">📅 เปิดมาแล้ว</div>
+        <div class="mv-detail-row-val">
+          <span style="font-weight:700">${totalAgeD}</span>
+          <span style="font-size:13px;color:#9ca3af;margin-left:6px">ตั้งแต่ ${fmtDate(t.timestamp)}</span>
+        </div>
+      </div>
+      ${slaD ? `
+      <div class="mv-detail-row">
+        <div class="mv-detail-row-lbl">⏱ ขั้นนี้นานแล้ว</div>
+        <div class="mv-detail-row-val">
+          <span style="background:${slaBg};color:${slaColor};padding:3px 10px;border-radius:10px;font-weight:700;font-size:16px">${slaD.display}</span>
+          ${slaD.limitStr ? `<span style="font-size:13px;color:#9ca3af;margin-left:6px">SLA: ${slaD.limitStr}</span>` : ''}
+        </div>
+      </div>
+      ${slaD.limitHours ? `
+      <div style="padding:4px 16px 16px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;margin-bottom:4px">
+          <span>0</span>
+          <span style="color:${slaColor};font-weight:700">${slaD.pctNum}% ใช้ไปแล้ว / used</span>
+          <span>${slaD.limitStr} SLA</span>
+        </div>
+        <div style="background:#f3f4f6;border-radius:4px;height:10px;overflow:hidden">
+          <div style="height:100%;width:${slaD.barWidth}%;background:${slaColor};border-radius:4px;transition:width .4s"></div>
+        </div>
+        ${slaD.cls === 'sla-over'
+          ? '<div style="margin-top:6px;font-size:12px;color:#c0392b;font-weight:700;text-align:center">⚠️ เกิน SLA แล้ว — ระบบส่งแจ้งเตือนแล้ว / SLA Breached</div>'
+          : slaD.cls === 'sla-warn'
+            ? '<div style="margin-top:6px;font-size:12px;color:#d97706;font-weight:600;text-align:center">⚠️ ใกล้ถึง SLA / Approaching SLA limit</div>'
+            : ''}
+      </div>` : ''}
+      ` : ''}
+    </div>`
+  }
 
   // Reporter info section
   html += `
