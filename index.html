@@ -1109,6 +1109,45 @@ function relativeTime(dateInput) {
 
 // ═══════════════════════════════════════════════════════════
 
+// --- Server POST with proper error visibility ---
+//
+// Why this exists: Apps Script web apps require a "simple CORS request" to
+// return a readable response. POST with Content-Type: application/json triggers
+// a CORS preflight (OPTIONS) that Apps Script doesn't handle — hence the old
+// code used mode:'no-cors' which makes the response opaque. Result: the
+// frontend couldn't tell if the server returned {success:false}, so users
+// always saw a green toast even when nothing was saved.
+//
+// Switching to Content-Type: text/plain;charset=utf-8 makes it a "simple
+// request" — no preflight, browser sends the POST directly, and the JSON
+// response IS readable. The backend reads e.postData.contents as a raw string
+// and JSON.parses it, so it doesn't care what Content-Type we send.
+//
+// On any failure (network, HTTP error, non-JSON response, or success:false
+// from the server) this throws, so existing try/catch blocks at each call
+// site display the actual error to the user.
+async function postToScript(payload) {
+  let r;
+  try {
+    r = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+  } catch (netErr) {
+    throw new Error('Network error: ' + (netErr.message || 'unable to reach server'));
+  }
+  if (!r.ok) throw new Error('Server error: HTTP ' + r.status);
+  let data;
+  try { data = await r.json(); }
+  catch (parseErr) { throw new Error('Server returned a non-JSON response (the script may have errored)'); }
+  if (!data || data.success !== true) {
+    const msg = (data && data.error) ? data.error : 'Server reported failure';
+    throw new Error(msg);
+  }
+  return data;
+}
+
 // ─── Navigation ───────────────────────────────
 function goPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1303,7 +1342,7 @@ async function submitForm() {
   while (attempt < MAX) {
     attempt++;
     try {
-      await fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+      await postToScript(payload);
       hideLoading();
       document.getElementById('successTicket').textContent = ticketNumber;
       document.getElementById('successScreen').classList.add('show');
@@ -1640,16 +1679,14 @@ async function submitUpdate() {
   document.getElementById('updateBtn').disabled = true;
   showLoading('กำลังบันทึก… Saving…');
   try {
-    await fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action: 'updateTicketStatus',
-        ticketNumber: usTicket.ticketNumber,
-        status, technician: tech, correction, spareParts: parts,
-        poNumber: document.getElementById('usPoNumber').value.trim(),
-        notifyPurchasing: status === '📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
-        notifyOutsideTeam: status === '🚧 Waiting for Outside Team',
-        quotationPhotos: usPhotos.map(p => ({name:p.name, data:p.data}))
-      })
+    await postToScript({
+      action: 'updateTicketStatus',
+      ticketNumber: usTicket.ticketNumber,
+      status, technician: tech, correction, spareParts: parts,
+      poNumber: document.getElementById('usPoNumber').value.trim(),
+      notifyPurchasing: status === '📋 Inquiring for Quotation' && !document.getElementById('usPoNumber').value.trim(),
+      notifyOutsideTeam: status === '🚧 Waiting for Outside Team',
+      quotationPhotos: usPhotos.map(p => ({name:p.name, data:p.data}))
     });
     hideLoading();
     document.getElementById('usSuccess').classList.add('show');
@@ -2132,10 +2169,7 @@ async function assignTicket(ticketNumber, dept, btn) {
   btn.innerHTML = '⏳ กำลังมอบหมาย…';
   const deptLabel = dept === 'electrical' ? 'Electrical Maintenance Team' : 'General Maintenance Team';
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true})
-    });
+    await postToScript({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true});
     row.outerHTML = `<div class="mv-assigned-badge">✅ มอบหมายให้ ${dept === 'electrical' ? '⚡ ช่างไฟฟ้า' : '🔧 ช่างทั่วไป'} แล้ว</div>`;
     const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
     if (idx !== -1) { mvTickets[idx].status = '🔵 In Progress'; mvTickets[idx].technician = deptLabel; }
@@ -2525,10 +2559,7 @@ async function confirmReassign(dept) {
   const deptLabel = dept === 'electrical' ? 'Electrical Maintenance Team' : 'General Maintenance Team';
   document.querySelectorAll('.mv-reassign-opt').forEach(b => b.disabled = true);
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true})
-    });
+    await postToScript({action:'acceptTicket', ticketNumber, technician: deptLabel, notifyReassign: true});
     const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
     if (idx !== -1) { mvTickets[idx].technician = deptLabel; mvTickets[idx].status = '🔵 In Progress'; mvTickets[idx].acceptedAt = ''; }
     closeReassignModal();
@@ -2545,13 +2576,10 @@ async function confirmResetToSubmitted() {
   const ticketNumber = mvReassignTicket;
   document.querySelectorAll('#mvTeamStep button').forEach(b => b.disabled = true);
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        action:'updateTicketStatus', ticketNumber,
-        status:'🟠 Submitted', technician:'', correction:'', spareParts:'',
-        notifyReset: true
-      })
+    await postToScript({
+      action:'updateTicketStatus', ticketNumber,
+      status:'🟠 Submitted', technician:'', correction:'', spareParts:'',
+      notifyReset: true
     });
     const idx = mvTickets.findIndex(t => t.ticketNumber === ticketNumber);
     if (idx !== -1) { mvTickets[idx].status = '🟠 Submitted'; mvTickets[idx].technician = ''; mvTickets[idx].approver = ''; }
@@ -2652,16 +2680,11 @@ async function submitCancel() {
   btn.textContent = 'กำลังยกเลิก... / Cancelling...';
 
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action       : 'cancelTicket',
-        ticketNumber : cpCancelTicketNum,
-        reason       : reason,
-        cancelledBy  : cancelledBy || 'GM'
-      })
+    await postToScript({
+      action       : 'cancelTicket',
+      ticketNumber : cpCancelTicketNum,
+      reason       : reason,
+      cancelledBy  : cancelledBy || 'GM'
     });
 
     closeCancelModalBtn();
