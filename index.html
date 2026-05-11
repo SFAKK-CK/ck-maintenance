@@ -587,6 +587,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="field">
           <label class="lbl" for="mname">ชื่อเครื่อง/อุปกรณ์ <span class="en">Machine / Device</span> <span class="req">*</span></label>
           <input type="text" id="mname" placeholder="เช่น: เครื่องแพ็ค, ปั๊มน้ำ, แอร์...">
+          <select id="mnameSelect" style="display:none">
+            <option value="">— เลือกหมวดหมู่ / Select Category —</option>
+            <option value="อุปกรณ์ไฟฟ้า">อุปกรณ์ไฟฟ้า / Electrical Equipment</option>
+            <option value="อะไหล่เครื่องจักร">อะไหล่เครื่องจักร / Mechanical Parts</option>
+            <option value="อะไหล่ระบบความเย็น">อะไหล่ระบบความเย็น / Refrigeration Parts</option>
+            <option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง / Consumables</option>
+            <option value="อุปกรณ์ความปลอดภัย">อุปกรณ์ความปลอดภัย / Safety Equipment</option>
+            <option value="เครื่องมือและอุปกรณ์ช่าง">เครื่องมือและอุปกรณ์ช่าง / Tools &amp; Hardware</option>
+            <option value="อุปกรณ์ IT">อุปกรณ์ IT / IT &amp; Electronics</option>
+            <option value="อื่นๆ">อื่นๆ — ระบุในช่องรายการสินค้า / Other — describe in Items field</option>
+          </select>
         </div>
         <div class="field">
           <label class="lbl" for="refcode">รหัสอ้างอิง <span class="en">Reference Code</span></label>
@@ -1203,6 +1214,8 @@ function fullResetForm() {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  var mnSel = document.getElementById('mnameSelect');
+  if (mnSel) mnSel.value = '';
   document.getElementById('t1').checked = true;
   if (isUrgent) toggleUrgent();
   photos = [];
@@ -1274,6 +1287,28 @@ function updateBuildInfoBox() {
   var picked = document.querySelector('input[name=rtype]:checked');
   var isBuild = picked && isPurchaseRequestType(picked.value);
   box.style.display = isBuild ? 'block' : 'none';
+
+  var mnameLabel  = document.querySelector('label[for="mname"]');
+  var mnameInput  = document.getElementById('mname');
+  var mnameSelect = document.getElementById('mnameSelect');
+  var causeLabel  = document.querySelector('label[for="cause"]');
+  var causeArea   = document.getElementById('cause');
+
+  if (isBuild) {
+    // Show category dropdown, hide free-text input
+    if (mnameInput)  { mnameInput.style.display  = 'none'; mnameInput.value = ''; }
+    if (mnameSelect)   mnameSelect.style.display  = 'block';
+    if (mnameLabel)  mnameLabel.innerHTML = 'หมวดหมู่การจัดซื้อ <span class="en">Purchase Category</span> <span class="req">*</span>';
+    if (causeLabel)  causeLabel.innerHTML = 'รายการสินค้า/บริการที่ต้องการ <span class="en">Items / Services to Purchase</span> <span class="req">*</span>';
+    if (causeArea)   causeArea.placeholder = 'ระบุชื่อสินค้า ขนาด และจำนวนให้ชัดเจน เช่น:\n- ถุงมือยาง Size M × 10 กล่อง\n- สายพาน B-52 × 2 เส้น\n- น้ำมันหล่อลื่น Shell Omala 220 × 1 กระป๋อง\n\nSpecify item name, size, and quantity clearly.';
+  } else {
+    // Show free-text input, hide category dropdown
+    if (mnameInput)  { mnameInput.style.display  = ''; }
+    if (mnameSelect) { mnameSelect.style.display  = 'none'; mnameSelect.value = ''; }
+    if (mnameLabel)  mnameLabel.innerHTML = 'ชื่อเครื่อง/อุปกรณ์ <span class="en">Machine / Device</span> <span class="req">*</span>';
+    if (causeLabel)  causeLabel.innerHTML = 'อาการ/สาเหตุ <span class="en">Symptom / Cause</span> <span class="req">*</span>';
+    if (causeArea)   causeArea.placeholder = 'อธิบายปัญหา... / Describe the issue...';
+  }
 }
 
 function toggleUrgent() {
@@ -1312,10 +1347,19 @@ uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('over
 uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('over'); handleFiles(e.dataTransfer.files); });
 
 function validateForm() {
-  const ids = ['rname','dept','mname','cause'];
+  const isBuildReq = isPurchaseRequestType(document.querySelector('input[name=rtype]:checked')?.value);
+  // For Open PR: validate category select instead of mname input
+  const ids = isBuildReq ? ['rname','dept','cause'] : ['rname','dept','mname','cause'];
   for (const id of ids) {
     const el = document.getElementById(id);
     if (!el.value.trim()) { el.focus(); el.style.borderColor = '#ef4444'; setTimeout(() => el.style.borderColor = '', 2500); return false; }
+  }
+  if (isBuildReq) {
+    const sel = document.getElementById('mnameSelect');
+    if (!sel || !sel.value) {
+      if (sel) { sel.style.borderColor = '#ef4444'; setTimeout(() => sel.style.borderColor = '', 2500); }
+      return false;
+    }
   }
   return true;
 }
@@ -1324,13 +1368,16 @@ async function submitForm() {
   const err = document.getElementById('errMsg');
   err.classList.remove('show');
   if (!validateForm()) { err.classList.add('show'); return; }
+  const isBuildPayload = isPurchaseRequestType(document.querySelector('input[name=rtype]:checked').value);
   const payload = {
     ticketNumber, timestamp: new Date().toISOString(),
     isUrgent: isUrgent ? 'ด่วน (Urgent)' : 'ทั่วไป (Normal)',
     requestType: document.querySelector('input[name=rtype]:checked').value,
     reporterName: document.getElementById('rname').value.trim(),
     department: document.getElementById('dept').value,
-    machineName: document.getElementById('mname').value.trim(),
+    machineName: isBuildPayload
+      ? document.getElementById('mnameSelect').value
+      : document.getElementById('mname').value.trim(),
     refCode: document.getElementById('refcode').value.trim(),
     cause: document.getElementById('cause').value.trim(),
     desiredDate: document.getElementById('ddate').value,
