@@ -405,6 +405,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .combo-item:last-child{border-bottom:none}
 .combo-item:hover,.combo-item.active{background:#eff6ff;color:#1a2744}
 .combo-empty{padding:14px 12px;font-size:13px;color:var(--g500);text-align:center;font-style:italic;line-height:1.5}
+.combo-other{font-style:italic;color:var(--g500);background:#fafafa;border-top:1.5px solid var(--g200)}
+.combo-other:hover,.combo-other.active{background:#eff6ff;color:#1a2744;font-style:normal}
 </style>
 </head>
 <body>
@@ -1210,21 +1212,28 @@ function initMachineCombo() {
     return v.indexOf('repair') >= 0 || v.indexOf('ซ่อม') >= 0;
   }
 
+  // The always-present "Other" entry — pinned at the bottom of the list,
+  // shown even while filtering, so the user always has a way to enter a
+  // machine that isn't in the registry.
+  var OTHER_ITEM = '<div class="combo-item combo-other" data-other="1">' +
+    'อื่นๆ / Other — เครื่องที่ไม่มีในรายการ / not in the list</div>';
+
   function render(query) {
     if (!isRepairSelected()) { list.hidden = true; return; }
     var q = (query || '').trim().toLowerCase();
     filtered = q ? MACHINE_LIST.filter(function(m){ return m.toLowerCase().indexOf(q) >= 0; })
                  : MACHINE_LIST.slice();
     activeIdx = -1;
+    var html = '';
     if (filtered.length === 0) {
-      list.innerHTML =
-        '<div class="combo-empty">ไม่พบในทะเบียน — กด "ส่ง" เพื่อใช้ข้อความนี้<br>' +
-        'Not in registry — press Submit to use as-is</div>';
+      html = '<div class="combo-empty">ไม่พบในทะเบียน / Not in registry</div>';
     } else {
-      list.innerHTML = filtered.map(function(m, i){
+      html = filtered.map(function(m, i){
         return '<div class="combo-item" data-idx="' + i + '">' + esc(m) + '</div>';
       }).join('');
     }
+    // "Other" is always appended last, regardless of the filter.
+    list.innerHTML = html + OTHER_ITEM;
     list.hidden = false;
   }
 
@@ -1233,6 +1242,16 @@ function initMachineCombo() {
     input.value = filtered[idx];
     list.hidden = true;
     activeIdx = -1;
+  }
+
+  // "Other" picked — clear the field so the user can type a machine name
+  // that isn't in the registry. Whatever they type is stored as-is.
+  function chooseOther() {
+    input.value = '';
+    input.placeholder = 'พิมพ์ชื่อเครื่อง / Type the machine name';
+    list.hidden = true;
+    activeIdx = -1;
+    setTimeout(function(){ input.focus(); }, 0);
   }
 
   function updateActive() {
@@ -1273,6 +1292,7 @@ function initMachineCombo() {
     var item = e.target.closest('.combo-item');
     if (!item) return;
     e.preventDefault();
+    if (item.dataset.other) { chooseOther(); return; }
     pick(parseInt(item.dataset.idx, 10));
   });
 }
