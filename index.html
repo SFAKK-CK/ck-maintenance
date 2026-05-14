@@ -398,6 +398,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .mv-role-btn-text{}
 .mv-role-btn-name{font-size:20px;font-weight:800;color:var(--navy)}
 .mv-role-btn-desc{font-size:17px;color:var(--g400);margin-top:2px}
+/* ── Machine combobox (Repair-flow searchable dropdown) ── */
+.combobox{position:relative}
+.combo-list{position:absolute;top:100%;left:0;right:0;z-index:60;max-height:280px;overflow-y:auto;background:#fff;border:1.5px solid var(--g200);border-radius:var(--r8);box-shadow:0 10px 28px -8px rgba(15,23,42,.18);margin-top:4px}
+.combo-item{padding:10px 12px;font-size:16px;line-height:1.35;cursor:pointer;border-bottom:1px solid #f3f4f6;color:var(--g900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.combo-item:last-child{border-bottom:none}
+.combo-item:hover,.combo-item.active{background:#eff6ff;color:#1a2744}
+.combo-empty{padding:14px 12px;font-size:13px;color:var(--g500);text-align:center;font-style:italic;line-height:1.5}
 </style>
 </head>
 <body>
@@ -586,7 +593,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="field">
           <label class="lbl" for="mname">ชื่อเครื่อง/อุปกรณ์ <span class="en">Machine / Device</span> <span class="req">*</span></label>
-          <input type="text" id="mname" placeholder="เช่น: เครื่องแพ็ค, ปั๊มน้ำ, แอร์...">
+          <div class="combobox" id="machineCombo">
+            <input type="text" id="mname" autocomplete="off" placeholder="พิมพ์ชื่อเครื่องหรือรหัส เช่น BITZER, AB.M.01 / Type machine name or code">
+            <div class="combo-list" id="machineComboList" hidden></div>
+          </div>
           <select id="mnameSelect" style="display:none">
             <option value="">— เลือกหมวดหมู่ / Select Category —</option>
             <option value="อุปกรณ์ไฟฟ้า">อุปกรณ์ไฟฟ้า / Electrical Equipment</option>
@@ -1062,6 +1072,212 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4LpNcK5zecvMa8w99GnnG8KT0WSh5GS-MvMzAQc4ZCzIlXyo4puCNwfPwSDU_G9hzmA/exec';
 
 // ═══════════════════════════════════════════════════════════
+// MACHINE REGISTRY — display format: "ชื่อเครื่องจักร / อุปกรณ์ - รหัสเครื่อง".
+// Used as suggestions in the Repair-flow machine combobox. Free text is still
+// accepted — if the typed value doesn't match any entry, the user can still
+// submit it (treated as a machine not yet in the registry).
+//
+// This hardcoded array is a FALLBACK only — used offline, or if the
+// getMachines endpoint is unavailable. On form load, fetchMachineList()
+// replaces it with the live list from the "🔧 Machine Registry" Sheet tab,
+// so machines can be added/retired by editing the Sheet — no redeploy needed.
+// Seed source: ทะเบียนเครื่องจักร อัปเดต 28-04-26.pdf (83 assets, PDF order).
+let MACHINE_LIST = [
+  // ── ระบบทำความเย็น / Refrigeration System (17) ──
+  "COMPRESSOR-BITZER NO.1695105809-380V.EN - AB.M.01",
+  "COMPRESSOR 380V. - AB.M.02",
+  "COMPRESSOR-BITZER NO.1666208211-380V.EN - AB.M.03",
+  "COMPRESSOR-BITZER NO.1680205898-380V.EN - AB.M.04",
+  "COMPRESSOR-BITZER NO.16891109203-380V.EN - AB.M.05",
+  "COMPRESSOR-BITZER NO.1666611419-380V.EN - AB.M.06",
+  "COMPRESSOR-BITZER NO.1666402477-380V.EN - AB.M.07",
+  "COOLING-LBC 100RT NO 4100280903 - AB.M.08",
+  "COMPRESSOR AIR BLAST 2 - AB.M.58",
+  "compressor - AB.M.43",
+  "compressor - AB.M.44",
+  "เทอร์โมมิเตอร์+เซ็นเซอร์ - AB.M.74",
+  "เทอร์โมมิเตอร์+เซ็นเซอร์ - AB.M.75",
+  "เทอร์โมมิเตอร์+เซ็นเซอร์ - ABM.76",
+  "เทอร์โมมิเตอร์+เซ็นเซอร์ - AB.M.98",
+  "เทอร์โมมิเตอร์ + เซ็นเซอร์ - ABM.104",
+  "เทอร์โมมิเตอร์ + เซ็นเซอร์ - AB.M.105",
+  // ── ระบบปรับอากาศ / Air Conditioning System (7) ──
+  "AIRCONDITION FC1200-NOF124810004 - AB.M.10",
+  "AIRCONDITION FC1200-NOF124810002 - AB.M.11",
+  "AIRCONDITION DG รุ่น 18 LCRU 31 - AB.M.12",
+  "AIRCONDITION DG - AB.M.13",
+  "AIRCONDITION - AB.M.124",
+  "AIRCONDITION - AB.M.125",
+  "AIRCONDITION - AB.M.126",
+  // ── โครงสร้างและระบบสาธารณูปโภค / Structure & Utilities (5) ──
+  "โครงสร้างอาคาร - AB.M.90",
+  "ตู้เมนบอร์ด - AB.M.47",
+  "Softener Tank (เครื่องลดความกระด้างน้ำ) - AB.M.89",
+  "บ่อบำบัดน้ำเสีย - AB.M.122",
+  "WATER TANK - AB.M.123",
+  // ── เครื่องมือและอุปกรณ์ QC / QC Tools & Equipment (20) ──
+  "เครื่องชั่งดิจิตอล (METTLER TOLEDO / SPA121-3211) - AB.M.61",
+  "เครื่องชั่งดิจิตอล (DIGI / DS673SS) - AB.M.63",
+  "เครื่องชั่งดิจิตอล (METTLER TOLEDO) - AB.M.66",
+  "เครื่องชั่งแบบตั้งโต๊ะ S/N-APK-X06061 (UWE) - AB.M.73",
+  "เครื่องชั่งดิจิตอล S/N-SSE-A0013 (SUNFORD/WSS30KG) - AB.M.80",
+  "เครื่องชั่งแบบตั้งโต๊ะ S/N-APK-X06062 (UWE) - AB.M.85",
+  "เครื่องชั่งแบบตั้งโต๊ะ S/N-APK-X06063 (UWE) - AB.M.86",
+  "เครื่องชั่งดิจิตอล 033-0122-62 (METTLER TOLEDO DS-673-SS-3KG/0.001KG) - AB.M.97",
+  "เครื่องชั่งดิจิตอล (SUNFORD/WSS) - AB.M.108",
+  "เครื่องชั่งดิจิตอล (TS Scale 1932) - AB.M.109",
+  "เครื่องชั่งดิจิตอล (SUNFORD) - AB.M.110",
+  "เครื่องชั่งดิจิตอล (METTLER TOLEDO) - AB.M.111",
+  "เครื่องชั่งดิจิตอล (ATLANTIC V9) - AB.M.112",
+  "เครื่องชั่งดิจิตอล (TS Scale 1932) - AB.M.116",
+  "เครื่องชั่งดิจิตอล (METTLER TOLEDO) - AB.M.118",
+  "ดิจิตอล เทอร์โมมิเตอร์ (Testo) - AB.M.68",
+  "ดิจิตอล เทอร์โมมิเตอร์ (Testo) - AB.M.69",
+  "STD.WEIGHT 1000G - AB.M.101",
+  "STD.WEIGHT 20G - ABM.102",
+  "สว่านแบต (Bosch GSB-102LI) - AB.M.100",
+  // ── เครื่องจักรและอุปกรณ์ในไลน์ผลิต / Production Line Machinery (34) ──
+  "เครื่องซีลสายพานตัวใหญ่อัตโนมัติ - AB.M.15",
+  "เครื่องซีลสายพานตัวใหญ่อัตโนมัติ - AB.M.16",
+  "เครื่องซีลสายพานตัวใหญ่อัตโนมัติ - AB.M.17",
+  "เครื่องซีลสายพานตัวเล็ก - AB.M.57",
+  "เครื่องซีลสายพานมือ (MERCIER) - AB.M.50",
+  "เครื่องซีลสายพานมือ (MERCIER) - AB.M.51",
+  "เครื่องซีลสายพานมือ (MERCIER) - AB.M.52",
+  "เครื่องถอดเกล็ดปลา (CHI CONG) - AB.M.77",
+  "เครื่องเก็ทปลา - AB.M.48",
+  "VACCUM model-j-v006 (ULTRAVAC UV 800) - AB.M.42",
+  "รถเข็น 2 ล้อ / 4 ล้อ - AB.M.53",
+  "รถเข็น 2 ล้อ / 4 ล้อ - AB.M.33",
+  "เครื่องรัดกล่อง (TUPACK) - AB.M.71",
+  "เครื่องรัดกล่อง (TUPACK) - AB.M.72",
+  "เครื่องรูดเทป OPP อัตโนมัติ (CHS.6601) - AB.M.34",
+  "เครื่องหั่นปลา (BEST) - AB.M.119",
+  "เครื่องหั่นปลา (BEST) - AB.M.120",
+  "เครื่องหั่นปลา (BEST) - AB.M.121",
+  "electronic balance (OMRON) - AB.M.36",
+  "electronic balance - AB.M.37",
+  "electronic balance (IWX30) - AB.M.38",
+  "electronic balance - AB.M.39",
+  "ลิฟท์ - AB.M.99",
+  "โฟล์คลิฟท์ - AB.M.127",
+  "แฮนด์ลิฟท์ (DLX) - AB.M.45",
+  "แฮนด์ลิฟท์ (DLX) - AB.M.46",
+  "แฮนด์ลิฟท์ (DLX) - AB.M.95",
+  "เครื่องดักแมลง (Frankrin/AAC220GB/S) - AB.M.25",
+  "เครื่องดักแมลง (LC ECOSYS) - AB.M.26",
+  "เครื่องดักแมลง (Frankrin/AAC220GB/S) - AB.M.27",
+  "เครื่องดักแมลง (Frankrin/AAC220GB/S) - AB.M.28",
+  "เครื่องดักแมลง (Frankrin/AAC220GB/S) - AB.M.29",
+  "เครื่องดักแมลง (Frankrin/AAC220GB/S) - AB.M.30",
+  "เครื่องดักแมลง (GLEECON) - AB.M.55"
+];
+
+// ── Pull the live machine registry from the backend ────────
+// Overrides the hardcoded MACHINE_LIST above with fresh data from the
+// "🔧 Machine Registry" Sheet tab. Fails silently to the fallback if
+// offline or the endpoint errors. Called once from initForm().
+function fetchMachineList() {
+  fetch(APPS_SCRIPT_URL + '?action=getMachines')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d && d.success && Array.isArray(d.machines) && d.machines.length) {
+        MACHINE_LIST = d.machines.map(function(m){
+          return m.code ? (m.name + ' - ' + m.code) : m.name;
+        });
+      }
+    })
+    .catch(function(){ /* offline or endpoint error — keep the hardcoded fallback */ });
+}
+
+// ── Machine combobox: searchable dropdown wired to #mname ──
+// Active only when the Repair request type is selected; for Open PR and Move,
+// the suggestion panel stays closed and #mname behaves as plain free text.
+// Keyboard nav (↑/↓/Enter/Esc), click-to-pick, and "no match → submit as-is".
+function initMachineCombo() {
+  var input = document.getElementById('mname');
+  var list  = document.getElementById('machineComboList');
+  if (!input || !list || input._comboWired) return;
+  input._comboWired = true;
+
+  var activeIdx = -1;
+  var filtered  = [];
+
+  function isRepairSelected() {
+    var t = document.querySelector('input[name=rtype]:checked');
+    if (!t) return false;
+    var v = (t.value || '').toLowerCase();
+    return v.indexOf('repair') >= 0 || v.indexOf('ซ่อม') >= 0;
+  }
+
+  function render(query) {
+    if (!isRepairSelected()) { list.hidden = true; return; }
+    var q = (query || '').trim().toLowerCase();
+    filtered = q ? MACHINE_LIST.filter(function(m){ return m.toLowerCase().indexOf(q) >= 0; })
+                 : MACHINE_LIST.slice();
+    activeIdx = -1;
+    if (filtered.length === 0) {
+      list.innerHTML =
+        '<div class="combo-empty">ไม่พบในทะเบียน — กด "ส่ง" เพื่อใช้ข้อความนี้<br>' +
+        'Not in registry — press Submit to use as-is</div>';
+    } else {
+      list.innerHTML = filtered.map(function(m, i){
+        return '<div class="combo-item" data-idx="' + i + '">' + esc(m) + '</div>';
+      }).join('');
+    }
+    list.hidden = false;
+  }
+
+  function pick(idx) {
+    if (idx < 0 || idx >= filtered.length) return;
+    input.value = filtered[idx];
+    list.hidden = true;
+    activeIdx = -1;
+  }
+
+  function updateActive() {
+    var items = list.querySelectorAll('.combo-item');
+    for (var i = 0; i < items.length; i++) {
+      if (i === activeIdx) {
+        items[i].classList.add('active');
+        items[i].scrollIntoView({ block: 'nearest' });
+      } else {
+        items[i].classList.remove('active');
+      }
+    }
+  }
+
+  input.addEventListener('focus', function(){ render(input.value); });
+  input.addEventListener('input', function(){ render(input.value); });
+  input.addEventListener('keydown', function(e){
+    if (list.hidden || filtered.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = (activeIdx + 1) % filtered.length;
+      updateActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = (activeIdx - 1 + filtered.length) % filtered.length;
+      updateActive();
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      pick(activeIdx);
+    } else if (e.key === 'Escape') {
+      list.hidden = true;
+    }
+  });
+  // Delay so click on combo-item registers before blur hides the panel.
+  input.addEventListener('blur', function(){ setTimeout(function(){ list.hidden = true; }, 200); });
+
+  list.addEventListener('mousedown', function(e){
+    var item = e.target.closest('.combo-item');
+    if (!item) return;
+    e.preventDefault();
+    pick(parseInt(item.dataset.idx, 10));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
 //  UX HELPERS — toasts, offline indicator, relative time
 // ═══════════════════════════════════════════════════════════
 
@@ -1270,6 +1486,11 @@ function initForm() {
     }
   });
   updateBuildInfoBox();
+  // Wire up the machine combobox (search-as-you-type from MACHINE_LIST).
+  // Idempotent — guards itself against double-wiring on re-init.
+  initMachineCombo();
+  // Refresh the machine list from the Sheet (overrides the hardcoded fallback).
+  fetchMachineList();
 }
 
 // Recognizes both the new "Open PR / เปิดใบขอซื้อ" label and the legacy "Build / สร้าง"
@@ -1287,6 +1508,9 @@ function updateBuildInfoBox() {
   var picked = document.querySelector('input[name=rtype]:checked');
   var isBuild = picked && isPurchaseRequestType(picked.value);
   box.style.display = isBuild ? 'block' : 'none';
+  // Close any open machine-combobox panel when request type changes.
+  var comboList = document.getElementById('machineComboList');
+  if (comboList) comboList.hidden = true;
 
   var mnameLabel  = document.querySelector('label[for="mname"]');
   var mnameInput  = document.getElementById('mname');
