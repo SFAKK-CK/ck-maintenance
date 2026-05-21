@@ -1203,10 +1203,6 @@ input:focus,select:focus,textarea:focus,
           </select>
         </div>
         <div class="field">
-          <label class="lbl" for="refcode">รหัสอ้างอิง <span class="en">Reference Code</span></label>
-          <input type="text" id="refcode" placeholder="รหัสเครื่อง (ถ้ามี)">
-        </div>
-        <div class="field">
           <label class="lbl" for="cause">อาการ/สาเหตุ <span class="en">Symptom / Cause</span> <span class="req">*</span></label>
           <textarea id="cause" rows="3" placeholder="อธิบายปัญหา... / Describe the issue..."></textarea>
         </div>
@@ -2037,7 +2033,7 @@ function resetUpdateStatus() {
 }
 
 function fullResetForm() {
-  ['rname','dept','mname','refcode','cause','ddate'].forEach(function(id) {
+  ['rname','dept','mname','cause','ddate'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -2213,7 +2209,7 @@ async function submitForm() {
     machineName: isBuildPayload
       ? document.getElementById('mnameSelect').value
       : document.getElementById('mname').value.trim(),
-    refCode: document.getElementById('refcode').value.trim(),
+    refCode: '',
     cause: document.getElementById('cause').value.trim(),
     desiredDate: document.getElementById('ddate').value,
     photos: photos.map(p => ({name:p.name, data:p.data}))
@@ -2240,7 +2236,7 @@ async function submitForm() {
 function resetForm() {
   document.getElementById('successScreen').classList.remove('show');
   document.getElementById('submitBtn').disabled = false;
-  ['rname','dept','mname','refcode','cause','ddate'].forEach(id => document.getElementById(id).value = '');
+  ['rname','dept','mname','cause','ddate'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('t1').checked = true;
   if (isUrgent) toggleUrgent();
   photos = []; renderPrev();
@@ -3291,7 +3287,6 @@ function buildDetailContent(t) {
     <div class="mv-detail-section">
       <div class="mv-detail-section-title">⚙️ เครื่อง / อาการ · Machine & Issue</div>
       <div class="mv-detail-row"><div class="mv-detail-row-lbl">เครื่อง / อุปกรณ์</div><div class="mv-detail-row-val">${esc(t.machine || '—')}</div></div>
-      ${t.refCode ? `<div class="mv-detail-row"><div class="mv-detail-row-lbl">รหัสอ้างอิง</div><div class="mv-detail-row-val">${esc(t.refCode)}</div></div>` : ''}
       <div class="mv-detail-row"><div class="mv-detail-row-lbl">อาการ / ปัญหา</div><div class="mv-detail-row-val multiline">${esc(t.cause || '—')}</div></div>
     </div>`;
 
