@@ -432,10 +432,13 @@ body{
 }
 
 /* Page-enter animation — every screen swap feels alive */
+/* NOTE: The "to" keyframe MUST use transform:none (not translateY(0) scale(1)).
+   Any non-none transform on .page creates a containing block that breaks
+   position:fixed on children (drilldown overlay, detail modal, etc.). */
 .page.active{animation:pageEnter .38s var(--spring-soft) both}
 @keyframes pageEnter{
   from{opacity:0;transform:translateY(12px) scale(.985)}
-  to{opacity:1;transform:translateY(0) scale(1)}
+  to{opacity:1;transform:none}
 }
 
 /* ── Top app header (still navy, but with refined depth) ── */
