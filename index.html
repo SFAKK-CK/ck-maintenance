@@ -3832,7 +3832,7 @@ function loadTechTickets(staff) {
   if (!_techParts.length) fetch(APPS_SCRIPT_URL + '?action=getInventoryItems').then(function(r){return r.json();}).then(function(d){if(d.success)_techParts=d.items||[];}).catch(function(){});
 }
 
-function tNorm(st){st=String(st);if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';return'New';}
+function tNorm(st){st=String(st);if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('Cancelled')>=0||st.indexOf('cancelled')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';if(st.indexOf('Submitted')>=0||st.indexOf('PR Pending')>=0||st.indexOf('Assigned')>=0)return'New';return'New';}
 function tLbl(st){return{'New':'รอดำเนินการ','In Progress':'กำลังดำเนินการ','Waiting Parts':'รออะไหล่','Outside Team':'รอทีมภายนอก','Completed':'เสร็จสิ้น'}[st]||st;}
 function tCls(st){return{'New':'s-new','In Progress':'s-ip','Waiting Parts':'s-wait','Outside Team':'s-out','Completed':'s-done'}[st]||'s-ip';}
 function tBg(st){return{'New':'#fef3c7','In Progress':'#dbeafe','Waiting Parts':'#fef3c7','Outside Team':'#f3e8ff','Completed':'#dcfce7'}[st]||'#f1f5f9';}
