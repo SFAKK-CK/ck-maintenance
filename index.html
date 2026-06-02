@@ -1023,7 +1023,7 @@ input:focus,select:focus,textarea:focus,
 .login-numpad button{padding:14px;font-size:20px;font-weight:500;border-radius:12px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.5);color:#0f172a;cursor:pointer;transition:.15s;backdrop-filter:blur(8px)}
 .login-numpad button:active{background:rgba(255,255,255,.8);transform:scale(.95)}
 .login-footer{text-align:center;color:#94a3b8;font-size:11px;margin-top:20px}
-.home-logout-btn{position:absolute;top:12px;right:16px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;z-index:10}
+.home-logout-btn{position:absolute;top:12px;right:16px;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.1);color:#374151;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;z-index:10;backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(0,0,0,.08)}
 /* ═══ TECHNICIAN VIEW ═══ */
 .tech-hdr{background:#1a73e8;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
 .tech-hdr h1{color:#fff;font-size:15px;font-weight:600}
@@ -3843,7 +3843,7 @@ function tAge(ts){if(!ts)return'';var d=new Date(ts);if(isNaN(d))return'';var da
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[];
   _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed')co.push(t);else pe.push(t);});
-  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><button class="tech-logout" onclick="appLogout()">↩</button></div>';
+  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div>';
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
   h+='<div id="ttPL" class="tech-list">';
   pe.forEach(function(t){var fr=tFroz(t._st);
