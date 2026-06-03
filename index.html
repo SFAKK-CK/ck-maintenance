@@ -3735,7 +3735,6 @@ var _techParts = [];
 var _techSelected = [];
 var _techMode = 'u';
 var _techNS = 'In Progress';
-var _techNoParts = false;
 
 // ── Login numpad ──
 (function() {
@@ -3840,6 +3839,7 @@ function tBg(st){return{'New':'#fef3c7','In Progress':'#dbeafe','Waiting Parts':
 function tCol(st){return{'New':'#92400e','In Progress':'#1e40af','Waiting Parts':'#92400e','Outside Team':'#6b21a8','Completed':'#166534'}[st]||'#334155';}
 function tFroz(st){return st==='Waiting Parts'||st==='Outside Team';}
 function tAge(ts){if(!ts)return'';var d=new Date(ts);if(isNaN(d))return'';var days=Math.floor((new Date()-d)/864e5);return days<=0?'วันนี้':days===1?'เมื่อวาน':'ผ่านมา '+days+' วัน';}
+function tParsePhotos(str){if(!str||str==='undefined')return[];return str.split(/[\n,]/).map(function(url){url=url.trim();if(!url)return null;var m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);if(m)return{id:m[1],thumb:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w200',full:'https://drive.google.com/open?id='+m[1]};if(url.match(/^https?:\/\//))return{id:'',thumb:url,full:url};return null;}).filter(Boolean);}
 
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[];
@@ -3871,7 +3871,7 @@ function tAccept(tid){
 // ── Detail screen ──
 function tOpen(tid,mode){
   _techCurrent=_techTickets.find(function(x){return x.ticketNumber===tid;});if(!_techCurrent)return;
-  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];_techNoParts=false;
+  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];
   tRenderDetail();
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-tech-detail').classList.add('active');window.scrollTo(0,0);
@@ -3880,6 +3880,14 @@ function tRenderDetail(){
   var t=_techCurrent;if(!t)return;var st=tNorm(t.status);var h='';
   h+='<div class="td-hdr"><button class="bk" onclick="tBack()">←</button><div class="tt">'+esc(t.ticketNumber)+'</div><div class="td-badge">'+tLbl(st)+'</div></div>';
   h+='<div class="td-info"><div class="mc">'+esc(t.machine)+'</div><div class="mt">'+esc(t.department)+' | ผู้แจ้ง: '+esc(t.reporter)+'</div><div class="sy"><div class="sl">อาการ:</div><div>'+esc(t.cause)+'</div></div><div class="ag">⏱ '+tAge(t.timestamp)+'</div></div>';
+  // Photos from original request
+  var _photos=tParsePhotos(t.photos||'');
+  if(_photos.length){
+    h+='<div style="font-size:12px;font-weight:600;padding:8px 14px 4px;color:#64748b">📷 รูปจากใบแจ้งซ่อม ('+_photos.length+')</div>';
+    h+='<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 14px 8px;-webkit-overflow-scrolling:touch">';
+    _photos.forEach(function(p){h+='<img src="'+esc(p.thumb)+'" onclick="window.open(\''+esc(p.full)+'\',\'_blank\')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
+    h+='</div>';
+  }
   h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
   // Update panel
   h+='<div id="tPU" style="display:'+(_techMode==='u'?'block':'none')+'"><div class="td-form">';
@@ -3894,8 +3902,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl">🔍 สาเหตุ <span class="req">*</span></div><div class="td-ta"><textarea id="tCRC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl">🔧 วิธีแก้ไข <span class="req">*</span></div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข..."></textarea></div>';
   h+='<div class="td-lbl" style="cursor:pointer" onclick="tToggleParts()">📦 อะไหล่ที่ใช้ <span id="tPartsToggle" style="font-size:12px;color:#94a3b8;margin-left:auto">▼</span></div>';
-  h+='<div class="td-pills" style="margin-bottom:8px"><div class="td-pill'+ (_techNoParts ? ' on' : '') +'" onclick="tSetNoParts(this)" id="tNoParts">ไม่ใช้อะไหล่ / No parts needed</div></div>';
-  h+='<div id="tPartsSection" style="display:'+(_techNoParts?'none':'block')+'">';
+  h+='<div id="tPartsSection">';
   h+='<div class="td-search"><span>🔍</span><input type="text" id="tPQ" placeholder="ค้นหาอะไหล่..." oninput="tFP()"></div>';
   h+='<div id="tPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tSC">0</span>)</div><div id="tSP" style="margin-bottom:12px"></div>';
@@ -3907,8 +3914,7 @@ function tRenderDetail(){
   if(_techMode==='c'){tRP('');tRSP();}
 }
 function tSetMode(m){_techMode=m;document.getElementById('tPU').style.display=m==='u'?'block':'none';document.getElementById('tPC').style.display=m==='c'?'block':'none';document.querySelectorAll('.td-mode').forEach(function(b){b.classList.remove('on');});document.querySelector('.td-mode.m'+m).classList.add('on');if(m==='c'){tRP('');tRSP();}}
-function tToggleParts(){var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(!s)return;if(s.style.display==='none'&&!_techNoParts){s.style.display='block';t.textContent='▲';}else{s.style.display='none';t.textContent='▼';}}
-function tSetNoParts(el){_techNoParts=!_techNoParts;el.className='td-pill'+(_techNoParts?' on':'');var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(_techNoParts){s.style.display='none';t.textContent='▼';_techSelected=[];tRSP();}else{s.style.display='block';t.textContent='▲';}}
+function tToggleParts(){var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(!s)return;if(s.style.display==='none'){s.style.display='block';t.textContent='▲';}else{s.style.display='none';t.textContent='▼';}}
 function tSS(el,st){_techNS=st;document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';}
 function tBack(){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});loadTechTickets(window._loggedInUser);}
 
