@@ -3891,9 +3891,12 @@ function tAccept(tid){
 }
 
 // ── Detail screen ──
+var _techPhotos=[];
+function tHandlePhotos(files){var max=3,maxSz=5*1024*1024;Array.from(files).forEach(function(f){if(_techPhotos.length>=max)return;if(f.size>maxSz){toast(f.name+': ไฟล์ใหญ่เกิน 5MB','warn');return;}if(!f.type.startsWith('image/'))return;var r=new FileReader();r.onload=function(e){_techPhotos.push({name:f.name,data:e.target.result});tRenderPhotoPrev();};r.readAsDataURL(f);});}
+function tRenderPhotoPrev(){var el=document.getElementById('tPhotoPrev');if(!el)return;var h='';_techPhotos.forEach(function(p,i){h+='<div style="display:inline-block;position:relative;margin:4px"><img src="'+p.data+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"><button onclick="_techPhotos.splice('+i+',1);tRenderPhotoPrev()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:12px;cursor:pointer;line-height:20px">×</button></div>';});el.innerHTML=h;var c=document.getElementById('tPhotoCount');if(c)c.textContent=_techPhotos.length?_techPhotos.length+'/3 รูป':'';}
 function tOpen(tid,mode){
   _techCurrent=_techTickets.find(function(x){return x.ticketNumber===tid;});if(!_techCurrent)return;
-  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];
+  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];_techPhotos=[];
   tRenderDetail();
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-tech-detail').classList.add('active');window.scrollTo(0,0);
@@ -3916,6 +3919,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tUNote" placeholder="อัพเดทเพิ่มเติม..."></textarea></div>';
   h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Waiting Parts\')">📦 รออะไหล่</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
+  h+='<div class="td-lbl">📷 แนบรูปเพิ่ม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div>';
   h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 อะไหล่ที่ต้องการ</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจนเพื่อฝ่ายจัดซื้อ</div></div>';
   h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุก่อนบันทึก</div>';
   h+='</div></div>';
@@ -3929,6 +3933,7 @@ function tRenderDetail(){
   h+='<div id="tPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tSC">0</span>)</div><div id="tSP" style="margin-bottom:12px"></div>';
   h+='</div>';
+  h+='<div class="td-lbl">📷 รูปหลังซ่อม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div>';
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tCNote" placeholder="หมายเหตุ..."></textarea></div>';
   h+='<button class="td-action green" onclick="tComplete()">✓ เสร็จสิ้นและตัดสต็อก</button><div class="td-hint">อะไหล่จะถูกตัดสต็อกอัตโนมัติ</div>';
   h+='</div></div>';
@@ -3946,7 +3951,7 @@ function tSaveUpd(){
   var spares=(_techNS==='Waiting Parts')?(document.getElementById('tUSpares').value||'').trim():'';
   var full='🔍 สาเหตุ: '+rc+(note?'\n📝 '+note:'');
   showLoading('กำลังบันทึก...');
-  postToScript({action:'updateTicket_tech',ticketNumber:_techCurrent.ticketNumber,status:_techNS,notes:full,spareParts:spares}).then(function(){hideLoading();tBack();toast(tFroz(_techNS)?'บันทึกแล้ว — ระงับ 🔒':'บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  postToScript({action:'updateTicket_tech',ticketNumber:_techCurrent.ticketNumber,status:_techNS,notes:full,spareParts:spares,photos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast(tFroz(_techNS)?'บันทึกแล้ว — ระงับ 🔒':'บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
 
 // Parts
@@ -3977,7 +3982,7 @@ function tComplete(){
   var note=(document.getElementById('tCNote').value||'').trim();
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
   showLoading('กำลังตัดสต็อก...');
-  postToScript({action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})}).then(function(d){
+  postToScript({action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};}),photos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(d){
     hideLoading();_techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();toast('เสร็จสิ้น ✓ ตัดสต็อกแล้ว');
   }).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
