@@ -3916,7 +3916,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tUNote" placeholder="อัพเดทเพิ่มเติม..."></textarea></div>';
   h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Waiting Parts\')">📦 รออะไหล่</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
-  h+='<div class="td-warn">⚠️ "รออะไหล่" หรือ "รอทีมภายนอก" จะระงับใบงาน</div>';
+  h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 อะไหล่ที่ต้องการ</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจนเพื่อฝ่ายจัดซื้อ</div></div>';
   h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุก่อนบันทึก</div>';
   h+='</div></div>';
   // Complete panel
@@ -3937,15 +3937,16 @@ function tRenderDetail(){
 }
 function tSetMode(m){_techMode=m;document.getElementById('tPU').style.display=m==='u'?'block':'none';document.getElementById('tPC').style.display=m==='c'?'block':'none';document.querySelectorAll('.td-mode').forEach(function(b){b.classList.remove('on');});document.querySelector('.td-mode.m'+m).classList.add('on');if(m==='c'){tRP('');tRSP();}}
 function tToggleParts(){var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(!s)return;if(s.style.display==='none'){s.style.display='block';t.textContent='▲';}else{s.style.display='none';t.textContent='▼';}}
-function tSS(el,st){_techNS=st;document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';}
+function tSS(el,st){_techNS=st;document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';var sw=document.getElementById('tSparesWrap');if(sw)sw.style.display=(st==='Waiting Parts')?'block':'none';}
 function tBack(){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});loadTechTickets(window._loggedInUser);}
 
 function tSaveUpd(){
   var rc=(document.getElementById('tURC').value||'').trim();if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}
   var note=(document.getElementById('tUNote').value||'').trim();
+  var spares=(_techNS==='Waiting Parts')?(document.getElementById('tUSpares').value||'').trim():'';
   var full='🔍 สาเหตุ: '+rc+(note?'\n📝 '+note:'');
   showLoading('กำลังบันทึก...');
-  postToScript({action:'updateTicket_tech',ticketNumber:_techCurrent.ticketNumber,status:_techNS,notes:full}).then(function(){hideLoading();tBack();toast(tFroz(_techNS)?'บันทึกแล้ว — ระงับ 🔒':'บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  postToScript({action:'updateTicket_tech',ticketNumber:_techCurrent.ticketNumber,status:_techNS,notes:full,spareParts:spares}).then(function(){hideLoading();tBack();toast(tFroz(_techNS)?'บันทึกแล้ว — ระงับ 🔒':'บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
 
 // Parts
