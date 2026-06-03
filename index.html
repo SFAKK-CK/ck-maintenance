@@ -3877,9 +3877,9 @@ function tClosePhoto(){document.getElementById('photoModal').classList.remove('s
 function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;if(_photoIdx>=_photoList.length)_photoIdx=0;document.getElementById('photoModalImg').src=_photoList[_photoIdx].full;document.getElementById('photoModalCount').textContent=(_photoIdx+1)+' / '+_photoList.length;}
 
 function renderTechList(){
-  var u=window._loggedInUser,pe=[],co=[];
-  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed')co.push(t);else pe.push(t);});
-  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div>';
+  var u=window._loggedInUser,pe=[],co=[],sevenDaysAgo=new Date();sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
+  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><div style="display:flex;gap:6px"><button onclick="tRefresh()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;cursor:pointer;font-family:inherit;font-weight:600">🔄 รีเฟรช</button><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div></div>';
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
   h+='<div id="ttPL" class="tech-list">';
   pe.forEach(function(t){var fr=tFroz(t._st);
@@ -3902,6 +3902,8 @@ function tAccept(tid){
   showLoading('กำลังรับงาน...');
   postToScript({action:'acceptTicket_tech',ticketNumber:tid,staffName:window._loggedInUser.name}).then(function(){hideLoading();var t=_techTickets.find(function(x){return x.ticketNumber===tid;});if(t)t.status='🔵 In Progress';renderTechList();toast('รับงานแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
+
+function tRefresh(){loadTechTickets(window._loggedInUser);toast('รีเฟรชแล้ว ✓');}
 
 // ── Detail screen ──
 var _techPhotos=[];
