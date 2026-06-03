@@ -3926,10 +3926,11 @@ function tRP(q){var el=document.getElementById('tPR');if(!el)return;var h='';q=q
   _techParts.forEach(function(p){if(q&&p.name.toLowerCase().indexOf(q)<0&&p.code.toLowerCase().indexOf(q)<0)return;if(_techSelected.find(function(s){return s.code===p.code;}))return;
   var sc=p.stock<=0?'td-stock-out':(p.stock<=3?'td-stock-low':'td-stock-ok'),sl=p.stock<=0?'หมด':(p.stock<=3?'ต่ำ '+p.stock:'คงเหลือ '+p.stock);
   h+='<div class="td-part-row" onclick="tAP(\''+esc(p.code)+'\')"><div><div class="td-part-name">'+esc(p.name)+'</div><div class="td-part-code">'+esc(p.code)+' | '+esc(p.unit)+'</div></div><span class="td-stock-badge '+sc+'">'+sl+'</span></div>';});
-  if(!h&&q)h='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">ไม่พบ</div>';
-  if(!h&&!q&&_techParts.length)h='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">พิมพ์ค้นหา</div>';
+  // Always show "Other" option at the bottom for unlisted parts
+  h+='<div class="td-part-row" onclick="tAddOther()" style="border-top:1px solid #e2e8f0;background:#f8fafc"><div><div class="td-part-name" style="color:#1a73e8">➕ อื่นๆ / Other (ระบุเอง)</div><div class="td-part-code">เพิ่มอะไหล่ที่ไม่อยู่ในระบบ</div></div></div>';
   el.innerHTML=h;}
 function tAP(c){var p=_techParts.find(function(x){return x.code===c;});if(p)_techSelected.push({code:p.code,name:p.name,unit:p.unit,stock:p.stock,qty:1});tRP(document.getElementById('tPQ')?document.getElementById('tPQ').value:'');tRSP();}
+function tAddOther(){var name=prompt('ชื่ออะไหล่ / Part name:');if(!name||!name.trim())return;var unit=prompt('หน่วย / Unit (เช่น ตัว, อัน, เมตร):','ตัว');var code='OTHER-'+Date.now();_techSelected.push({code:code,name:name.trim(),unit:unit||'ตัว',stock:999,qty:1,isOther:true});tRP(document.getElementById('tPQ')?document.getElementById('tPQ').value:'');tRSP();}
 function tRemP(c){_techSelected=_techSelected.filter(function(s){return s.code!==c;});tRP(document.getElementById('tPQ')?document.getElementById('tPQ').value:'');tRSP();}
 function tChQ(c,d){var s=_techSelected.find(function(x){return x.code===c;});if(s)s.qty=Math.max(1,s.qty+d);tRSP();}
 function tRSP(){var el=document.getElementById('tSP');if(!el)return;var h='';
