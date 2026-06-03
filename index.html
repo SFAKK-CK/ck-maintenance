@@ -3905,6 +3905,24 @@ function tRenderDetail(){
   var t=_techCurrent;if(!t)return;var st=tNorm(t.status);var h='';
   h+='<div class="td-hdr"><button class="bk" onclick="tBack()">←</button><div class="tt">'+esc(t.ticketNumber)+'</div><div class="td-badge">'+tLbl(st)+'</div></div>';
   h+='<div class="td-info"><div class="mc">'+esc(t.machine)+'</div><div class="mt">'+esc(t.department)+' | ผู้แจ้ง: '+esc(t.reporter)+'</div><div class="sy"><div class="sl">อาการ:</div><div>'+esc(t.cause)+'</div></div><div class="ag">⏱ '+tAge(t.timestamp)+'</div></div>';
+  // Activity log
+  var _log=[];
+  if(t.timestamp)_log.push({ts:new Date(t.timestamp),icon:'📝',txt:'แจ้งซ่อมโดย '+esc(t.reporter)+' ('+esc(t.department)+')'});
+  if(t.assignedAt)_log.push({ts:new Date(t.assignedAt),icon:'👑',txt:'GM มอบหมายให้ '+esc(t.approver||'')});
+  if(t.acceptedAt)_log.push({ts:new Date(t.acceptedAt),icon:'✅',txt:'ทีมช่างรับงานแล้ว'});
+  if(t.inquiringAt)_log.push({ts:new Date(t.inquiringAt),icon:'📋',txt:'ขอใบเสนอราคา / PR Request'});
+  if(t.prApprovedAt)_log.push({ts:new Date(t.prApprovedAt),icon:'👑',txt:'GM อนุมัติ PR'});
+  if(t.outsideAt)_log.push({ts:new Date(t.outsideAt),icon:'🚚',txt:'ส่งทีมภายนอก'});
+  if(t.poSavedAt)_log.push({ts:new Date(t.poSavedAt),icon:'🔖',txt:'PO: '+esc(t.poNumber||'')});
+  if(t.vendorSelected)_log.push({ts:new Date(t.poSavedAt||t.prApprovedAt||t.inquiringAt||t.timestamp),icon:'🏆',txt:'เลือกผู้จำหน่าย: '+esc(t.vendorSelected)});
+  if(t.completedDate)_log.push({ts:new Date(t.completedDate),icon:'🟢',txt:'เสร็จสิ้น'});
+  _log.sort(function(a,b){return a.ts-b.ts;});
+  if(_log.length>1){
+    h+='<div style="padding:8px 14px 0"><div class="td-log-toggle" onclick="var el=document.getElementById(\'tLogBody\');var ar=document.getElementById(\'tLogArrow\');if(el.style.display===\'none\'){el.style.display=\'block\';ar.textContent=\'▲\';}else{el.style.display=\'none\';ar.textContent=\'▼\';}" style="font-size:12px;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">📜 ประวัติใบงาน ('+_log.length+') <span id="tLogArrow" style="font-size:10px">▼</span></div>';
+    h+='<div id="tLogBody" style="display:none;margin-top:6px;border-left:2px solid #e2e8f0;padding-left:10px">';
+    _log.forEach(function(e){var dd=e.ts;var hh=('0'+dd.getHours()).slice(-2)+':'+('0'+dd.getMinutes()).slice(-2);var ds=('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2);h+='<div style="font-size:11px;margin-bottom:6px;color:#475569"><span style="color:#94a3b8">'+ds+' '+hh+'</span> '+e.icon+' '+e.txt+'</div>';});
+    h+='</div></div>';
+  }
   // Photos from original request
   var _photos=tParsePhotos(t.photos||'');
   if(_photos.length){
