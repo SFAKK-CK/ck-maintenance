@@ -4056,17 +4056,10 @@ function tComplete(){
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
   var payload={action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})};
   if(_cmpPhotos.length>0)payload.photos=_cmpPhotos.map(function(p){return{name:p.name,data:p.data};});
-  console.log('deductParts payload size:', JSON.stringify(payload).length, 'bytes, parts:', _techSelected.length);
   showLoading('กำลังตัดสต็อก...');
-  fetch(APPS_SCRIPT_URL, {method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
-  .then(function(r){console.log('deductParts response status:', r.status, r.statusText);return r.text();})
-  .then(function(txt){
-    console.log('deductParts raw response:', txt.substring(0,500));
-    hideLoading();
-    var d;try{d=JSON.parse(txt);}catch(pe){toast('Server returned invalid response — check Apps Script logs','error');return;}
-    if(!d.success){toast('Error: '+(d.error||'Unknown'),'error');return;}
-    _techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();toast('เสร็จสิ้น ✓ ตัดสต็อกแล้ว');
-  }).catch(function(e){hideLoading();console.error('deductParts error:', e);toast('Error: '+e.message,'error');});
+  postToScript(payload).then(function(d){
+    hideLoading();_techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();toast('เสร็จสิ้น ✓ ตัดสต็อกแล้ว');
+  }).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
 
 </script>
