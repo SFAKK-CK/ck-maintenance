@@ -1024,6 +1024,13 @@ input:focus,select:focus,textarea:focus,
 .login-numpad button:active{background:rgba(255,255,255,.8);transform:scale(.95)}
 .login-footer{text-align:center;color:#94a3b8;font-size:11px;margin-top:20px}
 .home-logout-btn{position:absolute;top:12px;right:16px;background:rgba(255,255,255,.7);border:1px solid rgba(0,0,0,.1);color:#374151;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;z-index:10;backdrop-filter:blur(12px);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.photo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;flex-direction:column}
+.photo-modal.show{display:flex}
+.photo-modal img{max-width:90%;max-height:75vh;border-radius:8px;object-fit:contain}
+.photo-modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer}
+.photo-modal-nav{display:flex;gap:16px;margin-top:16px}
+.photo-modal-nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer}
+.photo-modal-count{color:rgba(255,255,255,.6);font-size:13px;margin-top:8px}
 /* ═══ TECHNICIAN VIEW ═══ */
 .tech-hdr{background:#1a73e8;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
 .tech-hdr h1{color:#fff;font-size:15px;font-weight:600}
@@ -1112,6 +1119,17 @@ input:focus,select:focus,textarea:focus,
 <div id="toastLayer" aria-live="polite"></div>
 <!-- Offline banner (shown when network is unavailable) -->
 <div id="offlineBanner">📡 ออฟไลน์ / Offline — รอเชื่อมต่ออินเทอร์เน็ต / Waiting for connection…</div>
+
+<!-- Photo viewer modal -->
+<div class="photo-modal" id="photoModal" onclick="tClosePhoto()">
+  <button class="photo-modal-close" onclick="tClosePhoto()">✕</button>
+  <img id="photoModalImg" src="" onclick="event.stopPropagation()">
+  <div class="photo-modal-nav" onclick="event.stopPropagation()">
+    <button onclick="tNavPhoto(-1)">← ก่อนหน้า</button>
+    <button onclick="tNavPhoto(1)">ถัดไป →</button>
+  </div>
+  <div class="photo-modal-count" id="photoModalCount"></div>
+</div>
 
 
 <!-- LOADING OVERLAY -->
@@ -3839,7 +3857,11 @@ function tBg(st){return{'New':'#fef3c7','In Progress':'#dbeafe','Waiting Parts':
 function tCol(st){return{'New':'#92400e','In Progress':'#1e40af','Waiting Parts':'#92400e','Outside Team':'#6b21a8','Completed':'#166534'}[st]||'#334155';}
 function tFroz(st){return st==='Waiting Parts'||st==='Outside Team';}
 function tAge(ts){if(!ts)return'';var d=new Date(ts);if(isNaN(d))return'';var days=Math.floor((new Date()-d)/864e5);return days<=0?'วันนี้':days===1?'เมื่อวาน':'ผ่านมา '+days+' วัน';}
-function tParsePhotos(str){if(!str||str==='undefined')return[];return str.split(/[\n,]/).map(function(url){url=url.trim();if(!url)return null;var m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);if(m)return{id:m[1],thumb:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w200',full:'https://drive.google.com/open?id='+m[1]};if(url.match(/^https?:\/\//))return{id:'',thumb:url,full:url};return null;}).filter(Boolean);}
+function tParsePhotos(str){if(!str||str==='undefined')return[];return str.split(/[\n,]/).map(function(url){url=url.trim();if(!url)return null;var m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);if(m)return{id:m[1],thumb:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w200',full:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800'};if(url.match(/^https?:\/\//))return{id:'',thumb:url,full:url};return null;}).filter(Boolean);}
+var _photoList=[], _photoIdx=0;
+function tShowPhoto(i){var t=_techCurrent;if(!t)return;_photoList=tParsePhotos(t.photos||'');_photoIdx=i;var m=document.getElementById('photoModal');var img=document.getElementById('photoModalImg');if(!_photoList[i])return;img.src=_photoList[i].full;document.getElementById('photoModalCount').textContent=(i+1)+' / '+_photoList.length;m.classList.add('show');}
+function tClosePhoto(){document.getElementById('photoModal').classList.remove('show');}
+function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;if(_photoIdx>=_photoList.length)_photoIdx=0;document.getElementById('photoModalImg').src=_photoList[_photoIdx].full;document.getElementById('photoModalCount').textContent=(_photoIdx+1)+' / '+_photoList.length;}
 
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[];
@@ -3885,7 +3907,7 @@ function tRenderDetail(){
   if(_photos.length){
     h+='<div style="font-size:12px;font-weight:600;padding:8px 14px 4px;color:#64748b">📷 รูปจากใบแจ้งซ่อม ('+_photos.length+')</div>';
     h+='<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 14px 8px;-webkit-overflow-scrolling:touch">';
-    _photos.forEach(function(p){h+='<img src="'+esc(p.thumb)+'" onclick="window.open(\''+esc(p.full)+'\',\'_blank\')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
+    _photos.forEach(function(p,i){h+='<img src="'+esc(p.thumb)+'" onclick="tShowPhoto('+i+')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
     h+='</div>';
   }
   h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
