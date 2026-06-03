@@ -3934,8 +3934,11 @@ function tAddOther(){var name=prompt('ชื่ออะไหล่ / Part name
 function tRemP(c){_techSelected=_techSelected.filter(function(s){return s.code!==c;});tRP(document.getElementById('tPQ')?document.getElementById('tPQ').value:'');tRSP();}
 function tChQ(c,d){var s=_techSelected.find(function(x){return x.code===c;});if(s)s.qty=Math.max(1,s.qty+d);tRSP();}
 function tRSP(){var el=document.getElementById('tSP');if(!el)return;var h='';
-  _techSelected.forEach(function(s){var af=s.stock-s.qty,info=af<0?'<span style="color:#dc2626">เกิน!</span>':'คงเหลือ: '+s.stock+' → '+af;
-  h+='<div class="td-sel-part"><div class="td-sel-row"><div><div class="td-sel-name">'+esc(s.name)+'</div><div class="td-sel-code">'+esc(s.code)+'</div></div><button class="td-sel-rm" onclick="tRemP(\''+esc(s.code)+'\')">✕</button></div>';
+  _techSelected.forEach(function(s){
+  var isOther=s.isOther||s.code.indexOf('OTHER-')===0;
+  var info=isOther?'<span style="color:#1a73e8">ระบุเอง / Manual</span>':(s.stock-s.qty<0?'<span style="color:#dc2626">เกิน!</span>':'คงเหลือ: '+s.stock+' → '+(s.stock-s.qty));
+  var codeDisplay=isOther?'อะไหล่นอกระบบ / Unlisted part':esc(s.code);
+  h+='<div class="td-sel-part"><div class="td-sel-row"><div><div class="td-sel-name">'+esc(s.name)+'</div><div class="td-sel-code">'+codeDisplay+'</div></div><button class="td-sel-rm" onclick="tRemP(\''+esc(s.code)+'\')">✕</button></div>';
   h+='<div class="td-qty-row"><div class="td-qty-ctrl"><button onclick="tChQ(\''+esc(s.code)+'\',-1)">-</button><div class="v">'+s.qty+'</div><button onclick="tChQ(\''+esc(s.code)+'\',1)">+</button></div><span class="td-qty-unit">'+esc(s.unit)+'</span><span class="td-qty-info">'+info+'</span></div></div>';});
   el.innerHTML=h;var sc=document.getElementById('tSC');if(sc)sc.textContent=_techSelected.length;}
 
