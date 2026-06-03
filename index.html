@@ -3850,12 +3850,12 @@ function loadTechTickets(staff) {
   if (!_techParts.length) fetch(APPS_SCRIPT_URL + '?action=getInventoryItems').then(function(r){return r.json();}).then(function(d){if(d.success)_techParts=d.items||[];}).catch(function(){});
 }
 
-function tNorm(st){st=String(st);if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('Cancelled')>=0||st.indexOf('cancelled')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';if(st.indexOf('Submitted')>=0||st.indexOf('PR Pending')>=0||st.indexOf('Assigned')>=0)return'New';return'New';}
-function tLbl(st){return{'New':'รอดำเนินการ','In Progress':'กำลังดำเนินการ','Waiting Parts':'รออะไหล่','Outside Team':'รอทีมภายนอก','Completed':'เสร็จสิ้น'}[st]||st;}
-function tCls(st){return{'New':'s-new','In Progress':'s-ip','Waiting Parts':'s-wait','Outside Team':'s-out','Completed':'s-done'}[st]||'s-ip';}
+function tNorm(st){st=String(st);if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('Cancelled')>=0||st.indexOf('cancelled')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Inquiring')>=0)return'Inquiring';if(st.indexOf('PR Approval')>=0||st.indexOf('Vendor Selection')>=0||st.indexOf('Vendor Compare')>=0)return'PR Pending';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';if(st.indexOf('Submitted')>=0||st.indexOf('Assigned')>=0)return'New';return'New';}
+function tLbl(st){return{'New':'รอดำเนินการ','In Progress':'กำลังดำเนินการ','Inquiring':'ขอใบเสนอราคา','PR Pending':'รออนุมัติ PR','Waiting Parts':'รออะไหล่','Outside Team':'รอทีมภายนอก','Completed':'เสร็จสิ้น'}[st]||st;}
+function tCls(st){return{'New':'s-new','In Progress':'s-ip','Inquiring':'s-wait','PR Pending':'s-wait','Waiting Parts':'s-wait','Outside Team':'s-out','Completed':'s-done'}[st]||'s-ip';}
 function tBg(st){return{'New':'#fef3c7','In Progress':'#dbeafe','Waiting Parts':'#fef3c7','Outside Team':'#f3e8ff','Completed':'#dcfce7'}[st]||'#f1f5f9';}
 function tCol(st){return{'New':'#92400e','In Progress':'#1e40af','Waiting Parts':'#92400e','Outside Team':'#6b21a8','Completed':'#166534'}[st]||'#334155';}
-function tFroz(st){return st==='Waiting Parts'||st==='Outside Team';}
+function tFroz(st){return st==='Waiting Parts'||st==='Outside Team'||st==='Inquiring'||st==='PR Pending';}
 function tAge(ts){if(!ts)return'';var d=new Date(ts);if(isNaN(d))return'';var days=Math.floor((new Date()-d)/864e5);return days<=0?'วันนี้':days===1?'เมื่อวาน':'ผ่านมา '+days+' วัน';}
 function tParsePhotos(str){if(!str||str==='undefined')return[];return str.split(/[\n,]/).map(function(url){url=url.trim();if(!url)return null;var m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);if(m)return{id:m[1],thumb:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w200',full:'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800'};if(url.match(/^https?:\/\//))return{id:'',thumb:url,full:url};return null;}).filter(Boolean);}
 var _photoList=[], _photoIdx=0;
@@ -3917,11 +3917,13 @@ function tRenderDetail(){
   // Update panel
   h+='<div id="tPU" style="display:'+(_techMode==='u'?'block':'none')+'"><div class="td-form">';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
-  h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tUNote" placeholder="อัพเดทเพิ่มเติม..."></textarea></div>';
-  h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Waiting Parts\')">📦 รออะไหล่</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
-  h+='<div class="td-lbl">📷 แนบรูปเพิ่ม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div>';
-  h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 อะไหล่ที่ต้องการ</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจนเพื่อฝ่ายจัดซื้อ</div></div>';
-  h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุก่อนบันทึก</div>';
+  h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
+  h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
+  h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDet" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
+  h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div></div>';
+  h+='<div id="tPhotoWrap" style="display:none"><div class="td-lbl">📷 รูปภาพอ้างอิง / Reference Photos</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div></div>';
+  h+='<div class="td-warn" id="tUWarn">⚠️ "ขอใบเสนอราคา" หรือ "รอทีมภายนอก" จะระงับใบงาน</div>';
+  h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุและรายละเอียดก่อนบันทึก</div>';
   h+='</div></div>';
   // Complete panel
   h+='<div id="tPC" style="display:'+(_techMode==='c'?'block':'none')+'"><div class="td-form">';
@@ -3942,16 +3944,36 @@ function tRenderDetail(){
 }
 function tSetMode(m){_techMode=m;document.getElementById('tPU').style.display=m==='u'?'block':'none';document.getElementById('tPC').style.display=m==='c'?'block':'none';document.querySelectorAll('.td-mode').forEach(function(b){b.classList.remove('on');});document.querySelector('.td-mode.m'+m).classList.add('on');if(m==='c'){tRP('');tRSP();}}
 function tToggleParts(){var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(!s)return;if(s.style.display==='none'){s.style.display='block';t.textContent='▲';}else{s.style.display='none';t.textContent='▼';}}
-function tSS(el,st){_techNS=st;document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';var sw=document.getElementById('tSparesWrap');if(sw)sw.style.display=(st==='Waiting Parts')?'block':'none';}
+function tSS(el,st){
+  _techNS=st;_techPhotos=[];
+  document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';
+  var isInq=st==='Inquiring',isOut=st==='Outside Team',isIP=st==='In Progress';
+  var iw=document.getElementById('tInquiringWrap');if(iw)iw.style.display=isInq?'block':'none';
+  var sw=document.getElementById('tSparesWrap');if(sw)sw.style.display=isIP?'block':'none';
+  var pw=document.getElementById('tPhotoWrap');if(pw)pw.style.display=(isInq||isOut)?'block':'none';
+  var pp=document.getElementById('tPhotoPrev');if(pp)pp.innerHTML='';
+  var pc=document.getElementById('tPhotoCount');if(pc)pc.textContent='';
+  var lbl=document.getElementById('tUDetLbl'),ta=document.getElementById('tUDet');
+  if(isInq){lbl.innerHTML='📋 รายละเอียดสินค้าที่ต้องการซื้อ <span class="req">*</span>';ta.placeholder='ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase...';}
+  else if(isOut){lbl.innerHTML='🚧 สาเหตุที่ต้องใช้ทีมภายนอก <span class="req">*</span>';ta.placeholder='ระบุสาเหตุที่ไม่สามารถซ่อมภายในได้ / Why in-house repair is not possible...';}
+  else{lbl.innerHTML='🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span>';ta.placeholder='อธิบายวิธีการซ่อมหรือดำเนินการ...';}
+}
 function tBack(){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});loadTechTickets(window._loggedInUser);}
 
 function tSaveUpd(){
   var rc=(document.getElementById('tURC').value||'').trim();if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}
-  var note=(document.getElementById('tUNote').value||'').trim();
-  var spares=(_techNS==='Waiting Parts')?(document.getElementById('tUSpares').value||'').trim():'';
-  var full='🔍 สาเหตุ: '+rc+(note?'\n📝 '+note:'');
+  var det=(document.getElementById('tUDet').value||'').trim();if(!det){toast('กรุณากรอกรายละเอียด','error');return;}
+  var spares=(_techNS==='In Progress')?(document.getElementById('tUSpares').value||'').trim():'';
+  var techName=window._loggedInUser.name;
+  var correction='🔍 สาเหตุ: '+rc+'\n'+det;
   showLoading('กำลังบันทึก...');
-  postToScript({action:'updateTicket_tech',ticketNumber:_techCurrent.ticketNumber,status:_techNS,notes:full,spareParts:spares,photos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast(tFroz(_techNS)?'บันทึกแล้ว — ระงับ 🔒':'บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  if(_techNS==='Inquiring'){
+    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F4CB} Inquiring for Quotation',technician:techName,correction:det,notifyPurchasing:true,quotationPhotos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('ส่งใบขอซื้อให้ GM อนุมัติแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  } else if(_techNS==='Outside Team'){
+    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F6A7} Waiting for Outside Team',technician:techName,correction:correction,notifyOutsideTeam:true,quotationPhotos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('บันทึกแล้ว — ระงับ 🔒');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  } else {
+    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F535} In Progress',technician:techName,correction:correction,spareParts:spares}).then(function(){hideLoading();tBack();toast('บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  }
 }
 
 // Parts
