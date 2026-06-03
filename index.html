@@ -3222,6 +3222,14 @@ async function assignTicket(ticketNumber, dept, btn) {
 let usOverrideInput = '';
 
 function showGMOverride() {
+  if (window._loggedInRole === 'gm') {
+    document.getElementById('usInquiringLock').style.display = 'none';
+    document.getElementById('usGMOverride').style.display = 'none';
+    var inner = document.getElementById('usFieldsInner');
+    if (inner) inner.style.display = 'block';
+    document.getElementById('updateBtn').style.display = 'block';
+    return;
+  }
   usOverrideInput = '';
   updateUSDots();
   document.getElementById('usOverrideError').style.display = 'none';
@@ -3535,8 +3543,13 @@ function openReassignModal(ticketNumber) {
   mvPasscodeInput = '';
   updatePasscodeDots();
   document.getElementById('mvPasscodeError').style.display = 'none';
-  document.getElementById('mvPasscodeStep').style.display = 'block';
-  document.getElementById('mvTeamStep').style.display = 'none';
+  if (window._loggedInRole === 'gm') {
+    document.getElementById('mvPasscodeStep').style.display = 'none';
+    document.getElementById('mvTeamStep').style.display = 'block';
+  } else {
+    document.getElementById('mvPasscodeStep').style.display = 'block';
+    document.getElementById('mvTeamStep').style.display = 'none';
+  }
   document.getElementById('mvReassignModal').classList.add('show');
   document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', mvPasscodeKeyHandler);
@@ -3872,7 +3885,7 @@ function renderTechList(){
   pe.forEach(function(t){var fr=tFroz(t._st);
     h+='<div class="ttk '+tCls(t._st)+'"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+tBg(t._st)+';color:'+tCol(t._st)+'">'+tLbl(t._st)+'</span></div>';
     h+='<div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+esc(t.machine)+'</div><div class="ttk-age">⏱ '+tAge(t.timestamp)+'</div>';
-    if(fr){h+='<div class="ttk-frozen'+(t._st==='Outside Team'?' outside':'')+'">🔒 ใบงานถูกระงับ</div>';}
+    if(fr){var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[t._st]||'🔒 ใบงานถูกระงับ';h+='<div class="ttk-frozen'+(t._st==='Outside Team'?' outside':'')+'">'+fMsg+'</div>';}
     else{h+='<div class="ttk-btns">';if(t._st==='New')h+='<button class="ttk-btn accept" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน</button>';
     else{h+='<button class="ttk-btn update" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')">📝 อัพเดท</button>';h+='<button class="ttk-btn complete" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'c\')">✓ พร้อมซ่อม</button>';}h+='</div>';}
     h+='</div>';});
@@ -3930,6 +3943,15 @@ function tRenderDetail(){
     h+='<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 14px 8px;-webkit-overflow-scrolling:touch">';
     _photos.forEach(function(p,i){h+='<img src="'+esc(p.thumb)+'" onclick="tShowPhoto('+i+')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
     h+='</div>';
+  }
+  if(st==='New'){
+    h+='<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px">🔒 ต้องรับงานก่อน</div><div style="font-size:12px;color:#a16207;margin-bottom:10px">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action blue" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
+    document.getElementById('techDetailInner').innerHTML=h;return;
+  }
+  if(tFroz(st)){
+    var fzMsg={'Waiting Parts':'รออะไหล่ — PO อยู่ระหว่างจัดส่ง','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
+    h+='<div style="background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#880e4f">🔒 '+fzMsg+'</div><div style="font-size:12px;color:#880e4f;margin-top:4px">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
+    document.getElementById('techDetailInner').innerHTML=h;return;
   }
   h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
   // Update panel
