@@ -2117,6 +2117,7 @@ async function postToScript(payload) {
   try {
     r = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
+      redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
@@ -3906,12 +3907,14 @@ function tAccept(tid){
 function tRefresh(){loadTechTickets(window._loggedInUser);toast('รีเฟรชแล้ว ✓');}
 
 // ── Detail screen ──
-var _techPhotos=[];
-function tHandlePhotos(files){var max=3,maxSz=5*1024*1024;Array.from(files).forEach(function(f){if(_techPhotos.length>=max)return;if(f.size>maxSz){toast(f.name+': ไฟล์ใหญ่เกิน 5MB','warn');return;}if(!f.type.startsWith('image/'))return;var r=new FileReader();r.onload=function(e){_techPhotos.push({name:f.name,data:e.target.result});tRenderPhotoPrev();};r.readAsDataURL(f);});}
-function tRenderPhotoPrev(){var el=document.getElementById('tPhotoPrev');if(!el)return;var h='';_techPhotos.forEach(function(p,i){h+='<div style="display:inline-block;position:relative;margin:4px"><img src="'+p.data+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"><button onclick="_techPhotos.splice('+i+',1);tRenderPhotoPrev()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:12px;cursor:pointer;line-height:20px">×</button></div>';});el.innerHTML=h;var c=document.getElementById('tPhotoCount');if(c)c.textContent=_techPhotos.length?_techPhotos.length+'/3 รูป':'';}
+var _updPhotos=[],_cmpPhotos=[];
+function tHandleUpdPhotos(files){var max=3,maxSz=5*1024*1024;Array.from(files).forEach(function(f){if(_updPhotos.length>=max)return;if(f.size>maxSz){toast(f.name+': ไฟล์ใหญ่เกิน 5MB','warn');return;}if(!f.type.startsWith('image/'))return;var r=new FileReader();r.onload=function(e){_updPhotos.push({name:f.name,data:e.target.result});tRenderPrev('upd');};r.readAsDataURL(f);});}
+function tHandleCmpPhotos(files){var max=3,maxSz=5*1024*1024;Array.from(files).forEach(function(f){if(_cmpPhotos.length>=max)return;if(f.size>maxSz){toast(f.name+': ไฟล์ใหญ่เกิน 5MB','warn');return;}if(!f.type.startsWith('image/'))return;var r=new FileReader();r.onload=function(e){_cmpPhotos.push({name:f.name,data:e.target.result});tRenderPrev('cmp');};r.readAsDataURL(f);});}
+function tRenderPrev(which){var arr=which==='upd'?_updPhotos:_cmpPhotos;var el=document.getElementById('tPrev_'+which);if(!el)return;var h='';arr.forEach(function(p,i){h+='<div style="display:inline-block;position:relative;margin:4px"><img src="'+p.data+'" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0"><button onclick="tRmPhoto(\''+which+'\','+i+')" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:12px;cursor:pointer;line-height:20px">×</button></div>';});el.innerHTML=h;var c=document.getElementById('tCnt_'+which);if(c)c.textContent=arr.length?arr.length+'/3 รูป':'';}
+function tRmPhoto(which,i){if(which==='upd'){_updPhotos.splice(i,1);}else{_cmpPhotos.splice(i,1);}tRenderPrev(which);}
 function tOpen(tid,mode){
   _techCurrent=_techTickets.find(function(x){return x.ticketNumber===tid;});if(!_techCurrent)return;
-  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];_techPhotos=[];
+  _techMode=mode||'u';_techNS='In Progress';_techSelected=[];_updPhotos=[];_cmpPhotos=[];
   tRenderDetail();
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-tech-detail').classList.add('active');window.scrollTo(0,0);
@@ -3963,7 +3966,7 @@ function tRenderDetail(){
   h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDet" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
   h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div></div>';
-  h+='<div id="tPhotoWrap" style="display:none"><div class="td-lbl">📷 รูปภาพอ้างอิง / Reference Photos</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div></div>';
+  h+='<div id="tPhotoWrap" style="display:none"><div class="td-lbl">📷 รูปภาพอ้างอิง / Reference Photos</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandleUpdPhotos(this.files)" style="font-size:13px"><div id="tPrev_upd" style="margin-top:6px"></div><div id="tCnt_upd" style="font-size:11px;color:#94a3b8"></div></div></div>';
   h+='<div class="td-warn" id="tUWarn">⚠️ "ขอใบเสนอราคา" หรือ "รอทีมภายนอก" จะระงับใบงาน</div>';
   h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุและรายละเอียดก่อนบันทึก</div>';
   h+='</div></div>';
@@ -3977,24 +3980,30 @@ function tRenderDetail(){
   h+='<div id="tPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tSC">0</span>)</div><div id="tSP" style="margin-bottom:12px"></div>';
   h+='</div>';
-  h+='<div class="td-lbl">📷 รูปหลังซ่อม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandlePhotos(this.files)" style="font-size:13px"><div id="tPhotoPrev" style="margin-top:6px"></div><div id="tPhotoCount" style="font-size:11px;color:#94a3b8"></div></div>';
+  h+='<div class="td-lbl">📷 รูปหลังซ่อม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandleCmpPhotos(this.files)" style="font-size:13px"><div id="tPrev_cmp" style="margin-top:6px"></div><div id="tCnt_cmp" style="font-size:11px;color:#94a3b8"></div></div>';
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tCNote" placeholder="หมายเหตุ..."></textarea></div>';
   h+='<button class="td-action green" onclick="tComplete()">✓ เสร็จสิ้นและตัดสต็อก</button><div class="td-hint">อะไหล่จะถูกตัดสต็อกอัตโนมัติ</div>';
   h+='</div></div>';
   document.getElementById('techDetailInner').innerHTML=h;
   if(_techMode==='c'){tRP('');tRSP();}
 }
-function tSetMode(m){_techMode=m;document.getElementById('tPU').style.display=m==='u'?'block':'none';document.getElementById('tPC').style.display=m==='c'?'block':'none';document.querySelectorAll('.td-mode').forEach(function(b){b.classList.remove('on');});document.querySelector('.td-mode.m'+m).classList.add('on');if(m==='c'){tRP('');tRSP();}}
+function tSetMode(m){
+  var uHas=!!(document.getElementById('tURC')&&document.getElementById('tURC').value.trim())||(document.getElementById('tUDet')&&document.getElementById('tUDet').value.trim());
+  var cHas=!!(document.getElementById('tCRC')&&document.getElementById('tCRC').value.trim())||(document.getElementById('tCFix')&&document.getElementById('tCFix').value.trim())||_techSelected.length>0;
+  if(m==='c'&&uHas){toast('กรุณาล้างข้อมูลในหน้าอัพเดทก่อน','warn');return;}
+  if(m==='u'&&cHas){toast('กรุณาล้างข้อมูลในหน้าปิดงานก่อน','warn');return;}
+  _techMode=m;document.getElementById('tPU').style.display=m==='u'?'block':'none';document.getElementById('tPC').style.display=m==='c'?'block':'none';document.querySelectorAll('.td-mode').forEach(function(b){b.classList.remove('on');});document.querySelector('.td-mode.m'+m).classList.add('on');if(m==='c'){tRP('');tRSP();}
+}
 function tToggleParts(){var s=document.getElementById('tPartsSection');var t=document.getElementById('tPartsToggle');if(!s)return;if(s.style.display==='none'){s.style.display='block';t.textContent='▲';}else{s.style.display='none';t.textContent='▼';}}
 function tSS(el,st){
-  _techNS=st;_techPhotos=[];
+  _techNS=st;_updPhotos=[];
   document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';
   var isInq=st==='Inquiring',isOut=st==='Outside Team',isIP=st==='In Progress';
   var iw=document.getElementById('tInquiringWrap');if(iw)iw.style.display=isInq?'block':'none';
   var sw=document.getElementById('tSparesWrap');if(sw)sw.style.display=isIP?'block':'none';
   var pw=document.getElementById('tPhotoWrap');if(pw)pw.style.display=(isInq||isOut)?'block':'none';
-  var pp=document.getElementById('tPhotoPrev');if(pp)pp.innerHTML='';
-  var pc=document.getElementById('tPhotoCount');if(pc)pc.textContent='';
+  var pp=document.getElementById('tPrev_upd');if(pp)pp.innerHTML='';
+  var pc=document.getElementById('tCnt_upd');if(pc)pc.textContent='';
   var lbl=document.getElementById('tUDetLbl'),ta=document.getElementById('tUDet');
   if(isInq){lbl.innerHTML='📋 รายละเอียดสินค้าที่ต้องการซื้อ <span class="req">*</span>';ta.placeholder='ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase...';}
   else if(isOut){lbl.innerHTML='🚧 สาเหตุที่ต้องใช้ทีมภายนอก <span class="req">*</span>';ta.placeholder='ระบุสาเหตุที่ไม่สามารถซ่อมภายในได้ / Why in-house repair is not possible...';}
@@ -4010,9 +4019,9 @@ function tSaveUpd(){
   var correction='🔍 สาเหตุ: '+rc+'\n'+det;
   showLoading('กำลังบันทึก...');
   if(_techNS==='Inquiring'){
-    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F4CB} Inquiring for Quotation',technician:techName,correction:det,notifyPurchasing:true,quotationPhotos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('ส่งใบขอซื้อให้ GM อนุมัติแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F4CB} Inquiring for Quotation',technician:techName,correction:det,notifyPurchasing:true,quotationPhotos:_updPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('ส่งใบขอซื้อให้ GM อนุมัติแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
   } else if(_techNS==='Outside Team'){
-    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F6A7} Waiting for Outside Team',technician:techName,correction:correction,notifyOutsideTeam:true,quotationPhotos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('บันทึกแล้ว — ระงับ 🔒');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+    postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F6A7} Waiting for Outside Team',technician:techName,correction:correction,notifyOutsideTeam:true,quotationPhotos:_updPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('บันทึกแล้ว — ระงับ 🔒');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
   } else {
     postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F535} In Progress',technician:techName,correction:correction,spareParts:spares}).then(function(){hideLoading();tBack();toast('บันทึกแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
   }
@@ -4045,8 +4054,10 @@ function tComplete(){
   if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}if(!fix){toast('กรุณากรอกวิธีแก้ไข','error');return;}
   var note=(document.getElementById('tCNote').value||'').trim();
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
+  var payload={action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})};
+  if(_cmpPhotos.length>0)payload.photos=_cmpPhotos.map(function(p){return{name:p.name,data:p.data};});
   showLoading('กำลังตัดสต็อก...');
-  postToScript({action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};}),photos:_techPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(d){
+  postToScript(payload).then(function(d){
     hideLoading();_techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();toast('เสร็จสิ้น ✓ ตัดสต็อกแล้ว');
   }).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
