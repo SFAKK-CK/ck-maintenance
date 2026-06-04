@@ -1096,7 +1096,7 @@ input:focus,select:focus,textarea:focus,
 .td-part-row:active{background:#f8fafc}
 .td-part-name{font-size:12px;font-weight:600}
 .td-part-code{font-size:10px;color:#64748b}
-.td-stock-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.td-stock-badge{font-size:16px;padding:6px 14px;border-radius:20px;font-weight:700}
 .td-stock-ok{background:#dcfce7;color:#166534}
 .td-stock-low{background:#fef3c7;color:#92400e}
 .td-stock-out{background:#fee2e2;color:#991b1b}
@@ -3988,12 +3988,18 @@ function tRenderDetail(){
     h+='<div style="background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#880e4f">🔒 '+fzMsg+'</div><div style="font-size:12px;color:#880e4f;margin-top:4px">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
-  if(st==='Waiting Parts'&&_hasPO){
+  var _poReady=st==='Waiting Parts'&&_hasPO;
+  if(_poReady){
     h+='<div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin:8px 14px"><div style="font-size:13px;font-weight:700;color:#166534">✅ PO: '+esc(t.poNumber)+'</div><div style="font-size:11px;color:#15803d;margin-top:2px">อะไหล่มาแล้ว — กดปิดงานเมื่อติดตั้งเสร็จ</div></div>';
+    _techMode='c';
   }
-  h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
-  // Update panel
-  h+='<div id="tPU" style="display:'+(_techMode==='u'?'block':'none')+'"><div class="td-form">';
+  if(_poReady){
+    h+='<div style="padding:4px 14px;font-size:12px;font-weight:600;color:#166534">✓ พร้อมซ่อม — ปิดงาน</div>';
+  } else {
+    h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
+  }
+  // Update panel (hidden when PO ready — only Complete available)
+  h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
   h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div>';
@@ -4009,8 +4015,8 @@ function tRenderDetail(){
   h+='<div class="td-warn" id="tUWarn">⚠️ "ขอใบเสนอราคา" หรือ "รอทีมภายนอก" จะระงับใบงาน</div>';
   h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุและรายละเอียดก่อนบันทึก</div>';
   h+='</div></div>';
-  // Complete panel
-  h+='<div id="tPC" style="display:'+(_techMode==='c'?'block':'none')+'"><div class="td-form">';
+  // Complete panel (always visible when PO ready)
+  h+='<div id="tPC" style="display:'+(_poReady?'block':(_techMode==='c'?'block':'none'))+'"><div class="td-form">';
   h+='<div class="td-lbl">🔍 สาเหตุ <span class="req">*</span></div><div class="td-ta"><textarea id="tCRC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl">🔧 วิธีแก้ไข <span class="req">*</span></div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข..."></textarea></div>';
   h+='<div class="td-lbl" style="cursor:pointer" onclick="tToggleParts()">📦 อะไหล่ที่ใช้ <span id="tPartsToggle" style="font-size:12px;color:#94a3b8;margin-left:auto">▼</span></div>';
