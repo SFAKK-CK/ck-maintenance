@@ -3880,6 +3880,10 @@ function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[],sevenDaysAgo=new Date();sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
   _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
+  // Sort pending: urgent first, then oldest opened first
+  pe.sort(function(a,b){var ua=String(a.urgent).toLowerCase()==='yes'||String(a.urgent).toLowerCase()==='true'?1:0;var ub=String(b.urgent).toLowerCase()==='yes'||String(b.urgent).toLowerCase()==='true'?1:0;if(ua!==ub)return ub-ua;var da=a.timestamp?new Date(a.timestamp):new Date();var db=b.timestamp?new Date(b.timestamp):new Date();return da-db;});
+  // Sort completed: most recent first
+  co.sort(function(a,b){var da=a.completedDate?new Date(a.completedDate):new Date();var db=b.completedDate?new Date(b.completedDate):new Date();return db-da;});
   var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><div style="display:flex;gap:6px"><button onclick="tRefresh()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;cursor:pointer;font-family:inherit;font-weight:600">🔄 รีเฟรช</button><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div></div>';
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
   h+='<div id="ttPL" class="tech-list">';
@@ -4069,13 +4073,13 @@ function tSaveUpdDo(rc,techName){
     var itemDesc='';
     if(_inqMode==='inv'){
       if(_inqSelected.length===0){hideLoading();toast('กรุณาเลือกอะไหล่อย่างน้อย 1 รายการ','error');return;}
-      itemDesc=_inqSelected.map(function(s){return s.name+' ('+s.code+') x'+s.qty+' '+s.unit+' [คงเหลือ: '+s.stock+']';}).join('\n');
+      itemDesc=_inqSelected.map(function(s,i){return (i+1)+'. '+s.name+' ('+s.code+') - '+s.qty+' '+s.unit+' (Stock: '+s.stock+')';}).join('\n');
     } else {
       var txt=(document.getElementById('tUDet').value||'').trim();
       if(!txt){hideLoading();toast('กรุณาระบุรายละเอียดสินค้า','error');return;}
       itemDesc=txt;
     }
-    var correctionInq='🔍 สาเหตุ: '+rc+'\n📋 รายการ:\n'+itemDesc;
+    var correctionInq='Cause / Saethu: '+rc+'\n\nItems Requested:\n'+itemDesc;
     postToScript({action:'updateTicketStatus',ticketNumber:_techCurrent.ticketNumber,status:'\u{1F4CB} Inquiring for Quotation',technician:techName,correction:correctionInq,notifyPurchasing:true,quotationPhotos:_updPhotos.map(function(p){return{name:p.name,data:p.data};})}).then(function(){hideLoading();tBack();toast('ส่งใบขอซื้อให้ GM อนุมัติแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
   } else if(_techNS==='Outside Team'){
     var det=(document.getElementById('tUDetNonInq').value||'').trim();if(!det){hideLoading();toast('กรุณากรอกรายละเอียด','error');return;}
