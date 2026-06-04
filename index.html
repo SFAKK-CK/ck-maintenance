@@ -4060,6 +4060,10 @@ function tSaveUpd(){
   var rc=(document.getElementById('tURC').value||'').trim();if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}
   var techName=window._loggedInUser.name;
   showLoading('กำลังบันทึก...');
+  // Ensure ACCEPTED_AT is set (for tickets accepted before the fix)
+  postToScript({action:'acceptTicket_tech',ticketNumber:_techCurrent.ticketNumber,staffName:techName}).then(function(){return tSaveUpdDo(rc,techName);}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+}
+function tSaveUpdDo(rc,techName){
   if(_techNS==='Inquiring'){
     // Build item description from inventory selection or free text
     var itemDesc='';
