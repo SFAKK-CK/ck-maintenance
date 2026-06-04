@@ -4056,14 +4056,21 @@ function tComplete(){
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
   var partsLog=_techSelected.map(function(s){return s.name+' x'+s.qty;}).join(', ');
   showLoading('กำลังบันทึก...');
-  // Step 1: Mark ticket complete via updateTicketStatus (proven working)
+  // Step 0: Ensure ACCEPTED_AT is set (for tickets accepted before the fix)
   postToScript({
-    action:'updateTicketStatus',
+    action:'acceptTicket_tech',
     ticketNumber:_techCurrent.ticketNumber,
-    status:'🟢 Completed',
-    technician:window._loggedInUser.name,
-    correction:full,
-    spareParts:partsLog
+    staffName:window._loggedInUser.name
+  }).then(function(){
+    // Step 1: Mark ticket complete via updateTicketStatus (proven working)
+    return postToScript({
+      action:'updateTicketStatus',
+      ticketNumber:_techCurrent.ticketNumber,
+      status:'🟢 Completed',
+      technician:window._loggedInUser.name,
+      correction:full,
+      spareParts:partsLog
+    });
   }).then(function(){
     // Step 2: Deduct inventory if parts selected
     if(_techSelected.length>0){
