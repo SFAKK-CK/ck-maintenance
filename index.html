@@ -3951,6 +3951,15 @@ function tRenderDetail(){
   var t=_techCurrent;if(!t)return;var st=tNorm(t.status);var h='';
   h+='<div class="td-hdr"><button class="bk" onclick="tBack()">←</button><div class="tt">'+esc(t.ticketNumber)+'</div><div class="td-badge">'+tLbl(st)+'</div></div>';
   h+='<div class="td-info"><div class="mc">'+esc(t.machine)+'</div><div class="mt">'+esc(t.department)+' | ผู้แจ้ง: '+esc(t.reporter)+'</div><div class="sy"><div class="sl">อาการ:</div><div>'+esc(t.cause)+'</div></div><div class="ag">⏱ '+tAge(t.timestamp)+'</div></div>';
+  // Notes / GM remarks (includes rejection reasons)
+  if(t.notes&&t.notes.trim()){
+    var noteLines=t.notes.trim().split('\n').filter(function(l){return l.trim();});
+    var isReject=t.notes.indexOf('rejected')>=0||t.notes.indexOf('Rejected')>=0;
+    h+='<div style="margin:8px 14px;padding:10px 12px;border-radius:8px;background:'+(isReject?'#fef2f2;border:1.5px solid #fca5a5':'#f0f9ff;border:1.5px solid #93c5fd')+'">';
+    h+='<div style="font-size:12px;font-weight:700;color:'+(isReject?'#991b1b':'#1e40af')+';margin-bottom:4px">'+(isReject?'PR ถูกปฏิเสธ / PR Rejected':'หมายเหตุจาก GM / GM Notes')+'</div>';
+    noteLines.forEach(function(line){h+='<div style="font-size:12px;color:'+(isReject?'#991b1b':'#1e40af')+';line-height:1.5">'+esc(line)+'</div>';});
+    h+='</div>';
+  }
   // Activity log
   var _log=[];
   if(t.timestamp)_log.push({ts:new Date(t.timestamp),icon:'📝',txt:'แจ้งซ่อมโดย '+esc(t.reporter)+' ('+esc(t.department)+')'});
@@ -4000,25 +4009,33 @@ function tRenderDetail(){
   }
   // Update panel (hidden when PO ready — only Complete available)
   h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
+  h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
+  h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
   h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
-  h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div>';
+  h+='<div id="tInqItemsWrap" style="display:none">';
   h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\')">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\')">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
   h+='<div id="tInqInv"><div class="td-search"><span>🔍</span><input type="text" id="tInqQ" placeholder="ค้นหาอะไหล่..." oninput="tInqFP()"></div>';
   h+='<div id="tInqPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tInqSC">0</span>)</div><div id="tInqSP" style="margin-bottom:8px"></div></div>';
   h+='<div id="tInqTxt" style="display:none"><div class="td-ta"><textarea id="tUDet" placeholder="ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase..."></textarea></div></div>';
   h+='</div>';
-  h+='<div class="td-lbl" id="tUDetLbl" style="display:none">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div id="tUDetWrap" style="display:none"><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div></div>';
   h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div></div>';
   h+='<div id="tPhotoWrap" style="display:none"><div class="td-lbl">📷 รูปภาพอ้างอิง / Reference Photos</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandleUpdPhotos(this.files)" style="font-size:13px"><div id="tPrev_upd" style="margin-top:6px"></div><div id="tCnt_upd" style="font-size:11px;color:#94a3b8"></div></div></div>';
   h+='<div class="td-warn" id="tUWarn">⚠️ "ขอใบเสนอราคา" หรือ "รอทีมภายนอก" จะระงับใบงาน</div>';
   h+='<button class="td-action blue" onclick="tSaveUpd()">💾 บันทึกอัพเดท</button><div class="td-hint">ต้องกรอกสาเหตุและรายละเอียดก่อนบันทึก</div>';
   h+='</div></div>';
   // Complete panel (always visible when PO ready)
+  var _hasRC=!!(t.correction&&t.correction.trim());
   h+='<div id="tPC" style="display:'+(_poReady?'block':(_techMode==='c'?'block':'none'))+'"><div class="td-form">';
-  h+='<div class="td-lbl">🔍 สาเหตุ <span class="req">*</span></div><div class="td-ta"><textarea id="tCRC" placeholder="ระบุสาเหตุ..."></textarea></div>';
-  h+='<div class="td-lbl">🔧 วิธีแก้ไข <span class="req">*</span></div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข..."></textarea></div>';
+  if(_hasRC){
+    h+='<div class="td-lbl">🔍 สาเหตุ (บันทึกไว้แล้ว)</div><div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#166534;white-space:pre-wrap">'+esc(t.correction)+'</div>';
+    h+='<input type="hidden" id="tCRC" value="'+esc(t.correction).replace(/"/g,'&quot;')+'">';
+    h+='<div class="td-lbl">🔧 วิธีแก้ไข</div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข (ถ้ามี)..."></textarea></div>';
+  } else {
+    h+='<div class="td-lbl">🔍 สาเหตุ <span class="req">*</span></div><div class="td-ta"><textarea id="tCRC" placeholder="ระบุสาเหตุ..."></textarea></div>';
+    h+='<div class="td-lbl">🔧 วิธีแก้ไข <span class="req">*</span></div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข..."></textarea></div>';
+  }
   h+='<div class="td-lbl" style="cursor:pointer" onclick="tToggleParts()">📦 อะไหล่ที่ใช้ <span id="tPartsToggle" style="font-size:12px;color:#94a3b8;margin-left:auto">▼</span></div>';
   h+='<div id="tPartsSection">';
   h+='<div class="td-search"><span>🔍</span><input type="text" id="tPQ" placeholder="ค้นหาอะไหล่..." oninput="tFP()"></div>';
@@ -4045,22 +4062,22 @@ function tSS(el,st){
   document.querySelectorAll('#tPU .td-pill').forEach(function(p){p.className='td-pill';});el.className='td-pill on';
   var isInq=st==='Inquiring',isOut=st==='Outside Team',isIP=st==='In Progress';
   var iw=document.getElementById('tInquiringWrap');if(iw)iw.style.display=isInq?'block':'none';
+  var iiw=document.getElementById('tInqItemsWrap');if(iiw)iiw.style.display=isInq?'block':'none';
   var sw=document.getElementById('tSparesWrap');if(sw)sw.style.display=isIP?'block':'none';
   var pw=document.getElementById('tPhotoWrap');if(pw)pw.style.display=(isInq||isOut)?'block':'none';
   var pp=document.getElementById('tPrev_upd');if(pp)pp.innerHTML='';
   var pc=document.getElementById('tCnt_upd');if(pc)pc.textContent='';
-  // Show/hide detail fields based on status
-  var detLbl=document.getElementById('tUDetLbl'),detWrap=document.getElementById('tUDetWrap');
+  if(isInq){tInqRP('');tInqRSP();}
+  // Update correction label based on status
+  var detLbl=document.getElementById('tUDetLbl');
   if(isInq){
-    if(detLbl)detLbl.style.display='none';if(detWrap)detWrap.style.display='none';
-    if(iw){tInqRP('');tInqRSP();}
+    if(detLbl)detLbl.innerHTML='📋 รายละเอียดเพิ่มเติม <span class="req">*</span>';
+    var ta=document.getElementById('tUDetNonInq');if(ta)ta.placeholder='รายละเอียดเพิ่มเติมสำหรับใบขอซื้อ / Additional details for PR...';
   } else if(isOut){
-    if(detLbl){detLbl.style.display='block';detLbl.innerHTML='🚧 สาเหตุที่ต้องใช้ทีมภายนอก <span class="req">*</span>';}
-    if(detWrap)detWrap.style.display='block';
+    if(detLbl)detLbl.innerHTML='🚧 สาเหตุที่ต้องใช้ทีมภายนอก <span class="req">*</span>';
     var ta=document.getElementById('tUDetNonInq');if(ta)ta.placeholder='ระบุสาเหตุที่ไม่สามารถซ่อมภายในได้ / Why in-house repair is not possible...';
   } else {
-    if(detLbl){detLbl.style.display='block';detLbl.innerHTML='🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span>';}
-    if(detWrap)detWrap.style.display='block';
+    if(detLbl)detLbl.innerHTML='🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span>';
     var ta=document.getElementById('tUDetNonInq');if(ta)ta.placeholder='อธิบายวิธีการซ่อมหรือดำเนินการ...';
   }
 }
@@ -4123,7 +4140,7 @@ function tRSP(){var el=document.getElementById('tSP');if(!el)return;var h='';
 
 function tComplete(){
   var rc=(document.getElementById('tCRC').value||'').trim(),fix=(document.getElementById('tCFix').value||'').trim();
-  if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}if(!fix){toast('กรุณากรอกวิธีแก้ไข','error');return;}
+  if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}
   var note=(document.getElementById('tCNote').value||'').trim();
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
   var partsLog=_techSelected.map(function(s){return s.name+' x'+s.qty;}).join(', ');
