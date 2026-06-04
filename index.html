@@ -4072,11 +4072,11 @@ function tComplete(){
       spareParts:partsLog
     });
   }).then(function(){
-    // Step 2: Deduct inventory if parts selected (with delay to avoid rapid-fire)
-    if(_techSelected.length>0){
+    // Step 2: Deduct inventory and/or upload photos
+    if(_techSelected.length>0 || _cmpPhotos.length>0){
       showLoading('กำลังตัดสต็อก...');
       return new Promise(function(resolve){setTimeout(resolve,1500);}).then(function(){
-        return postToScript({
+        var deductPayload={
           action:'stockDeduct_tech',
           ticketNumber:_techCurrent.ticketNumber,
           staffName:window._loggedInUser.name,
@@ -4084,7 +4084,9 @@ function tComplete(){
           department:_techCurrent.department,
           machineCode:_techCurrent.machine,
           parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})
-        });
+        };
+        if(_cmpPhotos.length>0)deductPayload.photos=_cmpPhotos.map(function(p){return{name:p.name,data:p.data};});
+        return postToScript(deductPayload);
       });
     }
   }).then(function(){
