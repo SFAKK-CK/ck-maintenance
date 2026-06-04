@@ -4054,12 +4054,41 @@ function tComplete(){
   if(!rc){toast('กรุณากรอกสาเหตุ','error');return;}if(!fix){toast('กรุณากรอกวิธีแก้ไข','error');return;}
   var note=(document.getElementById('tCNote').value||'').trim();
   var full='🔍 สาเหตุ: '+rc+'\n🔧 วิธีแก้ไข: '+fix+(note?'\n📝 '+note:'');
-  var payload={action:'deductParts',ticketNumber:_techCurrent.ticketNumber,staffName:window._loggedInUser.name,notes:full,department:_techCurrent.department,machineCode:_techCurrent.machine,parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})};
-  if(_cmpPhotos.length>0)payload.photos=_cmpPhotos.map(function(p){return{name:p.name,data:p.data};});
-  showLoading('กำลังตัดสต็อก...');
-  postToScript(payload).then(function(d){
-    hideLoading();_techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();toast('เสร็จสิ้น ✓ ตัดสต็อกแล้ว');
-  }).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  var partsLog=_techSelected.map(function(s){return s.name+' x'+s.qty;}).join(', ');
+  showLoading('กำลังบันทึก...');
+  // Step 1: Mark ticket complete via updateTicketStatus (proven working)
+  postToScript({
+    action:'updateTicketStatus',
+    ticketNumber:_techCurrent.ticketNumber,
+    status:'🟢 Completed',
+    technician:window._loggedInUser.name,
+    correction:full,
+    spareParts:partsLog
+  }).then(function(){
+    // Step 2: Deduct inventory if parts selected
+    if(_techSelected.length>0){
+      showLoading('กำลังตัดสต็อก...');
+      return postToScript({
+        action:'deductParts',
+        ticketNumber:_techCurrent.ticketNumber,
+        staffName:window._loggedInUser.name,
+        notes:full,
+        department:_techCurrent.department,
+        machineCode:_techCurrent.machine,
+        parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})
+      });
+    }
+  }).then(function(){
+    hideLoading();_techSelected.forEach(function(s){var p=_techParts.find(function(x){return x.code===s.code;});if(p)p.stock=Math.max(0,p.stock-s.qty);});_techSelected=[];tBack();
+    toast(partsLog?'เสร็จสิ้น ✓ ตัดสต็อกแล้ว':'เสร็จสิ้น ✓');
+  }).catch(function(e){
+    hideLoading();
+    if(e.message&&e.message.indexOf('deductParts')>=0){
+      toast('ปิดงานแล้ว แต่ตัดสต็อกไม่สำเร็จ — กรุณาแจ้ง IT','warn');tBack();
+    } else {
+      toast('Error: '+e.message,'error');
+    }
+  });
 }
 
 </script>
