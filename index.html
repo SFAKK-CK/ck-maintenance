@@ -3883,11 +3883,11 @@ function renderTechList(){
   var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><div style="display:flex;gap:6px"><button onclick="tRefresh()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;cursor:pointer;font-family:inherit;font-weight:600">🔄 รีเฟรช</button><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div></div>';
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
   h+='<div id="ttPL" class="tech-list">';
-  pe.forEach(function(t){var fr=tFroz(t._st);
+  pe.forEach(function(t){var hasPO=!!(t.poNumber&&t.poNumber.trim());var fr=tFroz(t._st)&&!(t._st==='Waiting Parts'&&hasPO);
     h+='<div class="ttk '+tCls(t._st)+'"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+tBg(t._st)+';color:'+tCol(t._st)+'">'+tLbl(t._st)+'</span></div>';
     h+='<div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+esc(t.machine)+'</div><div class="ttk-age">⏱ '+tAge(t.timestamp)+'</div>';
     if(fr){var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[t._st]||'🔒 ใบงานถูกระงับ';h+='<div class="ttk-frozen'+(t._st==='Outside Team'?' outside':'')+'">'+fMsg+'</div>';}
-    else{h+='<div class="ttk-btns">';if(t._st==='New')h+='<button class="ttk-btn accept" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน</button>';
+    else{if(t._st==='Waiting Parts'&&hasPO){h+='<div style="font-size:11px;color:#166534;background:#dcfce7;border-radius:6px;padding:4px 8px;margin-bottom:4px">✅ PO: '+esc(t.poNumber)+' — พร้อมซ่อมเมื่ออะไหล่มาถึง</div>';}h+='<div class="ttk-btns">';if(t._st==='New')h+='<button class="ttk-btn accept" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน</button>';
     else{h+='<button class="ttk-btn update" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')">📝 อัพเดท</button>';h+='<button class="ttk-btn complete" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'c\')">✓ พร้อมซ่อม</button>';}h+='</div>';}
     h+='</div>';});
   if(!pe.length)h+='<div class="tech-empty">✅ ไม่มีงานค้าง</div>';
@@ -3977,10 +3977,15 @@ function tRenderDetail(){
     h+='<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px">🔒 ต้องรับงานก่อน</div><div style="font-size:12px;color:#a16207;margin-bottom:10px">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action blue" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
-  if(tFroz(st)){
-    var fzMsg={'Waiting Parts':'รออะไหล่ — PO อยู่ระหว่างจัดส่ง','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
+  var _hasPO=!!(t.poNumber&&t.poNumber.trim());
+  var _isFroz=tFroz(st)&&!(st==='Waiting Parts'&&_hasPO);
+  if(_isFroz){
+    var fzMsg={'Waiting Parts':'รออะไหล่ — รอ PO จากจัดซื้อ','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
     h+='<div style="background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#880e4f">🔒 '+fzMsg+'</div><div style="font-size:12px;color:#880e4f;margin-top:4px">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
+  }
+  if(st==='Waiting Parts'&&_hasPO){
+    h+='<div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin:8px 14px"><div style="font-size:13px;font-weight:700;color:#166534">✅ PO: '+esc(t.poNumber)+'</div><div style="font-size:11px;color:#15803d;margin-top:2px">อะไหล่มาแล้ว — กดปิดงานเมื่อติดตั้งเสร็จ</div></div>';
   }
   h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
   // Update panel
