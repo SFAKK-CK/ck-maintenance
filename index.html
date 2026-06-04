@@ -4077,12 +4077,13 @@ function tComplete(){
       showLoading('กำลังตัดสต็อก...');
       return new Promise(function(resolve){setTimeout(resolve,1500);}).then(function(){
         return postToScript({
-          action:'deductParts',
+          action:'acceptTicket_tech',
           ticketNumber:_techCurrent.ticketNumber,
           staffName:window._loggedInUser.name,
           notes:full,
           department:_techCurrent.department,
           machineCode:_techCurrent.machine,
+          deductStock:true,
           parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})
         });
       });
