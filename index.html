@@ -4072,17 +4072,19 @@ function tComplete(){
       spareParts:partsLog
     });
   }).then(function(){
-    // Step 2: Deduct inventory if parts selected
+    // Step 2: Deduct inventory if parts selected (with delay to avoid rapid-fire)
     if(_techSelected.length>0){
       showLoading('กำลังตัดสต็อก...');
-      return postToScript({
-        action:'deductParts',
-        ticketNumber:_techCurrent.ticketNumber,
-        staffName:window._loggedInUser.name,
-        notes:full,
-        department:_techCurrent.department,
-        machineCode:_techCurrent.machine,
-        parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})
+      return new Promise(function(resolve){setTimeout(resolve,1500);}).then(function(){
+        return postToScript({
+          action:'deductParts',
+          ticketNumber:_techCurrent.ticketNumber,
+          staffName:window._loggedInUser.name,
+          notes:full,
+          department:_techCurrent.department,
+          machineCode:_techCurrent.machine,
+          parts:_techSelected.map(function(s){return{code:s.code,name:s.name,qty:s.qty,unit:s.unit};})
+        });
       });
     }
   }).then(function(){
@@ -4090,8 +4092,10 @@ function tComplete(){
     toast(partsLog?'เสร็จสิ้น ✓ ตัดสต็อกแล้ว':'เสร็จสิ้น ✓');
   }).catch(function(e){
     hideLoading();
-    if(e.message&&e.message.indexOf('deductParts')>=0){
-      toast('ปิดงานแล้ว แต่ตัดสต็อกไม่สำเร็จ — กรุณาแจ้ง IT','warn');tBack();
+    // Steps 0+1 already succeeded — ticket is Completed. Only stock deduction may have failed.
+    _techSelected=[];tBack();
+    if(partsLog){
+      toast('ปิดงานแล้ว ✓ แต่ตัดสต็อกไม่สำเร็จ — กรุณาตัดสต็อกด้วยมือ','warn');
     } else {
       toast('Error: '+e.message,'error');
     }
