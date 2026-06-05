@@ -3864,7 +3864,7 @@ function loadTechTickets(staff) {
   if (!_techParts.length) fetch(APPS_SCRIPT_URL + '?action=getInventoryItems').then(function(r){return r.json();}).then(function(d){if(d.success)_techParts=d.items||[];}).catch(function(){});
 }
 
-function tNorm(st){st=String(st);if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('Cancelled')>=0||st.indexOf('cancelled')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Inquiring')>=0)return'Inquiring';if(st.indexOf('PR Approval')>=0||st.indexOf('Vendor Selection')>=0||st.indexOf('Vendor Compare')>=0)return'PR Pending';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';if(st.indexOf('Submitted')>=0||st.indexOf('Assigned')>=0)return'New';return'New';}
+function tNorm(st){st=String(st);if(st.indexOf('Cancelled')>=0||st.indexOf('cancelled')>=0)return'Cancelled';if(st.indexOf('Completed')>=0)return'Completed';if(st.indexOf('In Progress')>=0)return'In Progress';if(st.indexOf('Inquiring')>=0)return'Inquiring';if(st.indexOf('PR Approval')>=0||st.indexOf('Vendor Selection')>=0||st.indexOf('Vendor Compare')>=0)return'PR Pending';if(st.indexOf('Waiting')>=0&&st.indexOf('Part')>=0)return'Waiting Parts';if(st.indexOf('Outside')>=0)return'Outside Team';if(st.indexOf('Submitted')>=0||st.indexOf('Assigned')>=0)return'New';return'New';}
 function tLbl(st){return{'New':'รอดำเนินการ','In Progress':'กำลังดำเนินการ','Inquiring':'ขอใบเสนอราคา','PR Pending':'รออนุมัติ PR','Waiting Parts':'รออะไหล่','Outside Team':'รอทีมภายนอก','Completed':'เสร็จสิ้น'}[st]||st;}
 function tCls(st){return{'New':'s-new','In Progress':'s-ip','Inquiring':'s-wait','PR Pending':'s-wait','Waiting Parts':'s-wait','Outside Team':'s-out','Completed':'s-done'}[st]||'s-ip';}
 function tBg(st){return{'New':'#fef3c7','In Progress':'#dbeafe','Waiting Parts':'#fef3c7','Outside Team':'#f3e8ff','Completed':'#dcfce7'}[st]||'#f1f5f9';}
@@ -3879,7 +3879,7 @@ function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;
 
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[],sevenDaysAgo=new Date();sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
-  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
+  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'||t._st==='Cancelled'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
   // Sort pending: urgent first, then oldest opened first
   pe.sort(function(a,b){var ua=String(a.urgent).toLowerCase()==='yes'||String(a.urgent).toLowerCase()==='true'?1:0;var ub=String(b.urgent).toLowerCase()==='yes'||String(b.urgent).toLowerCase()==='true'?1:0;if(ua!==ub)return ub-ua;var da=a.timestamp?new Date(a.timestamp):new Date();var db=b.timestamp?new Date(b.timestamp):new Date();return da-db;});
   // Sort completed: most recent first
@@ -3896,7 +3896,7 @@ function renderTechList(){
     h+='</div>';});
   if(!pe.length)h+='<div class="tech-empty">✅ ไม่มีงานค้าง</div>';
   h+='</div><div id="ttCL" class="tech-list" style="display:none">';
-  co.forEach(function(t){h+='<div class="ttk s-done"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:#dcfce7;color:#166534">เสร็จสิ้น</span></div><div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | อะไหล่ '+(t.spareParts||'-')+'</div></div>';});
+ co.forEach(function(t){var isCan=t._st==='Cancelled';h+='<div class="ttk s-done"'+(isCan?' onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')" style="cursor:pointer"':'')+'><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+(isCan?'#fee2e2;color:#991b1b':'#dcfce7;color:#166534')+'">'+(isCan?'ยกเลิก':'เสร็จสิ้น')+'</span></div><div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+(isCan?'แตะเพื่อดูเหตุผล':'อะไหล่ '+(t.spareParts||'-'))+'</div></div>';});
   if(!co.length)h+='<div class="tech-empty">ยังไม่มีงานเสร็จ</div>';
   h+='</div>';
   document.getElementById('techListInner').innerHTML=h;
@@ -3951,13 +3951,20 @@ function tRenderDetail(){
   var t=_techCurrent;if(!t)return;var st=tNorm(t.status);var h='';
   h+='<div class="td-hdr"><button class="bk" onclick="tBack()">←</button><div class="tt">'+esc(t.ticketNumber)+'</div><div class="td-badge">'+tLbl(st)+'</div></div>';
   h+='<div class="td-info"><div class="mc">'+esc(t.machine)+'</div><div class="mt">'+esc(t.department)+' | ผู้แจ้ง: '+esc(t.reporter)+'</div><div class="sy"><div class="sl">อาการ:</div><div>'+esc(t.cause)+'</div></div><div class="ag">⏱ '+tAge(t.timestamp)+'</div></div>';
-  // Notes / GM remarks (includes rejection reasons)
+  // Notes / GM remarks — red flashcard for rejection OR cancellation (shows reason + ticket no.)
   if(t.notes&&t.notes.trim()){
     var noteLines=t.notes.trim().split('\n').filter(function(l){return l.trim();});
-    var isReject=t.notes.indexOf('rejected')>=0||t.notes.indexOf('Rejected')>=0;
-    h+='<div style="margin:8px 14px;padding:10px 12px;border-radius:8px;background:'+(isReject?'#fef2f2;border:1.5px solid #fca5a5':'#f0f9ff;border:1.5px solid #93c5fd')+'">';
-    h+='<div style="font-size:12px;font-weight:700;color:'+(isReject?'#991b1b':'#1e40af')+';margin-bottom:4px">'+(isReject?'PR ถูกปฏิเสธ / PR Rejected':'หมายเหตุจาก GM / GM Notes')+'</div>';
-    noteLines.forEach(function(line){h+='<div style="font-size:12px;color:'+(isReject?'#991b1b':'#1e40af')+';line-height:1.5">'+esc(line)+'</div>';});
+    var nlow=t.notes.toLowerCase();
+    var isReject=nlow.indexOf('rejected')>=0;
+    var isCancel=nlow.indexOf('cancelled')>=0||t.notes.indexOf('ยกเลิก')>=0;
+    var isRed=isReject||isCancel;
+    var cardTitle=isCancel
+      ? '❌ ยกเลิก / Cancelled — '+esc(t.ticketNumber)
+      : (isReject ? 'PR ถูกปฏิเสธ / PR Rejected — '+esc(t.ticketNumber)
+                  : 'หมายเหตุจาก GM / GM Notes');
+    h+='<div style="margin:8px 14px;padding:10px 12px;border-radius:8px;background:'+(isRed?'#fef2f2;border:1.5px solid #fca5a5':'#f0f9ff;border:1.5px solid #93c5fd')+'">';
+    h+='<div style="font-size:12px;font-weight:700;color:'+(isRed?'#991b1b':'#1e40af')+';margin-bottom:4px">'+cardTitle+'</div>';
+    noteLines.forEach(function(line){h+='<div style="font-size:12px;color:'+(isRed?'#991b1b':'#1e40af')+';line-height:1.5">'+esc(line)+'</div>';});
     h+='</div>';
   }
   // Activity log
@@ -3988,6 +3995,10 @@ function tRenderDetail(){
   }
   if(st==='New'){
     h+='<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px">🔒 ต้องรับงานก่อน</div><div style="font-size:12px;color:#a16207;margin-bottom:10px">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action blue" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
+    document.getElementById('techDetailInner').innerHTML=h;return;
+  }
+  if(st==='Cancelled'){
+    h+='<div style="background:#fee2e2;border:1.5px solid #fca5a5;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#991b1b">🔒 ใบงานถูกยกเลิก / Ticket Cancelled</div><div style="font-size:12px;color:#991b1b;margin-top:6px">ไม่สามารถอัพเดทได้ — หากยังต้องการซ่อม กรุณาแจ้งใหม่<br>Locked — submit a new ticket if work is still needed.</div></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
   var _hasPO=!!(t.poNumber&&t.poNumber.trim());
