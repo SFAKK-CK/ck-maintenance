@@ -1805,6 +1805,13 @@ input:focus,select:focus,textarea:focus,
     <div id="mvWaiting"><div class="mv-empty"><div class="spinner-sm"></div>กำลังโหลด…</div></div>
     <div id="mvShowMoreW" style="display:none"><button class="mv-show-more" onclick="showMore('W')">แสดงเพิ่มเติม ▼ / Show more</button></div>
 
+    <!-- Cancelled (red flashcards: ticket no. + reason) -->
+    <div class="mv-section-title">
+      <span>❌ ยกเลิก / Cancelled</span>
+      <span class="mv-section-count" id="mvCntC">0</span>
+    </div>
+    <div id="mvCancelled"><div class="mv-empty">—</div></div>
+
   </div>
 </div>
 
@@ -2986,6 +2993,7 @@ function renderManagerView(tickets) {
   const unassigned = [];
   const inProgress = [];
   const waiting    = [];
+  const cancelled  = [];
 
   const matchesDept   = (t) => !deptSel || t.department === deptSel;
   const matchesSearch = (t) => {
@@ -2999,8 +3007,9 @@ function renderManagerView(tickets) {
     const t = tickets[i];
     const st = t.status || '';
 
-    // Skip terminal states
-    if (st.indexOf('Completed') >= 0 || st.indexOf('Cancelled') >= 0) continue;
+    // Completed → skip entirely. Cancelled → collect for the red flashcard, then skip the rest.
+    if (st.indexOf('Completed') >= 0) continue;
+    if (st.indexOf('Cancelled') >= 0) { if (matchesDept(t) && matchesSearch(t)) cancelled.push(t); continue; }
 
     // Overall counters (independent of dept/search filter — these show site-wide totals)
     if (st.indexOf('Submitted') >= 0) cntU++;
@@ -3045,6 +3054,23 @@ function renderManagerView(tickets) {
   renderSection('mvUnassigned', 'mvShowMoreU', unassigned, mvShownU, true, now);
   renderSection('mvInProgress', 'mvShowMoreP', inProgress, mvShownP, false, now);
   renderSection('mvWaiting',    'mvShowMoreW', waiting,    mvShownW, false, now);
+
+  // Cancelled — red flashcards with ticket no. + reason (cleared by the daily sweep after a day)
+  var cancEl = document.getElementById('mvCancelled');
+  var cntCEl = document.getElementById('mvCntC');
+  if (cntCEl) cntCEl.textContent = cancelled.length;
+  if (cancEl) {
+    cancEl.innerHTML = cancelled.length ? cancelled.map(function(t){
+      var notes  = (t.notes || '').trim();
+      var lines  = notes ? notes.split('\n').filter(function(l){return l.trim();}) : [];
+      var reason = lines.length ? lines[lines.length - 1] : 'ไม่ระบุเหตุผล / no reason given';
+      return '<div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+           + '<div style="font-size:13px;font-weight:700;color:#991b1b">❌ ' + esc(t.ticketNumber) + '</div>'
+           + '<div style="font-size:12px;color:#7f1d1d;margin-top:2px">' + esc(t.machine || '—') + (t.department ? ' · ' + esc(t.department) : '') + '</div>'
+           + '<div style="font-size:12px;color:#991b1b;margin-top:4px;line-height:1.5">' + esc(reason) + '</div>'
+           + '</div>';
+    }).join('') : '<div class="mv-empty">— ไม่มีรายการยกเลิก / none —</div>';
+  }
 }
 
 function renderSection(containerId, showMoreId, items, shown, showAssign, now) {
