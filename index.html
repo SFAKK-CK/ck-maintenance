@@ -1152,6 +1152,60 @@ input:focus,select:focus,textarea:focus,
 @media(prefers-reduced-motion:reduce){.tt-card,.tt-act button,.tech-tab{transition:none!important}}
 /* ═══ END TECH SUMMARY-STYLE ═══ */
 
+
+/* ═══ TECH DETAIL · GLASSY (tRenderDetail) ═══ */
+.td-hdr{background:linear-gradient(135deg,#007AFF 0%,#5856D6 100%)!important;box-shadow:0 10px 26px -10px rgba(88,86,214,.5);align-items:center}
+.td-hdr .bk{background:rgba(255,255,255,.22)!important;border:1px solid rgba(255,255,255,.38)!important;width:36px;height:36px;border-radius:11px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.td-hdr .tt{font-weight:700;letter-spacing:.2px}
+.td-badge{background:rgba(255,255,255,.24)!important;border:1px solid rgba(255,255,255,.3);font-weight:700;padding:5px 12px}
+.td-info{background:var(--glass-bg)!important;border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);margin:12px 14px}
+.td-info .mc{font-weight:800;color:#0f172a}
+.td-info .sy{border-top:1px solid rgba(148,163,184,.25)}
+.td-info .ag{color:#c2410c}
+.td-mode-label{margin:12px 14px 2px;padding:11px 14px;border-radius:13px;font-size:13px;font-weight:800;text-align:center;backdrop-filter:blur(10px)}
+.td-mode-label.up{background:rgba(0,122,255,.12);border:1px solid rgba(0,122,255,.4);color:#0040DD}
+.td-mode-label.ok{background:rgba(52,199,89,.13);border:1px solid rgba(52,199,89,.4);color:#1b7a3d}
+.td-ta{border:1px solid var(--glass-border)!important;border-radius:14px;background:var(--glass-bg-strong)!important;backdrop-filter:blur(8px);transition:border-color .2s,box-shadow .2s}
+.td-ta:focus-within{border-color:#007AFF!important;box-shadow:0 0 0 4px rgba(0,122,255,.15)}
+.td-ta textarea,.td-ta input{border-radius:14px}
+.td-search{border:1px solid var(--glass-border)!important;border-radius:14px;background:var(--glass-bg-strong)!important;backdrop-filter:blur(8px);transition:border-color .2s,box-shadow .2s}
+.td-search:focus-within{border-color:#007AFF!important;box-shadow:0 0 0 4px rgba(0,122,255,.15)}
+.td-pill{border:1px solid var(--glass-border)!important;background:var(--glass-bg)!important;border-radius:20px;backdrop-filter:blur(8px);transition:.2s}
+.td-pill.on{background:linear-gradient(135deg,#007AFF,#5856D6)!important;border-color:transparent!important;color:#fff!important;font-weight:700}
+.td-action{border-radius:14px;font-weight:700;transition:transform .15s,box-shadow .15s}
+.td-action.blue{background:linear-gradient(135deg,#007AFF,#5856D6)!important;box-shadow:0 8px 20px -8px rgba(88,86,214,.55)}
+.td-action.green{background:linear-gradient(135deg,#34C759,#30B14E)!important;box-shadow:0 8px 20px -8px rgba(52,199,89,.55)}
+.td-warn{background:rgba(255,149,0,.12)!important;border:1px solid rgba(255,149,0,.4)!important;border-radius:12px;color:#9a5b00!important;font-weight:600}
+.td-results{border:1px solid var(--glass-border);border-radius:14px;background:var(--glass-bg);backdrop-filter:blur(8px)}
+.td-part-row{border-bottom:1px solid rgba(148,163,184,.16)}
+.td-sel-part{background:rgba(52,199,89,.1)!important;border:1px solid rgba(52,199,89,.35)!important;border-radius:14px;backdrop-filter:blur(6px)}
+.td-stock-ok{background:rgba(52,199,89,.16)!important;color:#15803d!important}
+.td-stock-low{background:rgba(255,149,0,.18)!important;color:#c2410c!important}
+.td-stock-out{background:rgba(255,59,48,.16)!important;color:#b91c1c!important}
+.td-qty-ctrl{border:1px solid rgba(52,199,89,.5)!important;background:var(--glass-bg-strong)!important;border-radius:10px}
+.td-banner{margin:8px 14px;padding:13px;border-radius:14px;text-align:center;backdrop-filter:blur(8px)}
+.td-banner .bt{font-size:13.5px;font-weight:800;margin-bottom:3px}
+.td-banner .bs{font-size:11.5px;line-height:1.5}
+.td-banner.warn{background:rgba(255,149,0,.12);border:1px solid rgba(255,149,0,.4)}
+.td-banner.warn .bt{color:#9a5b00}.td-banner.warn .bs{color:#a16207}
+.td-banner.danger{background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.4)}
+.td-banner.danger .bt,.td-banner.danger .bs{color:#b3261e}
+.td-banner.froz{background:rgba(175,82,222,.1);border:1px solid rgba(175,82,222,.4)}
+.td-banner.froz .bt,.td-banner.froz .bs{color:#7a2da0}
+.td-banner.ok{background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.4)}
+.td-banner.ok .bt{color:#15803d}.td-banner.ok .bs{color:#16a34a}
+.td-banner.info{background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.35)}
+.td-banner.info .bt{color:#0040DD}.td-banner.info .bs{color:#1e40af}
+.td-note{margin:8px 14px;padding:11px 13px;border-radius:14px;backdrop-filter:blur(8px)}
+.td-note .ntt{font-size:12px;font-weight:700;margin-bottom:3px}
+.td-note .ntl{font-size:12px;line-height:1.5}
+.td-note.info{background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.35)}
+.td-note.info .ntt,.td-note.info .ntl{color:#1e40af}
+.td-note.danger{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.4)}
+.td-note.danger .ntt,.td-note.danger .ntl{color:#991b1b}
+.td-saved{background:rgba(52,199,89,.1);border:1px solid rgba(52,199,89,.35);border-radius:12px;padding:9px 12px;margin-bottom:10px;font-size:12px;color:#166534;white-space:pre-wrap;backdrop-filter:blur(6px)}
+/* ═══ END TECH DETAIL GLASSY ═══ */
+
 </style>
 </head>
 <body>
@@ -4115,9 +4169,9 @@ function tRenderDetail(){
       ? '❌ ยกเลิก / Cancelled — '+esc(t.ticketNumber)
       : (isReject ? 'PR ถูกปฏิเสธ / PR Rejected — '+esc(t.ticketNumber)
                   : 'หมายเหตุจาก GM / GM Notes');
-    h+='<div style="margin:8px 14px;padding:10px 12px;border-radius:8px;background:'+(isRed?'#fef2f2;border:1.5px solid #fca5a5':'#f0f9ff;border:1.5px solid #93c5fd')+'">';
-    h+='<div style="font-size:12px;font-weight:700;color:'+(isRed?'#991b1b':'#1e40af')+';margin-bottom:4px">'+cardTitle+'</div>';
-    noteLines.forEach(function(line){h+='<div style="font-size:12px;color:'+(isRed?'#991b1b':'#1e40af')+';line-height:1.5">'+esc(line)+'</div>';});
+    h+='<div class="td-note '+(isRed?'danger':'info')+'">';
+    h+='<div class="ntt">'+cardTitle+'</div>';
+    noteLines.forEach(function(line){h+='<div class="ntl">'+esc(line)+'</div>';});
     h+='</div>';
   }
   // Activity log
@@ -4147,40 +4201,40 @@ function tRenderDetail(){
     h+='</div>';
   }
   if(st==='New'){
-    h+='<div style="background:#fef3c7;border:1.5px solid #fde68a;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px">🔒 ต้องรับงานก่อน</div><div style="font-size:12px;color:#a16207;margin-bottom:10px">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action blue" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
+    h+='<div class="td-banner warn"><div class="bt">🔒 ต้องรับงานก่อน</div><div class="bs">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action green" style="margin-top:10px" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
   if(st==='Cancelled'){
-    h+='<div style="background:#fee2e2;border:1.5px solid #fca5a5;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#991b1b">🔒 ใบงานถูกยกเลิก / Ticket Cancelled</div><div style="font-size:12px;color:#991b1b;margin-top:6px">ไม่สามารถอัพเดทได้ — หากยังต้องการซ่อม กรุณาแจ้งใหม่<br>Locked — submit a new ticket if work is still needed.</div></div>';
+    h+='<div class="td-banner danger"><div class="bt">🔒 ใบงานถูกยกเลิก / Ticket Cancelled</div><div class="bs">ไม่สามารถอัพเดทได้ — หากยังต้องการซ่อม กรุณาแจ้งใหม่<br>Locked — submit a new ticket if work is still needed.</div></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
   var _hasPO=!!(t.poNumber&&t.poNumber.trim());
   var _isFroz=tFroz(st)&&!(st==='Waiting Parts'&&_hasPO);
   if(_isFroz){
     var fzMsg={'Waiting Parts':'รออะไหล่ — รอ PO จากจัดซื้อ','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
-    h+='<div style="background:#fce4ec;border:1.5px solid #f48fb1;border-radius:10px;padding:14px;margin:8px 14px;text-align:center"><div style="font-size:14px;font-weight:700;color:#880e4f">🔒 '+fzMsg+'</div><div style="font-size:12px;color:#880e4f;margin-top:4px">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
+    h+='<div class="td-banner froz"><div class="bt">🔒 '+fzMsg+'</div><div class="bs">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
     document.getElementById('techDetailInner').innerHTML=h;return;
   }
   var _poReady=st==='Waiting Parts'&&_hasPO;
   if(_poReady){
-    h+='<div style="background:#dcfce7;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin:8px 14px"><div style="font-size:13px;font-weight:700;color:#166534">✅ PO: '+esc(t.poNumber)+'</div><div style="font-size:11px;color:#15803d;margin-top:2px">อะไหล่มาแล้ว — กดปิดงานเมื่อติดตั้งเสร็จ</div></div>';
+    h+='<div class="td-banner ok"><div class="bt">✅ PO: '+esc(t.poNumber)+'</div><div class="bs">อะไหล่มาแล้ว — กดปิดงานเมื่อติดตั้งเสร็จ</div></div>';
     _techMode='c';
   }
   if(_poReady){
-    h+='<div style="padding:4px 14px;font-size:12px;font-weight:600;color:#166534">✓ พร้อมซ่อม — ปิดงาน</div>';
+    h+='<div class="td-mode-label ok">✓ พร้อมซ่อม — ปิดงาน / Ready to close</div>';
   } else {
-    h+='<div class="td-mode-bar"><button class="td-mode mu'+(_techMode==='u'?' on':'')+'" onclick="tSetMode(\'u\')">📝 อัพเดทสถานะ</button><button class="td-mode mc'+(_techMode==='c'?' on':'')+'" onclick="tSetMode(\'c\')">✓ พร้อมซ่อม — ปิดงาน</button></div>';
+    h+='<div class="td-mode-label '+(_techMode==='c'?'ok':'up')+'">'+(_techMode==='c'?'✓ พร้อมซ่อม — ปิดงาน / Complete':'📝 อัพเดทสถานะ / Update status')+'</div>';
   }
   // Update panel (hidden when PO ready — only Complete available)
   h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
-  h+='<div id="tInquiringWrap" style="display:none"><div style="background:#ede9fe;border:1.5px solid #a78bfa;border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:13px;font-weight:700;color:#5b21b6">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div style="font-size:11px;color:#6d28d9;margin-top:2px">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
+  h+='<div id="tInquiringWrap" style="display:none"><div class="td-banner info" style="margin:0 0 10px"><div class="bt">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div class="bs">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
-  h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
+  h+='<div class="td-lbl">สถานะหลังบันทึก / Status after saving</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 ยังดำเนินการ / Still working</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
   h+='<div id="tInqItemsWrap" style="display:none">';
   h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\',this)">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\',this)">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
   h+='<div id="tInqInv"><div class="td-search"><span>🔍</span><input type="text" id="tInqQ" placeholder="ค้นหาอะไหล่..." oninput="tInqFP()"></div>';
-  h+='<div id="tInqPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
+  h+='<div id="tInqPR" class="td-results" style="max-height:170px;overflow-y:auto;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tInqSC">0</span>)</div><div id="tInqSP" style="margin-bottom:8px"></div></div>';
   h+='<div id="tInqTxt" style="display:none"><div class="td-ta"><textarea id="tUDet" placeholder="ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase..."></textarea></div></div>';
   h+='</div>';
@@ -4193,7 +4247,7 @@ function tRenderDetail(){
   var _hasRC=!!(t.correction&&t.correction.trim());
   h+='<div id="tPC" style="display:'+(_poReady?'block':(_techMode==='c'?'block':'none'))+'"><div class="td-form">';
   if(_hasRC){
-    h+='<div class="td-lbl">🔍 สาเหตุ (บันทึกไว้แล้ว)</div><div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;color:#166534;white-space:pre-wrap">'+esc(t.correction)+'</div>';
+    h+='<div class="td-lbl">🔍 สาเหตุ (บันทึกไว้แล้ว)</div><div class="td-saved">'+esc(t.correction)+'</div>';
     h+='<input type="hidden" id="tCRC" value="'+esc(t.correction).replace(/"/g,'&quot;')+'">';
     h+='<div class="td-lbl">🔧 วิธีแก้ไข</div><div class="td-ta"><textarea id="tCFix" placeholder="วิธีแก้ไข (ถ้ามี)..."></textarea></div>';
   } else {
@@ -4203,7 +4257,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl" style="cursor:pointer" onclick="tToggleParts()">📦 อะไหล่ที่ใช้ <span id="tPartsToggle" style="font-size:12px;color:#94a3b8;margin-left:auto">▼</span></div>';
   h+='<div id="tPartsSection">';
   h+='<div class="td-search"><span>🔍</span><input type="text" id="tPQ" placeholder="ค้นหาอะไหล่..." oninput="tFP()"></div>';
-  h+='<div id="tPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
+  h+='<div id="tPR" class="td-results" style="max-height:170px;overflow-y:auto;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tSC">0</span>)</div><div id="tSP" style="margin-bottom:12px"></div>';
   h+='</div>';
   h+='<div class="td-lbl">📷 รูปหลังซ่อม</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandleCmpPhotos(this.files)" style="font-size:13px"><div id="tPrev_cmp" style="margin-top:6px"></div><div id="tCnt_cmp" style="font-size:11px;color:#94a3b8"></div></div>';
