@@ -3918,11 +3918,14 @@ function tRenderPrev(which){var arr=which==='upd'?_updPhotos:_cmpPhotos;var el=d
 function tRmPhoto(which,i){if(which==='upd'){_updPhotos.splice(i,1);}else{_cmpPhotos.splice(i,1);}tRenderPrev(which);}
 // ── Inquiring parts search ──
 var _inqSelected=[],_inqMode='inv';
-function tInqMode(m){
+function tInqMode(m,el){
   _inqMode=m;_inqSelected=[];
-  document.querySelectorAll('#tInqItemsWrap .td-pill').forEach(function(p){p.className='td-pill';});
-  if(m==='inv'){document.querySelectorAll('#tInqItemsWrap .td-pill')[0].className='td-pill on';document.getElementById('tInqInv').style.display='block';document.getElementById('tInqTxt').style.display='none';}
-  else{document.querySelectorAll('#tInqItemsWrap .td-pill')[1].className='td-pill on';document.getElementById('tInqInv').style.display='none';document.getElementById('tInqTxt').style.display='block';}
+  var wrap=document.getElementById('tInqItemsWrap');
+  if(wrap){wrap.querySelectorAll('.td-pill').forEach(function(p){p.className='td-pill';});}
+  if(el){el.className='td-pill on';}
+  var inv=document.getElementById('tInqInv'),txt=document.getElementById('tInqTxt');
+  if(inv)inv.style.display=(m==='inv')?'block':'none';
+  if(txt)txt.style.display=(m==='inv')?'none':'block';
   tInqRSP();
 }
 function tInqFP(){tInqRP((document.getElementById('tInqQ').value||'').trim());}
@@ -4025,7 +4028,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
   h+='<div class="td-lbl">เปลี่ยนสถานะ</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 กำลังดำเนินการ</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
   h+='<div id="tInqItemsWrap" style="display:none">';
-  h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\')">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\')">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
+  h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\',this)">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\',this)">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
   h+='<div id="tInqInv"><div class="td-search"><span>🔍</span><input type="text" id="tInqQ" placeholder="ค้นหาอะไหล่..." oninput="tInqFP()"></div>';
   h+='<div id="tInqPR" style="max-height:170px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:8px;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tInqSC">0</span>)</div><div id="tInqSP" style="margin-bottom:8px"></div></div>';
