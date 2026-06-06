@@ -1165,6 +1165,7 @@ input:focus,select:focus,textarea:focus,
 .td-mode-label{margin:12px 14px 2px;padding:11px 14px;border-radius:13px;font-size:13px;font-weight:800;text-align:center;backdrop-filter:blur(10px)}
 .td-mode-label.up{background:rgba(0,122,255,.12);border:1px solid rgba(0,122,255,.4);color:#0040DD}
 .td-mode-label.ok{background:rgba(52,199,89,.13);border:1px solid rgba(52,199,89,.4);color:#1b7a3d}
+.td-mode-label.inq{background:rgba(175,82,222,.13);border:1px solid rgba(175,82,222,.42);color:#7a2da0}
 .td-ta{border:1px solid var(--glass-border)!important;border-radius:14px;background:var(--glass-bg-strong)!important;backdrop-filter:blur(8px);transition:border-color .2s,box-shadow .2s}
 .td-ta:focus-within{border-color:#007AFF!important;box-shadow:0 0 0 4px rgba(0,122,255,.15)}
 .td-ta textarea,.td-ta input{border-radius:14px}
@@ -1214,17 +1215,17 @@ input:focus,select:focus,textarea:focus,
 @keyframes spincw{to{transform:rotate(360deg)}}
 @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 #page-login .login-logo-icon{animation:floaty 5s ease-in-out infinite}
-#page-login .login-logo{animation:fadeInUp .55s var(--spring) both}
-#page-login .login-card{animation:fadeInUp .55s .08s var(--spring) both}
-#page-login .login-card .lc-icon{animation:fadeInUp .5s .16s var(--spring) both}
-#page-login .login-card h2{animation:fadeInUp .5s .22s var(--spring) both}
-#page-login .login-card .lc-sub{animation:fadeInUp .5s .27s var(--spring) both}
-#page-login .login-boxes{animation:fadeInUp .5s .33s var(--spring) both}
-#page-login .login-numpad{animation:fadeInUp .5s .39s var(--spring) both}
-#page-login .login-footer{animation:fadeInUp .5s .45s var(--spring) both}
+#page-login .login-logo{animation:fadeIn .55s var(--spring) both}
+#page-login .login-card{animation:fadeIn .55s .08s var(--spring) both}
+#page-login .login-card .lc-icon{animation:fadeIn .5s .16s var(--spring) both}
+#page-login .login-card h2{animation:fadeIn .5s .22s var(--spring) both}
+#page-login .login-card .lc-sub{animation:fadeIn .5s .27s var(--spring) both}
+#page-login .login-boxes{animation:fadeIn .5s .33s var(--spring) both}
+#page-login .login-numpad{animation:fadeIn .5s .39s var(--spring) both}
+#page-login .login-footer{animation:fadeIn .5s .45s var(--spring) both}
 @keyframes lboxpop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 .login-box.filled{animation:lboxpop .28s var(--spring)}
-.tech-list>*{animation:fadeInUp .34s ease-out both}
+.tech-list>*{animation:fadeIn .34s ease-out both}
 .tech-list>*:nth-child(2){animation-delay:.03s}
 .tech-list>*:nth-child(3){animation-delay:.06s}
 .tech-list>*:nth-child(4){animation-delay:.09s}
@@ -1309,8 +1310,8 @@ input:focus,select:focus,textarea:focus,
 <div class="login-bg">
   <div class="login-logo">
     <div class="login-logo-icon"><svg viewBox="0 0 80 80" width="100%" height="100%" fill="#fff" style="display:block" xmlns="http://www.w3.org/2000/svg"><g transform="translate(29,45)"><g class="gear cw"><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(0.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(40.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(80.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(120.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(160.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(200.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(240.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(280.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(320.0)"/><path fill-rule="evenodd" d="M -11.5,0 a 11.5,11.5 0 1,0 23.0,0 a 11.5,11.5 0 1,0 -23.0,0 Z M -5.0,0 a 5.0,5.0 0 1,1 10.0,0 a 5.0,5.0 0 1,1 -10.0,0 Z"/></g></g><g transform="translate(55,26) scale(.6)"><g class="gear ccw"><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(0.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(45.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(90.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(135.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(180.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(225.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(270.0)"/><rect x="-2.40" y="-16.50" width="4.80" height="6.00" rx="1.5" transform="rotate(315.0)"/><path fill-rule="evenodd" d="M -11.5,0 a 11.5,11.5 0 1,0 23.0,0 a 11.5,11.5 0 1,0 -23.0,0 Z M -5.0,0 a 5.0,5.0 0 1,1 10.0,0 a 5.0,5.0 0 1,1 -10.0,0 Z"/></g></g></svg></div>
-    <h1>C.K. Frozen Fish &amp; Food — Samut Prakarn</h1>
-    <p>ระบบจัดการงานซ่อมบำรุง · สาขาสมุทรปราการ / Samut Prakarn</p>
+    <h1>C.K. Frozen Fish &amp; Food</h1>
+    <p>ระบบจัดการงานซ่อมบำรุง · ระบบแจ้งซ่อม</p>
   </div>
   <div class="login-card">
     <div class="lc-icon">🔐</div>
@@ -1320,7 +1321,7 @@ input:focus,select:focus,textarea:focus,
     <div class="login-err" id="loginErr"></div>
     <div class="login-numpad" id="loginNumpad"></div>
   </div>
-  <div class="login-footer">บริษัท ซี.เค. โฟรเซน ฟิช แอนด์ ฟูด จำกัด · สมุทรปราการ · FM-MT-001.2 Rev.03</div>
+  <div class="login-footer">บริษัท ซี.เค. โฟรเซน ฟิช แอนด์ ฟูด จำกัด · FM-MT-001.2 Rev.03</div>
 </div>
 </div>
 
@@ -4220,11 +4221,12 @@ function tRenderDetail(){
   if(t.vendorSelected)_log.push({ts:new Date(t.poSavedAt||t.prApprovedAt||t.inquiringAt||t.timestamp),icon:'🏆',txt:'เลือกผู้จำหน่าย: '+esc(t.vendorSelected)});
   if(t.completedDate)_log.push({ts:new Date(t.completedDate),icon:'🟢',txt:'เสร็จสิ้น'});
   _log.sort(function(a,b){return a.ts-b.ts;});
+  var logHtml='';
   if(_log.length>1){
-    h+='<div style="padding:8px 14px 0"><div class="td-log-toggle" onclick="var el=document.getElementById(\'tLogBody\');var ar=document.getElementById(\'tLogArrow\');if(el.style.display===\'none\'){el.style.display=\'block\';ar.textContent=\'▲\';}else{el.style.display=\'none\';ar.textContent=\'▼\';}" style="font-size:12px;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">📜 ประวัติใบงาน ('+_log.length+') <span id="tLogArrow" style="font-size:10px">▼</span></div>';
-    h+='<div id="tLogBody" style="display:none;margin-top:6px;border-left:2px solid #e2e8f0;padding-left:10px">';
-    _log.forEach(function(e){var dd=e.ts;var hh=('0'+dd.getHours()).slice(-2)+':'+('0'+dd.getMinutes()).slice(-2);var ds=('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2);h+='<div style="font-size:11px;margin-bottom:6px;color:#475569"><span style="color:#94a3b8">'+ds+' '+hh+'</span> '+e.icon+' '+e.txt+'</div>';});
-    h+='</div></div>';
+    logHtml+='<div style="padding:8px 14px 0"><div class="td-log-toggle" onclick="var el=document.getElementById(\'tLogBody\');var ar=document.getElementById(\'tLogArrow\');if(el.style.display===\'none\'){el.style.display=\'block\';ar.textContent=\'▲\';}else{el.style.display=\'none\';ar.textContent=\'▼\';}" style="font-size:12px;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:4px">📜 ประวัติใบงาน ('+_log.length+') <span id="tLogArrow" style="font-size:10px">▼</span></div>';
+    logHtml+='<div id="tLogBody" style="display:none;margin-top:6px;border-left:2px solid #e2e8f0;padding-left:10px">';
+    _log.forEach(function(e){var dd=e.ts;var hh=('0'+dd.getHours()).slice(-2)+':'+('0'+dd.getMinutes()).slice(-2);var ds=('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2);logHtml+='<div style="font-size:11px;margin-bottom:6px;color:#475569"><span style="color:#94a3b8">'+ds+' '+hh+'</span> '+e.icon+' '+e.txt+'</div>';});
+    logHtml+='</div></div>';
   }
   // Photos from original request
   var _photos=tParsePhotos(t.photos||'');
@@ -4236,18 +4238,18 @@ function tRenderDetail(){
   }
   if(st==='New'){
     h+='<div class="td-banner warn"><div class="bt">🔒 ต้องรับงานก่อน</div><div class="bs">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action green" style="margin-top:10px" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
-    document.getElementById('techDetailInner').innerHTML=h;return;
+    h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
   if(st==='Cancelled'){
     h+='<div class="td-banner danger"><div class="bt">🔒 ใบงานถูกยกเลิก / Ticket Cancelled</div><div class="bs">ไม่สามารถอัพเดทได้ — หากยังต้องการซ่อม กรุณาแจ้งใหม่<br>Locked — submit a new ticket if work is still needed.</div></div>';
-    document.getElementById('techDetailInner').innerHTML=h;return;
+    h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
   var _hasPO=!!(t.poNumber&&t.poNumber.trim());
   var _isFroz=tFroz(st)&&!(st==='Waiting Parts'&&_hasPO);
   if(_isFroz){
     var fzMsg={'Waiting Parts':'รออะไหล่ — รอ PO จากจัดซื้อ','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
     h+='<div class="td-banner froz"><div class="bt">🔒 '+fzMsg+'</div><div class="bs">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
-    document.getElementById('techDetailInner').innerHTML=h;return;
+    h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
   var _poReady=st==='Waiting Parts'&&_hasPO;
   if(_poReady){
@@ -4257,7 +4259,7 @@ function tRenderDetail(){
   if(_poReady){
     h+='<div class="td-mode-label ok">✓ พร้อมซ่อม — ปิดงาน / Ready to close</div>';
   } else {
-    h+='<div class="td-mode-label '+(_techMode==='c'?'ok':'up')+'">'+(_techMode==='c'?'✓ พร้อมซ่อม — ปิดงาน / Complete':'📝 อัพเดทสถานะ / Update status')+'</div>';
+    h+='<div id="tModeLabel" class="td-mode-label '+(_techMode==='c'?'ok':'up')+'">'+(_techMode==='c'?'✓ พร้อมซ่อม — ปิดงาน / Complete':'📝 อัพเดทสถานะ / Update status')+'</div>';
   }
   // Update panel (hidden when PO ready — only Complete available)
   h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
@@ -4298,7 +4300,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tCNote" placeholder="หมายเหตุ..."></textarea></div>';
   h+='<button class="td-action green" onclick="tComplete()">✓ เสร็จสิ้นและตัดสต็อก</button><div class="td-hint">อะไหล่จะถูกตัดสต็อกอัตโนมัติ</div>';
   h+='</div></div>';
-  document.getElementById('techDetailInner').innerHTML=h;
+  h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;
   if(_techMode==='c'){tRP('');tRSP();}
 }
 function tSetMode(m){
@@ -4332,6 +4334,7 @@ function tSS(el,st){
     if(detLbl)detLbl.innerHTML='🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span>';
     var ta=document.getElementById('tUDetNonInq');if(ta)ta.placeholder='อธิบายวิธีการซ่อมหรือดำเนินการ...';
   }
+  var ml=document.getElementById('tModeLabel');if(ml)ml.className='td-mode-label '+(isInq?'inq':'up');
 }
 function tBack(){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});loadTechTickets(window._loggedInUser);}
 
