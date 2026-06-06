@@ -1193,6 +1193,8 @@ input:focus,select:focus,textarea:focus,
 .td-banner.danger .bt,.td-banner.danger .bs{color:#b3261e}
 .td-banner.froz{background:rgba(175,82,222,.1);border:1px solid rgba(175,82,222,.4)}
 .td-banner.froz .bt,.td-banner.froz .bs{color:#7a2da0}
+.td-banner.inq{background:rgba(175,82,222,.1);border:1px solid rgba(175,82,222,.4)}
+.td-banner.inq .bt,.td-banner.inq .bs{color:#7a2da0}
 .td-banner.ok{background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.4)}
 .td-banner.ok .bt{color:#15803d}.td-banner.ok .bs{color:#16a34a}
 .td-banner.info{background:rgba(0,122,255,.08);border:1px solid rgba(0,122,255,.35)}
@@ -4261,9 +4263,10 @@ function tRenderDetail(){
   } else {
     h+='<div id="tModeLabel" class="td-mode-label '+(_techMode==='c'?'ok':'up')+'">'+(_techMode==='c'?'✓ พร้อมซ่อม — ปิดงาน / Complete':'📝 อัพเดทสถานะ / Update status')+'</div>';
   }
+  h+=logHtml;
   // Update panel (hidden when PO ready — only Complete available)
   h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
-  h+='<div id="tInquiringWrap" style="display:none"><div class="td-banner info" style="margin:0 0 10px"><div class="bt">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div class="bs">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
+  h+='<div id="tInquiringWrap" style="display:none"><div class="td-banner inq" style="margin:0 0 10px"><div class="bt">📝 ใบขอซื้อจะส่งให้ GM อนุมัติ</div><div class="bs">PR will be sent to GM for approval → then to Purchasing</div></div></div>';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
   h+='<div class="td-lbl">สถานะหลังบันทึก / Status after saving</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 ยังดำเนินการ / Still working</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
@@ -4300,7 +4303,7 @@ function tRenderDetail(){
   h+='<div class="td-lbl">📝 หมายเหตุ</div><div class="td-ta"><textarea id="tCNote" placeholder="หมายเหตุ..."></textarea></div>';
   h+='<button class="td-action green" onclick="tComplete()">✓ เสร็จสิ้นและตัดสต็อก</button><div class="td-hint">อะไหล่จะถูกตัดสต็อกอัตโนมัติ</div>';
   h+='</div></div>';
-  h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;
+  document.getElementById('techDetailInner').innerHTML=h;
   if(_techMode==='c'){tRP('');tRSP();}
 }
 function tSetMode(m){
@@ -4334,7 +4337,6 @@ function tSS(el,st){
     if(detLbl)detLbl.innerHTML='🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span>';
     var ta=document.getElementById('tUDetNonInq');if(ta)ta.placeholder='อธิบายวิธีการซ่อมหรือดำเนินการ...';
   }
-  var ml=document.getElementById('tModeLabel');if(ml)ml.className='td-mode-label '+(isInq?'inq':'up');
 }
 function tBack(){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});loadTechTickets(window._loggedInUser);}
 
