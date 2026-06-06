@@ -1112,6 +1112,46 @@ input:focus,select:focus,textarea:focus,
 .td-qty-unit{font-size:11px;color:#15803d}
 .td-qty-info{font-size:11px;color:#6b7280;margin-left:auto}
 
+
+/* ═══ TECH VIEW · SUMMARY-STYLE GLASSY (renderTechList) ═══ */
+.tech-hdr{background:linear-gradient(135deg,#007AFF 0%,#5856D6 100%)!important;border-radius:0 0 22px 22px;box-shadow:0 10px 26px -10px rgba(88,86,214,.5);padding:16px 18px}
+.tech-hdr h1{font-size:16px;font-weight:700;letter-spacing:.2px}
+.tech-logout{background:rgba(255,255,255,.22)!important;border:1px solid rgba(255,255,255,.38)!important;border-radius:12px!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.tech-tabs{display:flex;gap:5px;padding:5px;margin:14px 12px 4px;border:none!important;border-radius:16px;background:var(--glass-bg);box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%)}
+.tech-tab{border-bottom:none!important;border-radius:12px;font-weight:600;color:#64748b;transition:.22s cubic-bezier(.2,.8,.2,1)}
+.tech-tab.on{background:linear-gradient(135deg,#007AFF 0%,#5856D6 100%);color:#fff!important;border-bottom:none!important;box-shadow:0 6px 16px -6px rgba(88,86,214,.6)}
+.tech-list{background:transparent!important;padding:4px 12px 26px;min-height:auto}
+.tt-sec{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 9px}
+.tt-sec-label{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;color:#334155}
+.tt-sec-count{min-width:26px;height:26px;padding:0 8px;border-radius:14px;background:var(--glass-bg-strong);border:1px solid var(--glass-border);color:#475569;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:var(--glass-shadow)}
+.tt-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:18px;margin-bottom:11px;overflow:hidden;box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+.tt-card.cancel{border-color:rgba(255,59,48,.35)}
+.tt-card:active{transform:translateY(1px) scale(.996)}
+@media(hover:hover){.tt-card:hover{transform:translateY(-2px);box-shadow:var(--glass-shadow-strong)}}
+.tt-head{padding:13px 15px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;cursor:pointer}
+.tt-num{font-size:12px;font-weight:700;font-family:ui-monospace,monospace;color:#94a3b8;margin-bottom:4px}
+.tt-title{font-size:16px;font-weight:800;color:#0f172a;line-height:1.35;letter-spacing:-.01em}
+.tt-dept{font-size:12.5px;color:#475569;margin-top:6px}
+.tt-meta{text-align:right;flex-shrink:0}
+.tt-status{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;white-space:nowrap;display:inline-block}
+.tt-cause{font-size:12.5px;color:#475569;margin:2px 15px 0;padding:9px 0 0;border-top:1px solid rgba(148,163,184,.22);line-height:1.55}
+.tt-tap{padding:8px 16px 4px;font-size:12px;color:#94a3b8;text-align:center;cursor:pointer}
+.tt-assigned{margin:8px 15px 6px;background:rgba(52,199,89,.13);border:1px solid rgba(52,199,89,.32);border-radius:11px;padding:9px 13px;font-size:12.5px;color:#1b7a3d;font-weight:700;backdrop-filter:blur(6px)}
+.tt-assigned.ee{background:rgba(175,82,222,.12);border-color:rgba(175,82,222,.32);color:#7a2da0}
+.tt-act{padding:0 15px 14px;display:flex;gap:8px}
+.tt-act button{flex:1;padding:12px;border:none;border-radius:13px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.tt-act button:active{transform:scale(.97)}
+.tt-b-accept{background:linear-gradient(135deg,#34C759,#30B14E);color:#fff;box-shadow:0 8px 18px -8px rgba(52,199,89,.6)}
+.tt-b-ready{background:linear-gradient(135deg,#007AFF,#5856D6);color:#fff;box-shadow:0 8px 18px -8px rgba(88,86,214,.55)}
+.tt-b-update{background:var(--glass-bg-strong);border:1px solid rgba(0,122,255,.42)!important;color:#0040DD;backdrop-filter:blur(8px)}
+.tt-lock{margin:8px 15px 14px;border-radius:12px;padding:11px 13px;font-size:12.5px;font-weight:700;text-align:center;backdrop-filter:blur(8px)}
+.tt-lock.wait{background:rgba(255,149,0,.12);border:1px solid rgba(255,149,0,.4);color:#9a5b00}
+.tt-lock.cancel{background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.4);color:#b3261e;cursor:pointer}
+.tt-po{margin:6px 15px 4px;font-size:11.5px;color:#15803d;background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.3);border-radius:10px;padding:7px 11px;font-weight:600}
+.tt-empty{text-align:center;padding:40px;color:#94a3b8;font-size:13px}
+@media(prefers-reduced-motion:reduce){.tt-card,.tt-act button,.tech-tab{transition:none!important}}
+/* ═══ END TECH SUMMARY-STYLE ═══ */
+
 </style>
 </head>
 <body>
@@ -3904,29 +3944,113 @@ function tClosePhoto(){document.getElementById('photoModal').classList.remove('s
 function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;if(_photoIdx>=_photoList.length)_photoIdx=0;document.getElementById('photoModalImg').src=_photoList[_photoIdx].full;document.getElementById('photoModalCount').textContent=(_photoIdx+1)+' / '+_photoList.length;}
 
 function renderTechList(){
-  var u=window._loggedInUser,pe=[],co=[],sevenDaysAgo=new Date();sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
-  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
-  // Sort pending: urgent first, then oldest opened first
-  pe.sort(function(a,b){var ua=String(a.urgent).toLowerCase()==='yes'||String(a.urgent).toLowerCase()==='true'?1:0;var ub=String(b.urgent).toLowerCase()==='yes'||String(b.urgent).toLowerCase()==='true'?1:0;if(ua!==ub)return ub-ua;var da=a.timestamp?new Date(a.timestamp):new Date();var db=b.timestamp?new Date(b.timestamp):new Date();return da-db;});
-  // Sort completed: most recent first
-  co.sort(function(a,b){var da=a.completedDate?new Date(a.completedDate):new Date();var db=b.completedDate?new Date(b.completedDate):new Date();return db-da;});
-  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><div style="display:flex;gap:6px"><button onclick="tRefresh()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;cursor:pointer;font-family:inherit;font-weight:600">🔄 รีเฟรช</button><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div></div>';
-  h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
+  var u=window._loggedInUser, now=new Date();
+  var pe=[], co=[], cancel=[], sevenDaysAgo=new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+  _techTickets.forEach(function(t){
+    t._st=tNorm(t.status);
+    if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}
+    else if(t._st==='Cancelled'){cancel.push(t);}
+    else pe.push(t);
+  });
+  function byUrgentThenOld(a,b){
+    var ua=String(a.urgent).toLowerCase()==='yes'||String(a.urgent).toLowerCase()==='true'?1:0;
+    var ub=String(b.urgent).toLowerCase()==='yes'||String(b.urgent).toLowerCase()==='true'?1:0;
+    if(ua!==ub)return ub-ua;
+    var da=a.timestamp?new Date(a.timestamp):now, db=b.timestamp?new Date(b.timestamp):now; return da-db;
+  }
+  pe.sort(byUrgentThenOld); cancel.sort(byUrgentThenOld);
+  co.sort(function(a,b){var da=a.completedDate?new Date(a.completedDate):now, db=b.completedDate?new Date(b.completedDate):now; return db-da;});
+  var ongoingCount=pe.length+cancel.length;
+
+  // Header (glassy gradient via CSS) + refresh/logout
+  var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="tRefresh()" style="width:auto;border-radius:12px;padding:8px 13px;font-size:12px;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.38);cursor:pointer;font-family:inherit;font-weight:600;backdrop-filter:blur(10px)">🔄 รีเฟรช</button>'
+    +'<button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:12px;padding:8px 13px;font-size:12px">↩ ออก</button></div></div>';
+  // Tabs
+  h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+ongoingCount+')</div>'
+    +'<div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
+
+  // ===== ON-GOING — grouped by status =====
   h+='<div id="ttPL" class="tech-list">';
-  pe.forEach(function(t){if(t._st==='Cancelled'){h+='<div class="ttk s-done" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')" style="cursor:pointer"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:#fee2e2;color:#991b1b">ยกเลิก</span></div><div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | แตะเพื่อดูเหตุผล</div></div>';return;}var hasPO=!!(t.poNumber&&t.poNumber.trim());var fr=tFroz(t._st)&&!(t._st==='Waiting Parts'&&hasPO);
-    h+='<div class="ttk '+tCls(t._st)+'"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+tBg(t._st)+';color:'+tCol(t._st)+'">'+tLbl(t._st)+'</span></div>';
-    h+='<div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+esc(t.machine)+'</div><div class="ttk-age">⏱ '+tAge(t.timestamp)+'</div>';
-    if(fr){var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[t._st]||'🔒 ใบงานถูกระงับ';h+='<div class="ttk-frozen'+(t._st==='Outside Team'?' outside':'')+'">'+fMsg+'</div>';}
-    else{if(t._st==='Waiting Parts'&&hasPO){h+='<div style="font-size:11px;color:#166534;background:#dcfce7;border-radius:6px;padding:4px 8px;margin-bottom:4px">✅ PO: '+esc(t.poNumber)+' — พร้อมซ่อมเมื่ออะไหล่มาถึง</div>';}h+='<div class="ttk-btns">';if(t._st==='New')h+='<button class="ttk-btn accept" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน</button>';
-    else{h+='<button class="ttk-btn update" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')">📝 อัพเดท</button>';h+='<button class="ttk-btn complete" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'c\')">✓ พร้อมซ่อม</button>';}h+='</div>';}
-    h+='</div>';});
-  if(!pe.length)h+='<div class="tech-empty">✅ ไม่มีงานค้าง</div>';
-  h+='</div><div id="ttCL" class="tech-list" style="display:none">';
- co.forEach(function(t){var isCan=t._st==='Cancelled';h+='<div class="ttk s-done"'+(isCan?' onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')" style="cursor:pointer"':'')+'><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+(isCan?'#fee2e2;color:#991b1b':'#dcfce7;color:#166534')+'">'+(isCan?'ยกเลิก':'เสร็จสิ้น')+'</span></div><div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+(isCan?'แตะเพื่อดูเหตุผล':'อะไหล่ '+(t.spareParts||'-'))+'</div></div>';});
-  if(!co.length)h+='<div class="tech-empty">ยังไม่มีงานเสร็จ</div>';
+  var order=['In Progress','New','Waiting Parts','Inquiring','PR Pending','Outside Team'];
+  var secMeta={
+    'In Progress':{dot:'#007AFF',lbl:'🔵 กำลังดำเนินการ / In Progress'},
+    'New':{dot:'#FF9500',lbl:'🟠 รอดำเนินการ / New'},
+    'Waiting Parts':{dot:'#FF9500',lbl:'⏳ รออะไหล่ / Waiting Parts'},
+    'Inquiring':{dot:'#FF9500',lbl:'📋 ขอใบเสนอราคา / Inquiring'},
+    'PR Pending':{dot:'#FF9500',lbl:'📝 รออนุมัติ PR / PR Pending'},
+    'Outside Team':{dot:'#AF52DE',lbl:'🚚 รอทีมภายนอก / Outside Team'}
+  };
+  var grouped={}; pe.forEach(function(t){(grouped[t._st]=grouped[t._st]||[]).push(t);});
+  order.forEach(function(st){var arr=grouped[st]; if(!arr||!arr.length)return; h+=tSecHeader(secMeta[st]||{dot:'#94a3b8',lbl:tLbl(st)},arr.length); arr.forEach(function(t){h+=tCardHTML(t,u,now);});});
+  Object.keys(grouped).forEach(function(st){ if(order.indexOf(st)>-1)return; var arr=grouped[st]; h+=tSecHeader({dot:'#94a3b8',lbl:tLbl(st)},arr.length); arr.forEach(function(t){h+=tCardHTML(t,u,now);});});
+  if(cancel.length){ h+=tSecHeader({dot:'#FF3B30',lbl:'❌ ยกเลิก / Cancelled'},cancel.length); cancel.forEach(function(t){h+=tCardHTML(t,u,now);});}
+  if(!ongoingCount)h+='<div class="tt-empty">✅ ไม่มีงานค้าง</div>';
   h+='</div>';
+
+  // ===== COMPLETED =====
+  h+='<div id="ttCL" class="tech-list" style="display:none">';
+  if(co.length){ h+=tSecHeader({dot:'#34C759',lbl:'✅ เสร็จสิ้น / Completed'},co.length); co.forEach(function(t){h+=tCardHTML(t,u,now);});}
+  else h+='<div class="tt-empty">ยังไม่มีงานเสร็จ</div>';
+  h+='</div>';
+
   document.getElementById('techListInner').innerHTML=h;
 }
+
+// Section header (label + count badge), matches GM .mv-section-title look
+function tSecHeader(m,n){
+  return '<div class="tt-sec"><div class="tt-sec-label"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:'+m.dot+'"></span>'+m.lbl+'</div><div class="tt-sec-count">'+n+'</div></div>';
+}
+
+// Green "assigned team" strip (derives team from approver/technician, falls back to user dept)
+function tTeamAssigned(t,u){
+  var s=((t.approver||'')+(t.technician||'')+((u&&u.dept)||'')).toLowerCase();
+  if(s.indexOf('electrical')>-1||s.indexOf('ไฟฟ้า')>-1) return '<div class="tt-assigned ee">⚡ ช่างไฟฟ้า / Electrical Maintenance มอบหมายแล้ว</div>';
+  if(s.indexOf('general')>-1||s.indexOf('ทั่วไป')>-1)  return '<div class="tt-assigned">🔧 ช่างทั่วไป / General Maintenance มอบหมายแล้ว</div>';
+  return '<div class="tt-assigned">🔧 '+esc((u&&u.dept)||'ทีมช่าง')+' มอบหมายแล้ว</div>';
+}
+
+// SLA badges (📅 total age + ⏱ SLA). Reuses GM helpers if present; safe-guarded.
+function tSlaBadges(t,now,skipSla){
+  var b='';
+  try{ var ta=(typeof getTotalAgeStr==='function')?getTotalAgeStr(t,now):tAge(t.timestamp); if(ta)b+='<span class="sla-badge sla-total">📅 '+ta+'</span>'; }catch(e){}
+  if(!skipSla){ try{ if(typeof getSLABadge==='function'){ var sla=getSLABadge(t,now); if(sla&&sla.display)b+='<span class="sla-badge '+(sla.cls||'')+'">⏱ '+sla.display+(sla.limitStr?' / '+sla.limitStr:'')+'</span>'; } }catch(e){} }
+  return b?'<div class="sla-badge-wrap">'+b+'</div>':'';
+}
+
+// One ticket flashcard (transparent), GM-summary anatomy + technician actions
+function tCardHTML(t,u,now){
+  var st=t._st, tid=esc(t.ticketNumber);
+  var hasPO=!!(t.poNumber&&t.poNumber.trim());
+  var frozen=tFroz(st)&&!(st==='Waiting Parts'&&hasPO);
+  var isCancel=st==='Cancelled', isNew=st==='New', isDone=st==='Completed';
+  var head='<div class="tt-head"'+(isNew?'':' onclick="tOpen(\''+tid+'\',\'u\')"')+'>'
+    +'<div class="tt-info"><div class="tt-num">'+tid+'</div>'
+    +'<div class="tt-title">'+esc(t.machine||t.cause||'—')+'</div>'
+    +'<div class="tt-dept">🏭 '+esc(t.department||'—')+(t.reporter?' · 👤 '+esc(t.reporter):'')+'</div></div>'
+    +'<div class="tt-meta"><div class="tt-status" style="background:'+tBg(st)+';color:'+tCol(st)+'">'+tLbl(st)+'</div>'+tSlaBadges(t,now,isDone)+'</div></div>';
+  var card='<div class="tt-card'+(isCancel?' cancel':'')+'">'+head;
+  if(t.cause&&t.machine&&t.cause!==t.machine)card+='<div class="tt-cause">💬 '+esc(t.cause)+'</div>';
+
+  if(isCancel){ card+='<div class="tt-lock cancel" onclick="tOpen(\''+tid+'\',\'u\')">🔒 ถูกยกเลิก — แตะเพื่อดูเหตุผล / Tap for reason</div></div>'; return card; }
+  if(isDone){ card+='<div class="tt-tap" onclick="tOpen(\''+tid+'\',\'u\')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>'+(t.spareParts?'<div class="tt-po">🧩 อะไหล่: '+esc(t.spareParts)+'</div>':'')+'</div>'; return card; }
+
+  if(!isNew)card+='<div class="tt-tap" onclick="tOpen(\''+tid+'\',\'u\')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>';
+  card+=tTeamAssigned(t,u);
+  if(hasPO&&st==='Waiting Parts')card+='<div class="tt-po">✅ PO: '+esc(t.poNumber)+' — พร้อมซ่อมเมื่ออะไหล่มาถึง</div>';
+  if(frozen){
+    var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[st]||'🔒 ใบงานถูกระงับ';
+    card+='<div class="tt-lock wait">'+fMsg+'</div>';
+  } else if(isNew){
+    card+='<div class="tt-act"><button class="tt-b-accept" onclick="tAccept(\''+tid+'\')">✓ รับงาน / Accept Job</button></div>';
+  } else {
+    card+='<div class="tt-act"><button class="tt-b-update" onclick="tOpen(\''+tid+'\',\'u\')">📝 อัพเดท / Update</button><button class="tt-b-ready" onclick="tOpen(\''+tid+'\',\'c\')">✓ พร้อมซ่อม / Ready</button></div>';
+  }
+  card+='</div>';
+  return card;
+}
+
 function tTab(t){document.getElementById('ttPL').style.display=t==='p'?'block':'none';document.getElementById('ttCL').style.display=t==='c'?'block':'none';document.getElementById('ttP').className='tech-tab'+(t==='p'?' on':'');document.getElementById('ttC').className='tech-tab'+(t==='c'?' on':'');}
 
 function tAccept(tid){
