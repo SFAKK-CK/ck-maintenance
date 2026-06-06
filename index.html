@@ -3999,11 +3999,11 @@ function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;
 
 function renderTechList(){
   var u=window._loggedInUser, now=new Date();
-  var pe=[], co=[], cancel=[], sevenDaysAgo=new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
+  var pe=[], co=[], cancel=[], cutoff=new Date(); cutoff.setDate(cutoff.getDate()-3); // show Completed & Cancelled from last 3 days only
   _techTickets.forEach(function(t){
     t._st=tNorm(t.status);
-    if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}
-    else if(t._st==='Cancelled'){cancel.push(t);}
+    if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=cutoff)co.push(t);}
+    else if(t._st==='Cancelled'){var xd=t.completedDate?new Date(t.completedDate):null;if(!xd||xd>=cutoff)cancel.push(t);}
     else pe.push(t);
   });
   function byUrgentThenOld(a,b){
