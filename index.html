@@ -3905,7 +3905,7 @@ function tNavPhoto(d){_photoIdx+=d;if(_photoIdx<0)_photoIdx=_photoList.length-1;
 
 function renderTechList(){
   var u=window._loggedInUser,pe=[],co=[],sevenDaysAgo=new Date();sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
-  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'||t._st==='Cancelled'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
+  _techTickets.forEach(function(t){t._st=tNorm(t.status);if(t._st==='Completed'){var cd=t.completedDate?new Date(t.completedDate):null;if(cd&&cd>=sevenDaysAgo)co.push(t);}else pe.push(t);});
   // Sort pending: urgent first, then oldest opened first
   pe.sort(function(a,b){var ua=String(a.urgent).toLowerCase()==='yes'||String(a.urgent).toLowerCase()==='true'?1:0;var ub=String(b.urgent).toLowerCase()==='yes'||String(b.urgent).toLowerCase()==='true'?1:0;if(ua!==ub)return ub-ua;var da=a.timestamp?new Date(a.timestamp):new Date();var db=b.timestamp?new Date(b.timestamp):new Date();return da-db;});
   // Sort completed: most recent first
@@ -3913,7 +3913,7 @@ function renderTechList(){
   var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div><div style="display:flex;gap:6px"><button onclick="tRefresh()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;cursor:pointer;font-family:inherit;font-weight:600">🔄 รีเฟรช</button><button class="tech-logout" onclick="appLogout()" style="width:auto;border-radius:8px;padding:6px 14px;font-size:12px">↩ ออกจากระบบ</button></div></div>';
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+pe.length+')</div><div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
   h+='<div id="ttPL" class="tech-list">';
-  pe.forEach(function(t){var hasPO=!!(t.poNumber&&t.poNumber.trim());var fr=tFroz(t._st)&&!(t._st==='Waiting Parts'&&hasPO);
+  pe.forEach(function(t){if(t._st==='Cancelled'){h+='<div class="ttk s-done" onclick="tOpen(\''+esc(t.ticketNumber)+'\',\'u\')" style="cursor:pointer"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:#fee2e2;color:#991b1b">ยกเลิก</span></div><div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | แตะเพื่อดูเหตุผล</div></div>';return;}var hasPO=!!(t.poNumber&&t.poNumber.trim());var fr=tFroz(t._st)&&!(t._st==='Waiting Parts'&&hasPO);
     h+='<div class="ttk '+tCls(t._st)+'"><div class="ttk-row"><span class="ttk-id">'+esc(t.ticketNumber)+'</span><span class="ttk-badge" style="background:'+tBg(t._st)+';color:'+tCol(t._st)+'">'+tLbl(t._st)+'</span></div>';
     h+='<div class="ttk-desc">'+esc(t.cause||t.machine)+'</div><div class="ttk-meta">'+esc(t.department)+' | '+esc(t.machine)+'</div><div class="ttk-age">⏱ '+tAge(t.timestamp)+'</div>';
     if(fr){var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[t._st]||'🔒 ใบงานถูกระงับ';h+='<div class="ttk-frozen'+(t._st==='Outside Team'?' outside':'')+'">'+fMsg+'</div>';}
