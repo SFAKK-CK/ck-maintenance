@@ -4276,7 +4276,7 @@ function tRenderDetail(){
   h+='<div id="tOutsideWrap" style="display:none"><div class="td-banner out" style="margin:0 0 10px"><div class="bt">🚚 รอ GM เลือก: ซ่อม หรือ ซื้อใหม่</div><div class="bs">Waiting for GM to choose: repair or buy new</div></div></div>';
   h+='<div class="td-lbl">🔍 สาเหตุเบื้องต้น <span class="req">*</span></div><div class="td-ta"><textarea id="tURC" placeholder="ระบุสาเหตุ..."></textarea></div>';
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
-  h+='<div class="td-lbl">สถานะหลังบันทึก / Status after saving</div><div class="td-pills"><div class="td-pill on" onclick="tSS(this,\'In Progress\')">🔵 ยังดำเนินการ / Still working</div><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
+  h+='<div class="td-lbl">สถานะหลังบันทึก / Status after saving</div><div class="td-pills"><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
   h+='<div id="tInqItemsWrap" style="display:none">';
   h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\',this)">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\',this)">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
   h+='<div id="tInqInv"><div class="td-search"><span>🔍</span><input type="text" id="tInqQ" placeholder="ค้นหาอะไหล่..." oninput="tInqFP()"></div>';
