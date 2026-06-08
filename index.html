@@ -1083,6 +1083,7 @@ input:focus,select:focus,textarea:focus,
 .td-ta textarea{width:100%;border:none;padding:9px;font-size:12px;font-family:inherit;min-height:52px;resize:none;border-radius:10px;background:transparent;color:#334155}
 .td-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .td-pill{padding:7px 12px;font-size:11px;border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer;transition:.2s}
+.td-pill.dis{opacity:.45;pointer-events:none}
 .td-pill.on{background:#dbeafe;border-color:#1a73e8;color:#1e40af;font-weight:600}
 .td-warn{background:#fff8e1;border:1px solid #fde68a;border-radius:8px;padding:7px;margin-bottom:12px;font-size:11px;color:#92400e}
 .td-action{width:100%;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px}
@@ -4137,6 +4138,8 @@ function tCardHTML(t,u,now){
     card+='<div class="tt-lock wait">'+fMsg+'</div>';
   } else if(isNew){
     card+='<div class="tt-act"><button class="tt-b-accept" onclick="tAccept(\''+tid+'\')">✓ รับงาน / Accept Job</button></div>';
+  } else if(st==='Waiting Parts'&&hasPO){
+    card+='<div class="tt-act"><button class="tt-b-ready" onclick="tOpen(\''+tid+'\',\'c\')">✓ ปิดงาน / Complete</button></div>';
   } else {
     card+='<div class="tt-act"><button class="tt-b-update" onclick="tOpen(\''+tid+'\',\'u\')">📝 อัพเดท / Update</button><button class="tt-b-ready" onclick="tOpen(\''+tid+'\',\'c\')">✓ พร้อมซ่อม / Ready</button></div>';
   }
@@ -4162,6 +4165,8 @@ function tRmPhoto(which,i){if(which==='upd'){_updPhotos.splice(i,1);}else{_cmpPh
 // ── Inquiring parts search ──
 var _inqSelected=[],_inqMode='inv';
 function tInqMode(m,el){
+  if(m==='txt'&&_inqSelected.length>0)return;
+  var _md=document.getElementById('tUDet');if(m==='inv'&&_md&&(_md.value||'').trim())return;
   _inqMode=m;_inqSelected=[];
   var wrap=document.getElementById('tInqItemsWrap');
   if(wrap){wrap.querySelectorAll('.td-pill').forEach(function(p){p.className='td-pill';});}
@@ -4169,8 +4174,9 @@ function tInqMode(m,el){
   var inv=document.getElementById('tInqInv'),txt=document.getElementById('tInqTxt');
   if(inv)inv.style.display=(m==='inv')?'block':'none';
   if(txt)txt.style.display=(m==='inv')?'none':'block';
-  tInqRSP();
+  tInqRSP();tInqTxtChk();
 }
+function tInqTxtChk(){var md=document.getElementById('tUDet');var ip=document.getElementById('tInqInvPill');if(!ip)return;var has=md&&(md.value||'').trim().length>0;if(has){ip.classList.add('dis');}else{ip.classList.remove('dis');}}
 function tInqFP(){tInqRP((document.getElementById('tInqQ').value||'').trim());}
 function tInqRP(q){var el=document.getElementById('tInqPR');if(!el)return;var h='';q=q.toLowerCase();
   _techParts.forEach(function(p){if(q&&p.name.toLowerCase().indexOf(q)<0&&p.code.toLowerCase().indexOf(q)<0)return;if(_inqSelected.find(function(s){return s.code===p.code;}))return;
@@ -4184,7 +4190,7 @@ function tInqRSP(){var el=document.getElementById('tInqSP');if(!el)return;var h=
   _inqSelected.forEach(function(s){
   h+='<div class="td-sel-part"><div class="td-sel-row"><div><div class="td-sel-name">'+esc(s.name)+'</div><div class="td-sel-code">'+esc(s.code)+' | คงเหลือ: '+s.stock+'</div></div><button class="td-sel-rm" onclick="tInqRemP(\''+esc(s.code)+'\')">✕</button></div>';
   h+='<div class="td-qty-row"><div class="td-qty-ctrl"><button onclick="tInqChQ(\''+esc(s.code)+'\',-1)">-</button><div class="v">'+s.qty+'</div><button onclick="tInqChQ(\''+esc(s.code)+'\',1)">+</button></div><span class="td-qty-unit">'+esc(s.unit)+'</span></div></div>';});
-  el.innerHTML=h;var sc=document.getElementById('tInqSC');if(sc)sc.textContent=_inqSelected.length;}
+  el.innerHTML=h;var sc=document.getElementById('tInqSC');if(sc)sc.textContent=_inqSelected.length;var tp=document.getElementById('tInqTxtPill');if(tp){if(_inqSelected.length>0){tp.classList.add('dis');}else{tp.classList.remove('dis');}}}
 
 function tOpen(tid,mode){
   _techCurrent=_techTickets.find(function(x){return x.ticketNumber===tid;});if(!_techCurrent)return;
@@ -4278,11 +4284,11 @@ function tRenderDetail(){
   h+='<div class="td-lbl" id="tUDetLbl">🛠️ วิธีการแก้ไข / Correction Details <span class="req">*</span></div><div class="td-ta"><textarea id="tUDetNonInq" placeholder="อธิบายวิธีการซ่อมหรือดำเนินการ..."></textarea></div>';
   h+='<div class="td-lbl">สถานะหลังบันทึก / Status after saving</div><div class="td-pills"><div class="td-pill" onclick="tSS(this,\'Inquiring\')">📋 ขอใบเสนอราคา</div><div class="td-pill" onclick="tSS(this,\'Outside Team\')">🚚 รอทีมภายนอก</div></div>';
   h+='<div id="tInqItemsWrap" style="display:none">';
-  h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" onclick="tInqMode(\'inv\',this)">📦 เลือกจากสต็อก</div><div class="td-pill" onclick="tInqMode(\'txt\',this)">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
+  h+='<div class="td-lbl">เลือกประเภทรายการ</div><div class="td-pills"><div class="td-pill on" id="tInqInvPill" onclick="tInqMode(\'inv\',this)">📦 เลือกจากสต็อก</div><div class="td-pill" id="tInqTxtPill" onclick="tInqMode(\'txt\',this)">📝 ระบุเอง (ไม่มีในระบบ)</div></div>';
   h+='<div id="tInqInv"><div class="td-search"><span>🔍</span><input type="text" id="tInqQ" placeholder="ค้นหาอะไหล่..." oninput="tInqFP()"></div>';
   h+='<div id="tInqPR" class="td-results" style="max-height:170px;overflow-y:auto;margin-bottom:8px"></div>';
   h+='<div style="font-size:12px;font-weight:600;margin-bottom:5px">รายการที่เลือก (<span id="tInqSC">0</span>)</div><div id="tInqSP" style="margin-bottom:8px"></div></div>';
-  h+='<div id="tInqTxt" style="display:none"><div class="td-ta"><textarea id="tUDet" placeholder="ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase..."></textarea></div></div>';
+  h+='<div id="tInqTxt" style="display:none"><div class="td-ta"><textarea id="tUDet" oninput="tInqTxtChk()" placeholder="ระบุรายการสินค้าที่ต้องการจัดซื้อ / Describe the items to purchase..."></textarea></div></div>';
   h+='</div>';
   h+='<div id="tSparesWrap" style="display:none"><div class="td-lbl">🔩 ชื่ออะไหล่ที่ใช้ / Spare Parts Used</div><div class="td-ta"><input type="text" id="tUSpares" placeholder="เช่น: ปั๊มน้ำ No.3, สายพาน B-52, มอเตอร์ 2HP..."></div><div style="font-size:11px;color:#94a3b8;padding:0 4px 4px">ระบุชื่ออะไหล่ให้ชัดเจน / Please specify exact part names</div></div>';
   h+='<div id="tPhotoWrap" style="display:none"><div class="td-lbl">📷 รูปภาพอ้างอิง / Reference Photos</div><div style="padding:0 4px 8px"><input type="file" accept="image/*" multiple capture="environment" onchange="tHandleUpdPhotos(this.files)" style="font-size:13px"><div id="tPrev_upd" style="margin-top:6px"></div><div id="tCnt_upd" style="font-size:11px;color:#94a3b8"></div></div></div>';
