@@ -4231,18 +4231,20 @@ function tRenderDetail(){
     logHtml+='</div></div>';
   }
   // Photos from original request
-  var _photos=tParsePhotos(t.photos||'');
+  var _photos=tParsePhotos(t.photos||'');var photoHtml='';
   if(_photos.length){
-    h+='<div style="font-size:12px;font-weight:600;padding:8px 14px 4px;color:#64748b">📷 รูปจากใบแจ้งซ่อม ('+_photos.length+')</div>';
-    h+='<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 14px 8px;-webkit-overflow-scrolling:touch">';
-    _photos.forEach(function(p,i){h+='<img src="'+esc(p.thumb)+'" onclick="tShowPhoto('+i+')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
-    h+='</div>';
+    photoHtml+='<div style="font-size:12px;font-weight:600;padding:8px 14px 4px;color:#64748b">📷 รูปจากใบแจ้งซ่อม ('+_photos.length+')</div>';
+    photoHtml+='<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 14px 8px;-webkit-overflow-scrolling:touch">';
+    _photos.forEach(function(p,i){photoHtml+='<img src="'+esc(p.thumb)+'" onclick="tShowPhoto('+i+')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
+    photoHtml+='</div>';
   }
   if(st==='New'){
+    h+=photoHtml;
     h+='<div class="td-banner warn"><div class="bt">🔒 ต้องรับงานก่อน</div><div class="bs">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action green" style="margin-top:10px" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
     h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
   if(st==='Cancelled'){
+    h+=photoHtml;
     h+='<div class="td-banner danger"><div class="bt">🔒 ใบงานถูกยกเลิก / Ticket Cancelled</div><div class="bs">ไม่สามารถอัพเดทได้ — หากยังต้องการซ่อม กรุณาแจ้งใหม่<br>Locked — submit a new ticket if work is still needed.</div></div>';
     h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
@@ -4250,6 +4252,7 @@ function tRenderDetail(){
   var _isFroz=tFroz(st)&&!(st==='Waiting Parts'&&_hasPO);
   if(_isFroz){
     var fzMsg={'Waiting Parts':'รออะไหล่ — รอ PO จากจัดซื้อ','Outside Team':'รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'รออนุมัติ PR จาก GM'}[st]||'ใบงานถูกระงับ';
+    h+=photoHtml;
     h+='<div class="td-banner froz"><div class="bt">🔒 '+fzMsg+'</div><div class="bs">ไม่สามารถอัพเดทได้จนกว่าสถานะจะเปลี่ยน</div></div>';
     h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
   }
@@ -4263,6 +4266,7 @@ function tRenderDetail(){
   } else {
     h+='<div id="tModeLabel" class="td-mode-label '+(_techMode==='c'?'ok':'up')+'">'+(_techMode==='c'?'✓ พร้อมซ่อม — ปิดงาน / Complete':'📝 อัพเดทสถานะ / Update status')+'</div>';
   }
+  h+=photoHtml;
   h+=logHtml;
   // Update panel (hidden when PO ready — only Complete available)
   h+='<div id="tPU" style="display:'+(_poReady?'none':(_techMode==='u'?'block':'none'))+'"><div class="td-form">';
