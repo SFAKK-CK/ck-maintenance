@@ -4152,7 +4152,7 @@ function tTab(t){document.getElementById('ttPL').style.display=t==='p'?'block':'
 
 function tAccept(tid){
   showLoading('กำลังรับงาน...');
-  postToScript({action:'acceptTicket_tech',ticketNumber:tid,staffName:window._loggedInUser.name}).then(function(){hideLoading();var t=_techTickets.find(function(x){return x.ticketNumber===tid;});if(t)t.status='🔵 In Progress';renderTechList();toast('รับงานแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
+  postToScript({action:'acceptTicket_tech',ticketNumber:tid,staffName:window._loggedInUser.name}).then(function(){hideLoading();var t=_techTickets.find(function(x){return x.ticketNumber===tid;});if(t){t.status='🔵 In Progress';t.acceptedAt=new Date().toISOString();}renderTechList();if(_techCurrent&&_techCurrent.ticketNumber===tid&&document.getElementById('page-tech-detail').classList.contains('active'))tRenderDetail();toast('รับงานแล้ว ✓');}).catch(function(e){hideLoading();toast('Error: '+e.message,'error');});
 }
 
 function tRefresh(){loadTechTickets(window._loggedInUser,{refresh:true});}
