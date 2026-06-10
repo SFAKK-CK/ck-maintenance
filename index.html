@@ -4119,7 +4119,8 @@ function tCardHTML(t,u,now){
   var hasPO=!!(t.poNumber&&t.poNumber.trim());
   var frozen=tFroz(st)&&!(st==='Waiting Parts'&&hasPO);
   var isCancel=st==='Cancelled', isNew=st==='New', isDone=st==='Completed';
-  var head='<div class="tt-head"'+(isNew?'':' onclick="tOpen(\''+tid+'\',\'u\')"')+'>'
+  var notAcc=!(t.acceptedAt&&(''+t.acceptedAt).trim());var gateAccept=notAcc&&!isDone&&!isCancel&&!frozen&&!(st==='Waiting Parts'&&hasPO);
+  var head='<div class="tt-head"'+(gateAccept?'':' onclick="tOpen(\''+tid+'\',\'u\')"')+'>'
     +'<div class="tt-info"><div class="tt-num">'+tid+'</div>'
     +'<div class="tt-title">'+esc(t.machine||t.cause||'—')+'</div>'
     +'<div class="tt-dept">🏭 '+esc(t.department||'—')+(t.reporter?' · 👤 '+esc(t.reporter):'')+'</div></div>'
@@ -4130,13 +4131,13 @@ function tCardHTML(t,u,now){
   if(isCancel){ card+='<div class="tt-lock cancel" onclick="tOpen(\''+tid+'\',\'u\')">🔒 ถูกยกเลิก — แตะเพื่อดูเหตุผล / Tap for reason</div></div>'; return card; }
   if(isDone){ card+='<div class="tt-tap" onclick="tOpen(\''+tid+'\',\'u\')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>'+(t.spareParts?'<div class="tt-po">🧩 อะไหล่: '+esc(t.spareParts)+'</div>':'')+'</div>'; return card; }
 
-  if(!isNew)card+='<div class="tt-tap" onclick="tOpen(\''+tid+'\',\'u\')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>';
+  if(!gateAccept)card+='<div class="tt-tap" onclick="tOpen(\''+tid+'\',\'u\')">👆 แตะเพื่อดูรายละเอียด / Tap for details</div>';
   card+=tTeamAssigned(t,u);
   if(hasPO&&st==='Waiting Parts')card+='<div class="tt-po">✅ PO: '+esc(t.poNumber)+' — พร้อมซ่อมเมื่ออะไหล่มาถึง</div>';
   if(frozen){
     var fMsg={'Waiting Parts':'🔒 รออะไหล่ — รอ PO/จัดส่ง','Outside Team':'🔒 รอทีมภายนอก — รอจัดซื้อดำเนินการ','Inquiring':'🔒 ขอใบเสนอราคา — รอจัดซื้อสอบราคา','PR Pending':'🔒 รออนุมัติ PR จาก GM'}[st]||'🔒 ใบงานถูกระงับ';
     card+='<div class="tt-lock wait">'+fMsg+'</div>';
-  } else if(isNew){
+  } else if(gateAccept){
     card+='<div class="tt-act"><button class="tt-b-accept" onclick="tAccept(\''+tid+'\')">✓ รับงาน / Accept Job</button></div>';
   } else if(st==='Waiting Parts'&&hasPO){
     card+='<div class="tt-act"><button class="tt-b-ready" onclick="tOpen(\''+tid+'\',\'c\')">✓ ปิดงาน / Complete</button></div>';
@@ -4246,7 +4247,7 @@ function tRenderDetail(){
     _photos.forEach(function(p,i){photoHtml+='<img src="'+esc(p.thumb)+'" onclick="tShowPhoto('+i+')" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0;flex-shrink:0;cursor:pointer;background:#f1f5f9" onerror="this.style.display=\'none\'">';});
     photoHtml+='</div>';
   }
-  if(st==='New'){
+  if(st==='New'||(st==='In Progress'&&!(t.acceptedAt&&(''+t.acceptedAt).trim()))){
     h+=photoHtml;
     h+='<div class="td-banner warn"><div class="bt">🔒 ต้องรับงานก่อน</div><div class="bs">กดปุ่มด้านล่างเพื่อรับงาน จึงจะสามารถอัพเดทหรือปิดงานได้</div><button class="td-action green" style="margin-top:10px" onclick="tAccept(\''+esc(t.ticketNumber)+'\')">✓ รับงาน / Accept Job</button></div>';
     h+=logHtml;document.getElementById('techDetailInner').innerHTML=h;return;
