@@ -4058,9 +4058,15 @@ function renderTechList(){
 
   // Header (glassy gradient via CSS) + refresh/logout
   var h='<div class="tech-hdr"><div class="ui"><h1>'+esc(u.name)+' ('+u.id+')</h1><div class="sub">'+esc(u.dept)+'</div></div>'
-    +'<div style="display:flex;gap:8px">'
-    +'<button onclick="tRefresh()" style="min-width:88px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.38);cursor:pointer;font-family:inherit;backdrop-filter:blur(10px)">🔄 รีเฟรช</button>'
-    +'<button onclick="appLogout()" style="min-width:88px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.38);cursor:pointer;font-family:inherit;backdrop-filter:blur(10px)">↩ ออก</button></div></div>';
+   +'<button onclick="appLogout()" style="min-width:88px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.38);cursor:pointer;font-family:inherit;backdrop-filter:blur(10px)">↩ ออก</button></div></div>';
+
+  // ➕ ENG can raise a ticket (compact) — opens the form; submits as 🟠 Submitted to GM
+  h+='<div style="padding:10px 12px 2px"><div onclick="techCreateTicket()" style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:16px;background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);cursor:pointer">'
+    +'<div style="width:38px;height:38px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;background:linear-gradient(135deg,#FF9500 0%,#FF6B00 100%);box-shadow:0 6px 14px -4px rgba(255,107,0,.5)">📝</div>'
+    +'<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700;color:#0f172a;letter-spacing:-.01em">แจ้งซ่อม / เปิดใบขอซื้อ</div>'
+    +'<div style="font-size:11.5px;color:#64748b;margin-top:2px">Maintenance Request / Open PR</div></div>'
+    +'<div style="color:#cbd5e1;font-size:20px;flex-shrink:0">›</div></div></div>';
+
   // Tabs
   h+='<div class="tech-tabs"><div class="tech-tab on" onclick="tTab(\'p\')" id="ttP">⏱ งานค้าง ('+ongoingCount+')</div>'
     +'<div class="tech-tab" onclick="tTab(\'c\')" id="ttC">✓ เสร็จแล้ว ('+co.length+')</div></div>';
@@ -4156,6 +4162,15 @@ function tAccept(tid){
 }
 
 function tRefresh(){loadTechTickets(window._loggedInUser,{refresh:true});}
+// ENG-raised ticket → opens the standard maintenance form. On submit it's created
+// as 🟠 Submitted (unassigned) and the GM is notified to assign.
+function techCreateTicket(){
+  goPage('page-form');
+  try{
+    var u=window._loggedInUser;
+    if(u&&u.name){var rn=document.getElementById('rname');if(rn)rn.value=u.name;}
+  }catch(e){}
+}
 
 // ── Detail screen ──
 var _updPhotos=[],_cmpPhotos=[];
